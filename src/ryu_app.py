@@ -4,6 +4,10 @@ Ryu SDN application: SDN-VANET controller với D3QN (Offload + Caching).
 
 Chạy Ryu: ryu-manager ryu_app.py
 Chạy mạng: sudo python3 main_thesis.py
+
+FIXES:
+  - Bug 4 FIX: _create_stub_config() thêm num_videos=100 và zipf_exponent=0.7
+    → nhất quán với config.py và environment.py
 """
 import threading
 import time
@@ -21,12 +25,23 @@ from agents.control_layer import ControlLayer
 
 
 def _create_stub_config():
-    """Config mặc định khi chạy Ryu — đồng bộ với get_config()."""
+    """
+    Config mặc định khi chạy Ryu — đồng bộ với get_config().
+
+    BUG 4 FIX: thêm num_videos và zipf_exponent để nhất quán với config.py.
+    Trước đây thiếu 2 tham số này → VanetEnvironment phải fallback về default,
+    gây khó debug và không minh bạch.
+    """
     return SimpleNamespace(
         cars=10, uavs=3, rsus=1,
         plot_max=400,
         epochs=100, max_steps_per_epoch=1000,
         model_path='agents/models/d3qn.pth',
+
+        # BUG 4 FIX: thêm Zipf params — khớp config.py và environment.py
+        num_videos    = 100,   # F: tổng số video (Table 2 Xie: F=100)
+        zipf_exponent = 0.7,   # γ: độ lệch Zipf (Table 2 Xie)
+
         # Communication params (khớp config.py)
         B=160e6, Bh=60e6, M=30,
         PUAV_dBm=30, PBS_dBm=35, sigma2_dBm=-95,
@@ -35,6 +50,7 @@ def _create_stub_config():
         kappa=11.9, zeta=0.13,
         gamma_bs=3.5, eta_bs=100.0,
         w0=1.0, C_comp=3.4e9, chunk_size_MB=8.0,
+        cache_uav_MB=300,
     )
 
 
@@ -90,7 +106,6 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         stations, rsus, uavs = _create_stub_nodes(config)
         env = VanetEnvironment(config, stations, aps=rsus, uavs_list=uavs)
 
-        # FIX: truyền đủ 4 tham số — num_offload_targets bắt buộc
         agent = D3QNAgent(
             state_size=env.state_size,
             action_size=env.action_size,
@@ -114,6 +129,8 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 step += 1
                 action_idx, reward = self._control_layer.step()
                 # get_decision() trả dict (khớp environment.get_action_components)
+                # BUG 5 FIX (trong environment.py): dict giờ có đủ offload_name
+                # và bitrate_label → không còn KeyError ở đây
                 decision = self._control_layer.get_decision(action_idx)
                 if step % 50 == 1:
                     self.logger.info(
@@ -125,7 +142,6 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                         reward,
                     )
             except (KeyboardInterrupt, SystemExit):
-                # Ctrl+C hoặc ryu-manager dừng → thoát sạch, không in traceback
                 self.logger.info("*** Control loop stopping (KeyboardInterrupt). ***")
                 self._control_stop.set()
                 break

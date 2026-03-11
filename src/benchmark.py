@@ -8,6 +8,12 @@ Kết quả: results/benchmark_*.png + results/benchmark_summary.txt
 Dùng stub nodes giả lập topology 400×400m (khớp main_thesis.py):
   - 10 xe (cars), 3 UAV (tam giác đều), 1 RSU
   - Cùng config.py, cùng models.py → so sánh công bằng
+
+FIXES:
+  - Bug 1 FIX: run_qea() dùng F=config.num_videos (100) thay vì F=10
+    → QEA và D3QN cùng bài toán F=100 video, so sánh công bằng
+  - Bug 3 FIX: run_d3qn() epochs=100, steps_per_epoch=500 (50,000 steps)
+    → Đủ để D3QN hội tụ với replay buffer 10,000
 """
 import os
 import sys
@@ -80,15 +86,23 @@ def make_stub_nodes(config):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def run_qea(config, cars, rsus, uavs, t_max=100, pop_size=20):
+    # ── BUG 1 FIX: dùng F=config.num_videos thay vì F=10 ──────────────────
+    # Trước: F=10  → QEA tối ưu bài toán nhỏ hơn 10× D3QN → so sánh sai
+    # Sau:   F=config.num_videos (=100) → cùng bài toán F=100 video
+    F = int(getattr(config, 'num_videos', 100))
+    Z = 2   # số mức bitrate (khớp NUM_BITRATES trong environment.py)
+
     print(f"\n{'='*55}")
     print(f"  [QEA] Bắt đầu tối ưu: {pop_size} cá thể × {t_max} thế hệ")
+    print(f"  [QEA] F={F} video, Z={Z} bitrate  (khớp D3QN)")
     print(f"{'='*55}")
     t0 = time.time()
 
     qea = QEAJointCAUA(
         cars=cars, uavs=uavs, rsus=rsus,
         config=config,
-        F=10, Z=2,
+        F=F,          # BUG 1 FIX: dùng F từ config thay vì hardcode F=10
+        Z=Z,
         pop_size=pop_size,
         t_max=t_max,
         seed=42,
@@ -104,9 +118,13 @@ def run_qea(config, cars, rsus, uavs, t_max=100, pop_size=20):
 # 3. Chạy D3QN
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def run_d3qn(config, cars, rsus, uavs, epochs=50, steps_per_epoch=200):
+def run_d3qn(config, cars, rsus, uavs, epochs=100, steps_per_epoch=500):
+    # ── BUG 3 FIX: tăng từ 50×200=10,000 lên 100×500=50,000 steps ─────────
+    # D3QN với replay buffer 10,000 cần ít nhất 50,000 steps để hội tụ.
+    # 10,000 steps trước đây quá ít → đường delay trông phẳng hoàn toàn.
     print(f"\n{'='*55}")
     print(f"  [D3QN] Bắt đầu training: {epochs} epochs × {steps_per_epoch} steps")
+    print(f"  [D3QN] Tổng: {epochs * steps_per_epoch:,} steps")
     print(f"{'='*55}")
     t0 = time.time()
 
@@ -180,39 +198,34 @@ def plot_comparison(qea, d3qn_results, out_dir):
     epochs     = d3qn_results['epochs']
     epoch_list = list(range(1, epochs + 1))
 
-    qea_delay     = qea.f_best                          # scalar — delay tối ưu QEA
+    qea_delay     = qea.f_best
     d3qn_delays   = d3qn_results['epoch_avg_delay']
     d3qn_rewards  = d3qn_results['epoch_rewards']
     d3qn_loss     = d3qn_results['epoch_avg_loss']
     d3qn_epsilon  = d3qn_results['epoch_epsilon']
-    qea_conv      = qea.convergence                     # list f_best qua 100 thế hệ
+    qea_conv      = qea.convergence
 
-    # ── Màu sắc thống nhất ──────────────────────────────────────────────────
-    C_D3QN  = '#2196F3'   # xanh dương
-    C_QEA   = '#F44336'   # đỏ
-    C_SHADE = '#BBDEFB'   # xanh nhạt cho fill
+    C_D3QN  = '#2196F3'
+    C_QEA   = '#F44336'
+    C_SHADE = '#BBDEFB'
 
     # ════════════════════════════════════════════════════════════════════════
     # Hình 1: Delay so sánh D3QN vs đường baseline QEA
     # ════════════════════════════════════════════════════════════════════════
     fig, ax = plt.subplots(figsize=(10, 5))
 
-    # D3QN: đường delay trung bình mỗi epoch
     ax.plot(epoch_list, d3qn_delays, color=C_D3QN, linewidth=2,
             label='D3QN — avg delay/epoch')
 
-    # Smoothed D3QN (moving average 5 epochs)
     if epochs >= 5:
         smoothed = np.convolve(d3qn_delays, np.ones(5)/5, mode='valid')
         ax.plot(range(3, 3 + len(smoothed)), smoothed,
                 color=C_D3QN, linewidth=2.5, linestyle='--', alpha=0.7,
                 label='D3QN — smoothed (MA5)')
 
-    # QEA: đường ngang baseline
     ax.axhline(y=qea_delay, color=C_QEA, linewidth=2, linestyle='-.',
                label=f'QEA baseline = {qea_delay:.4f} s')
 
-    # Fill vùng D3QN tốt hơn QEA
     d3qn_arr = np.array(d3qn_delays)
     better   = d3qn_arr < qea_delay
     ax.fill_between(epoch_list, d3qn_arr, qea_delay,
@@ -238,14 +251,12 @@ def plot_comparison(qea, d3qn_results, out_dir):
     fig, axes = plt.subplots(2, 2, figsize=(13, 9))
     fig.suptitle('D3QN Training Chi Tiết', fontsize=15, fontweight='bold')
 
-    # 2a: Reward tích lũy
     ax = axes[0, 0]
     ax.plot(epoch_list, d3qn_rewards, color=C_D3QN, linewidth=1.5)
     ax.set_title('Tổng Reward mỗi Epoch')
     ax.set_xlabel('Epoch'); ax.set_ylabel('Total Reward')
     ax.grid(True, alpha=0.3)
 
-    # 2b: Avg Delay + QEA baseline
     ax = axes[0, 1]
     ax.plot(epoch_list, d3qn_delays, color=C_D3QN, linewidth=1.5,
             label='D3QN avg delay')
@@ -255,14 +266,12 @@ def plot_comparison(qea, d3qn_results, out_dir):
     ax.set_xlabel('Epoch'); ax.set_ylabel('Delay (s)')
     ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
 
-    # 2c: Training loss
     ax = axes[1, 0]
     ax.plot(epoch_list, d3qn_loss, color='#9C27B0', linewidth=1.5)
     ax.set_title('Training Loss (Huber/SmoothL1)')
     ax.set_xlabel('Epoch'); ax.set_ylabel('Loss')
     ax.grid(True, alpha=0.3)
 
-    # 2d: Epsilon decay
     ax = axes[1, 1]
     ax.plot(epoch_list, d3qn_epsilon, color='#FF9800', linewidth=2)
     ax.set_title('Epsilon Decay (Explore → Exploit)')
@@ -310,8 +319,8 @@ def write_summary(qea, d3qn_results, out_dir):
     steps        = d3qn_results['steps_per_epoch']
 
     qea_delay    = qea.f_best
-    d3qn_init    = float(np.mean(d3qn_delays[:5]))    # trung bình 5 epoch đầu
-    d3qn_final   = float(np.mean(d3qn_delays[-5:]))   # trung bình 5 epoch cuối
+    d3qn_init    = float(np.mean(d3qn_delays[:5]))
+    d3qn_final   = float(np.mean(d3qn_delays[-5:]))
     improvement  = (d3qn_init - d3qn_final) / d3qn_init * 100 if d3qn_init > 0 else 0
     vs_qea_pct   = (d3qn_final - qea_delay) / qea_delay * 100
 
@@ -321,7 +330,8 @@ def write_summary(qea, d3qn_results, out_dir):
         "=" * 55,
         "",
         f"  Topology   : {qea.K} xe, {qea.L} UAV, 1 RSU",
-        f"  D3QN       : {epochs} epochs × {steps} steps/epoch",
+        f"  Num videos : {qea.F}  (F — khớp nhau giữa QEA và D3QN)",
+        f"  D3QN       : {epochs} epochs × {steps} steps/epoch = {epochs*steps:,} steps",
         f"  QEA        : {qea.t_max} thế hệ × {qea.pop_size} cá thể",
         "",
         "  ── QEA ─────────────────────────────────────",
@@ -387,18 +397,20 @@ def main():
 
     # Tạo stub topology
     cars, rsus, uavs = make_stub_nodes(config)
-    print(f"\n  Topology: {len(cars)} xe, {len(uavs)} UAV, {len(rsus)} RSU")
+    num_videos = getattr(config, 'num_videos', 100)
+    print(f"\n  Topology   : {len(cars)} xe, {len(uavs)} UAV, {len(rsus)} RSU")
+    print(f"  Num videos : {num_videos}  (F — dùng cho cả QEA và D3QN)")
     print(f"  Action space: {1+len(uavs)+len(rsus)} offload × 2 bitrate × 2 cache"
           f" = {(1+len(uavs)+len(rsus))*2*2} actions")
 
     # ── Chạy QEA ──────────────────────────────────────────────────────────
+    # BUG 1 FIX: run_qea dùng F=config.num_videos bên trong rồi
     qea = run_qea(config, cars, rsus, uavs, t_max=100, pop_size=20)
 
     # ── Chạy D3QN ─────────────────────────────────────────────────────────
-    # epochs=50, steps=200 → nhanh (~vài phút), đủ thấy trend
-    # Tăng lên epochs=100, steps=1000 để kết quả chính xác hơn
+    # BUG 3 FIX: 100 epochs × 500 steps = 50,000 steps → đủ để hội tụ
     d3qn_results = run_d3qn(config, cars, rsus, uavs,
-                             epochs=50, steps_per_epoch=200)
+                             epochs=100, steps_per_epoch=500)
 
     # ── Vẽ đồ thị ─────────────────────────────────────────────────────────
     out_dir = os.path.join(SRC, 'results')

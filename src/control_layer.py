@@ -3,6 +3,11 @@
 ControlLayer: SDN control plane logic dùng chung cho main_thesis.py và ryu_app.py.
 
 Tách ra file riêng để tránh duplicate code giữa 2 entry point.
+
+FIXES:
+  - Bug 2 FIX: get_forced_ap_name() dùng self.env.requesting_car
+    (xe đang request trong step hiện tại) thay vì cứng cars[0].
+    Điều này đồng bộ với Bug 1 fix trong environment.py (random xe).
 """
 import math
 
@@ -49,28 +54,39 @@ class ControlLayer:
         """
         Trả về dict mô tả action để log.
         Dùng get_action_components() từ environment — khớp với action space mới.
+        Dict trả về có đủ keys: offload_idx, offload_name, bitrate,
+        bitrate_label, cache, f_req, popularity.
         """
         return self.env.get_action_components(action_idx)
 
     def get_forced_ap_name(self, action_idx, cars, uavs):
         """
-        Trả về tên AP mà car0 nên bám theo quyết định của agent,
-        CHỈ khi car0 thực sự nằm trong vùng phủ của AP đó.
+        Trả về tên AP mà xe đang request nên bám theo quyết định của agent,
+        CHỈ khi xe thực sự nằm trong vùng phủ của AP đó.
         Nếu ngoài vùng phủ → trả về None.
 
-        Dùng get_action_vector() 3-dim: (offload, z_req, cache).
+        BUG 2 FIX: dùng self.env.requesting_car (xe ngẫu nhiên trong step
+        hiện tại) thay vì cứng cars[0]. Đồng bộ với fix random car trong
+        environment.py.
+
+        Fallback: nếu env chưa có requesting_car (bước đầu tiên trước khi
+        step() được gọi), dùng cars[0] để tránh crash.
         """
         if not cars:
             return None
 
-        # get_action_vector trả (offload, z_req, cache) — chỉ cần offload
+        # ── BUG 2 FIX: lấy xe đang request từ env ──────────────────────────
+        car = getattr(self.env, 'requesting_car', None)
+        if car is None:
+            # Fallback an toàn cho bước đầu tiên (trước khi env.step() chạy)
+            car = cars[0]
+
         action_tuple = self.agent.get_action_vector(action_idx)
         off_idx = action_tuple[0]
 
         if off_idx == 0:
             return None   # local, không cần bám AP
 
-        car = cars[0]
         target_node = None
         tmp = off_idx - 1
         if tmp < len(uavs):
