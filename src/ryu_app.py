@@ -117,7 +117,7 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 decision = self._control_layer.get_decision(action_idx)
                 if step % 50 == 1:
                     self.logger.info(
-                        "step %d offload→%s bitrate=%s cache=%s R=%.2f",
+                        "step %d offload → %s bitrate = %s cache = %s R= %.2f",
                         step,
                         decision['offload_name'],
                         decision['bitrate_label'],
