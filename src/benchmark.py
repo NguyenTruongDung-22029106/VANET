@@ -292,7 +292,7 @@ def plot_comparison(qea, d3qn_results, out_dir):
     gen_list = list(range(1, len(qea_conv) + 1))
     ax.plot(gen_list, qea_conv, color=C_QEA, linewidth=2, label='QEA f_best')
     ax.fill_between(gen_list, qea_conv, alpha=0.15, color=C_QEA)
-    ax.axhline(y=qea_delay, color='#333', linewidth=1, linestyle='--',
+    ax.axhline(y=qea_delay, color='#333333', linewidth=1, linestyle='--',
                alpha=0.5, label=f'Final = {qea_delay:.4f}s')
     ax.set_xlabel('Thế hệ (Generation)', fontsize=12)
     ax.set_ylabel('D_tot (s)', fontsize=12)

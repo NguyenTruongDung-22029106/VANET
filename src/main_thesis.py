@@ -25,7 +25,7 @@ from mn_wifi.wmediumdConnector import interference
 from config import get_config
 from environment import VanetEnvironment
 from agents.d3qn_agent import D3QNAgent
-from agents.control_layer import ControlLayer          # FIX: import từ file chung
+from control_layer import ControlLayer
 from agents.qea_joint_ca_ua import QEAJointCAUA
 
 # Patch tkinter để tránh RuntimeError khi thoát

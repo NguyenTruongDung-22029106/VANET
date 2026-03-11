@@ -21,7 +21,7 @@ from ryu.ofproto import ofproto_v1_0
 from environment import VanetEnvironment
 from agents.d3qn_agent import D3QNAgent
 # FIX: dùng ControlLayer từ file chung, không định nghĩa lại
-from agents.control_layer import ControlLayer
+from control_layer import ControlLayer
 
 
 def _create_stub_config():
