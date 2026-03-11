@@ -29,6 +29,10 @@ def get_config():
         vehicle_speed_kmh=20,
         vehicle_range_m=50,     # R (Vehicle Communication Range)
 
+        # Content popularity (Zipf) — Chen et al. Eq(1), Xie et al. Section III-B
+        num_videos     = 100,   # F: tổng số video trong thư viện (Table 2 Xie: F=100)
+        zipf_exponent  = 0.7,   # γ: độ lệch Zipf (Table 2 Xie: zipf_alpha=0.7)
+
         # Communication model — Xie et al. Eq(1-13) + Table II Chen et al.
         B           = 160e6,    # V2U bandwidth (Hz) — 160 MHz
         Bh          = 60e6,     # V2B backhaul bandwidth (Hz) — 60 MHz

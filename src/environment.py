@@ -1,21 +1,11 @@
 #!/usr/bin/env python3
 """
-VANET Simulation Environment for DRL (SDN-VANET-UAV architecture).
+VanetEnvironment — đã sửa:
+  Bug 1: requesting_car random mỗi step (không còn cố định cars[0])
+  Bug 2: popularity Zipf p_f tính động theo f_req thực sự (không còn 0.7)
 
-State: positions (cars, UAVs, RSUs), CPU load, cache status, video popularity.
-       Dùng làm "global view" cho agent D3QN.
-
-Action (Fix 2 — 3-way joint decision):
-  offload_target × bitrate_z × cache_decision
-  - offload_target : local=0 | UAV_1..UAV_n | RSU_1..RSU_m
-  - bitrate_z      : 0=low (480p) | 1=high (1080p)          ← MỚI
-  - cache_decision : 0=no_cache  | 1=cache                   ← giữ
-
-  action_size = num_offload_targets × num_bitrates × num_cache_actions
-
-Reward (Fix 1):
-  reward = -delay   (đơn vị giây, âm để minimize)
-  Không dùng normalized improvement nữa — thống nhất với mô tả "reward = -cost".
+Công thức Zipf (Chen et al. Eq.1 / Xie et al. Section III-B):
+  p_f = f^{-γ} / Σ_{j=1}^{F} j^{-γ}
 
 Cache 3-mode (đồng bộ models.py):
   0 = không cache                     → D^3 cache miss
@@ -26,11 +16,25 @@ CPU load (Fix 3):
   Được truyền vào calculate_total_cost() → ảnh hưởng delay thực sự.
   Agent "nhìn" cpu_load trong state VÀ môi trường phạt khi CPU cao.
 """
+import random
 import numpy as np
 from models import calculate_total_cost
 
 # Số mức bitrate (z): 0=low, 1=high
 NUM_BITRATES = 2
+
+# ============================================================
+# Zipf helper  (Chen et al. Eq.1)
+# ============================================================
+
+def _compute_zipf_probs(num_videos: int, gamma: float) -> np.ndarray:
+    """
+    p_f = f^{-γ} / Σ_{j=1}^{F} j^{-γ}   (f = 1..F, 1-indexed rank)
+    Trả về array shape (num_videos,), index 0 = video phổ biến nhất.
+    """
+    ranks = np.arange(1, num_videos + 1, dtype=np.float64)
+    raw   = ranks ** (-gamma)
+    return raw / raw.sum()
 
 
 class VanetEnvironment:
@@ -62,12 +66,12 @@ class VanetEnvironment:
 
         # --- State space ---
         self.state_size = (
-            len(self.cars)  * 2 +           # positions x,y
+            len(self.cars)  * 2 +               # positions x,y
             len(self.uavs)  * 2 +
             len(self.rsus)  * 2 +
             len(self.uavs) + len(self.rsus) +   # CPU load
             len(self.uavs) + len(self.rsus) +   # cache status (mode 0/1/2)
-            1                                    # video popularity (Zipf)
+            1                                    # video popularity (Zipf p_f)
         )
 
         # Cache state: mode per node (0=miss,1=hit,2=transcoding)
@@ -80,6 +84,17 @@ class VanetEnvironment:
         self._cpu_decay      = 0.05   # giảm mỗi step
         self._cpu_per_req    = 0.1    # tăng khi có request
 
+        # -------------------------------------------------------
+        # BUG FIX 2: Zipf popularity động
+        # -------------------------------------------------------
+        # Lấy tham số từ config (có fallback về giá trị mặc định)
+        self.num_videos    = int(getattr(config, 'num_videos',    100))
+        self.zipf_exponent = float(getattr(config, 'zipf_exponent', 0.7))
+        # Precompute xác suất Zipf cho tất cả F video — shape (num_videos,)
+        self._zipf_probs   = _compute_zipf_probs(self.num_videos, self.zipf_exponent)
+        # Video đang được request trong step hiện tại (0-indexed)
+        self.f_req         = 0
+
     # ------------------------------------------------------------------
     @staticmethod
     def get_pos_from_node(node):
@@ -89,7 +104,12 @@ class VanetEnvironment:
         return 0.0, 0.0
 
     def get_state(self):
-        """State vector đầy đủ: pos + cpu_load + cache_mode + popularity."""
+        """
+        State vector đầy đủ: pos + cpu_load + cache_mode + popularity.
+
+        BUG FIX 2: popularity = Zipf p_{f_req} tính động,
+                   KHÔNG còn là giá trị cứng 0.7.
+        """
         sv = []
         for n in self.cars + self.uavs + self.rsus:
             sv.extend(self.get_pos_from_node(n))
@@ -97,7 +117,11 @@ class VanetEnvironment:
             sv.append(float(self.cpu_load.get(n.name, 0.0)))
         for n in self.uavs + self.rsus:
             sv.append(float(self.cache_state.get(n.name, 0)))
-        sv.append(0.7)   # popularity placeholder (Zipf p_f)
+
+        # --- BUG FIX 2: Zipf p_f động thay vì 0.7 cứng ---
+        p_f = float(self._zipf_probs[self.f_req])
+        sv.append(p_f)
+
         return np.array(sv, dtype=np.float32)
 
     # ------------------------------------------------------------------
@@ -123,15 +147,29 @@ class VanetEnvironment:
     def step(self, action_idx: int):
         """
         One step:
-          1. Decode action → (offload, z_req, cache)
-          2. Update cache state theo bitrate agent chọn
-          3. Update CPU load
-          4. Tính delay (Eq 10-12 + queuing penalty)
-          5. reward = -delay  (Fix 1)
+          1. BUG FIX 1: chọn requesting_car ngẫu nhiên (không cố định cars[0])
+          2. BUG FIX 2: chọn f_req ngẫu nhiên theo phân phối Zipf
+          3. Decode action → (offload, z_req, cache)
+          4. Update cache state theo bitrate agent chọn
+          5. Update CPU load
+          6. Tính delay (Eq 10-12 + queuing penalty)
+          7. reward = -delay  (Fix 1)
         """
-        offload_choice, z_req, cache_dec = self._decode_action(action_idx)
+        # -------------------------------------------------------
+        # BUG FIX 1: random requesting_car — không còn cứng cars[0]
+        # -------------------------------------------------------
+        requesting_car = random.choice(self.cars)
 
-        requesting_car = self.cars[0]
+        # -------------------------------------------------------
+        # BUG FIX 2: random f_req theo Zipf (video phổ biến hơn
+        #            được chọn nhiều hơn, đúng với mô hình paper)
+        # -------------------------------------------------------
+        self.f_req = int(np.random.choice(
+            self.num_videos,
+            p=self._zipf_probs
+        ))
+
+        offload_choice, z_req, cache_dec = self._decode_action(action_idx)
 
         # Xác định target node
         if offload_choice == self.OFFLOAD_LOCAL:
@@ -154,19 +192,12 @@ class VanetEnvironment:
         # --- Update cache state (Fix 2: agent chọn bitrate z) ---
         if target_node is not requesting_car and node_name in self.cache_state:
             if cache_dec == 1:
-                # Agent cache content ở bitrate z_req
-                # Nếu z_req == z_req_user → mode=1 (direct hit)
-                # Nếu z_cached > z_req    → mode=2 (transcoding)
                 self.cache_bitrate[node_name] = z_req
-                # Dự đoán user thường request z=0 (low bitrate):
-                # nếu agent cache z=1 (high) → mode=2 transcoding
-                # nếu agent cache z=0 (low)  → mode=1 direct hit
                 if z_req == 0:
                     self.cache_state[node_name] = 1  # direct hit
                 else:
-                    self.cache_state[node_name] = 2  # transcoding (có thể downscale)
+                    self.cache_state[node_name] = 2  # transcoding
             else:
-                # Không cache → miss
                 self.cache_state[node_name]   = 0
                 self.cache_bitrate[node_name] = 0
 
@@ -205,19 +236,18 @@ class VanetEnvironment:
         self.cache_state   = {n.name: 0   for n in (self.uavs + self.rsus)}
         self.cache_bitrate = {n.name: 0   for n in (self.uavs + self.rsus)}
         self.cpu_load      = {n.name: 0.0 for n in (self.uavs + self.rsus)}
+        # Reset f_req về video phổ biến nhất
+        self.f_req = 0
         return self.get_state()
 
     # ------------------------------------------------------------------
     def get_action_components(self, action_idx: int):
         """Public helper: trả về dict mô tả action (dùng trong control_layer)."""
         offload, z_req, cache = self._decode_action(action_idx)
-        names = ['Local']
-        names.extend([f'UAV{i+1}' for i in range(len(self.uavs))])
-        names.extend([f'RSU{i+1}' for i in range(len(self.rsus))])
         return {
-            'offload_name': names[offload] if offload < len(names) else f'#{offload}',
             'offload_idx':  offload,
-            'z_req':        z_req,
-            'bitrate_label': ['low(480p)', 'high(1080p)'][z_req],
-            'cache':        cache == 1,
+            'bitrate':      z_req,
+            'cache':        cache,
+            'f_req':        self.f_req,
+            'popularity':   float(self._zipf_probs[self.f_req]),
         }
