@@ -372,18 +372,25 @@ def run_simulation_loop(net, config, env, agent, cars, uavs, plot_queue=None, ua
                 action_idx, reward = control_layer.step()
 
                 # FIX 4: Agent-driven association với range check
-                # Chỉ ép car1 bám AP khi xe thực sự trong vùng phủ của node đó
+                # BUG 6 FIX: dùng requesting_car.name (xe đang request) thay vì
+                # cars[0].name. Sau Bug 2 fix, get_forced_ap_name() đã trả về AP
+                # cho xe ngẫu nhiên — phải map đúng tên xe đó vào forced dict.
                 try:
                     ap_name = control_layer.get_forced_ap_name(action_idx, cars, uavs)
                     forced  = getattr(net, '_car_forced_ap', None)
                     if forced is None:
                         net._car_forced_ap = {}
                         forced = net._car_forced_ap
+                    # Lấy tên xe đang request từ env (đã được lưu trong env.step())
+                    req_car_name = getattr(
+                        getattr(control_layer.env, 'requesting_car', None),
+                        'name', cars[0].name   # fallback về cars[0] nếu chưa có
+                    )
                     if ap_name:
-                        forced[cars[0].name] = ap_name
+                        forced[req_car_name] = ap_name
                     else:
                         # Xóa forced để update_car_ap_association fallback theo khoảng cách
-                        forced.pop(cars[0].name, None)
+                        forced.pop(req_car_name, None)
                 except Exception:
                     pass
 
