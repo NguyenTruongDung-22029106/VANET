@@ -1,0 +1,568 @@
+% =============================================================================
+% SYSTEM MODEL FORMULAS - LaTeX Reference
+% =============================================================================
+% Mục đích: Tài liệu các công thức toán học dùng trong luận văn
+%   "Tối ưu hóa Lưu trữ Biên và Liên kết Người dùng cho Dịch vụ
+%    Truyền phát Video Thích ứng trong Mạng VANET hỗ trợ UAV dùng D3QN"
+%
+% Nguồn:
+%   [Xie]  Xie et al., "Joint Caching and User Association Optimization
+%          for Adaptive Bitrate Video Streaming in UAV-Assisted Cellular
+%          Networks," IEEE Access, 2022.
+%   [Chen] Chen et al., "Edge Collaborative Caching Based on
+%          Incentive-Driven D3QN Combined With User Preferences in
+%          UAV-Assisted Vehicular Networks," IEEE Trans. ITS, 2025.
+% =============================================================================
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\title{System Model Formulas\\
+\large Optimizing ABR Video Streaming in SDN-VANET-UAV using D3QN}
+\author{Thesis Reference}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Communication Model}
+% Source: [Xie] Eq.(1)--(9)
+% =============================================================================
+
+\subsection{Path Loss: LoS and NLoS}
+
+The average path loss (dB) between UAV $l$ and user $k$ is computed as a
+weighted sum of LoS and NLoS components \cite{Xie}:
+
+\begin{equation}
+  g_{l,k} = P_{l,k}^{\mathrm{LoS}} \cdot g_{l,k}^{\mathrm{LoS}}
+           + \left(1 - P_{l,k}^{\mathrm{LoS}}\right) \cdot g_{l,k}^{\mathrm{NLoS}}
+  \tag{Xie~1--2}
+\end{equation}
+
+\noindent where the LoS and NLoS path loss terms are:
+\begin{align}
+  g_{l,k}^{\mathrm{LoS}}  &= 20\log_{10}\!\left(\tfrac{4\pi f_c d_0}{c}\right)
+                              + 10\,n_{\mathrm{LoS}}\log_{10}(d_{l,k}) + s_{\mathrm{LoS}}
+  \tag{Xie~1} \\
+  g_{l,k}^{\mathrm{NLoS}} &= 20\log_{10}\!\left(\tfrac{4\pi f_c d_0}{c}\right)
+                              + 10\,n_{\mathrm{NLoS}}\log_{10}(d_{l,k}) + s_{\mathrm{NLoS}}
+  \tag{Xie~2}
+\end{align}
+
+\noindent \textbf{Variables:}
+$f_c$ = carrier frequency;
+$d_0$ = reference distance;
+$c$ = speed of light;
+$n_{\mathrm{LoS}}, n_{\mathrm{NLoS}}$ = path loss exponents;
+$s_{\mathrm{LoS}}, s_{\mathrm{NLoS}}$ = shadowing factors (dB);
+$d_{l,k} = \sqrt{(X_l-X_k)^2+(Y_l-Y_k)^2+H^2}$ = 3D distance UAV--user.
+
+\subsection{LoS Probability}
+
+\begin{equation}
+  P_{l,k}^{\mathrm{LoS}} = \frac{1}{1 + \kappa \exp\!\left(-\zeta\,(\theta_{l,k} - \kappa)\right)}
+  \tag{Xie~3}
+\end{equation}
+
+\noindent where $\theta_{l,k} = \arcsin(H / d_{l,k})$ is the elevation angle (degrees),
+and $\kappa,\,\zeta$ are environment-dependent constants.
+
+\subsection{SINR: UAV $\to$ User (Downlink)}
+
+\begin{equation}
+  \mathrm{SINR}_{l,k} =
+    \frac{P_{\mathrm{UAV}} \cdot 10^{-g_{l,k}/10}}
+         {\displaystyle\sum_{l' \in \mathcal{L},\, l' \neq l}
+          P_{\mathrm{UAV}} \cdot 10^{-g_{l',k}/10} + \sigma^2}
+  \tag{Xie~4}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$P_{\mathrm{UAV}}$ = UAV transmit power (W);
+$\sigma^2$ = noise power;
+interference from all other UAVs $l' \neq l$.
+
+\subsection{Downlink Rate: UAV $\to$ User}
+
+\begin{equation}
+  r_{l,k} = \frac{B}{M} \log_2\!\left(1 + \mathrm{SINR}_{l,k}\right)
+  \tag{Xie~5}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$B$ = total bandwidth;
+$M$ = number of users / sub-channels per UAV.
+
+\subsection{Backhaul Rate: MBS $\to$ UAV}
+
+\begin{equation}
+  r_{\mathrm{BS},l} = \frac{B_h}{L} \log_2\!\left(1 + \mathrm{SINR}_{\mathrm{BS},l}\right)
+  \tag{Xie~9}
+\end{equation}
+
+\noindent where the backhaul path loss (Eq.~6--8) uses the same LoS/NLoS model
+with backhaul-specific exponent $\gamma$ and excess loss $\eta$:
+\begin{equation}
+  g_{\mathrm{BS},l} = P_{\mathrm{BS},l}^{\mathrm{LoS}} \cdot d_{\mathrm{BS},l}^{-\gamma}
+                    + \left(1 - P_{\mathrm{BS},l}^{\mathrm{LoS}}\right) \cdot \eta \, d_{\mathrm{BS},l}^{-\gamma}
+  \tag{Xie~6--8}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$B_h$ = backhaul bandwidth;
+$L$ = number of UAVs;
+$P_{\mathrm{BS}}$ = MBS transmit power;
+$\gamma$ = backhaul path loss exponent;
+$\eta$ = NLoS excess loss coefficient.
+
+\subsection{V2V Transmission Rate}
+
+\begin{equation}
+  R_{vv'}(t) = B_{vv'} \log_2\!\left(1 + \frac{P_{vv'}\,g_{vv'}(t)}{N_0 B_{vv'}}\right)
+  \tag{Chen~12}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$B_{vv'}$ = V2V bandwidth;
+$P_{vv'}$ = vehicle transmit power;
+$g_{vv'}(t) = g_0 / l_{vv'}^2(t)$ = channel gain ($l_{vv'}$ = distance);
+$N_0$ = noise power.
+
+\subsection{V2U Transmission Rate}
+
+\begin{equation}
+  R_{u,v} = B_{u,v} \log_2\!\left(1 + \frac{P_{u,v}^t \, h_{v,u}(t)}{\sigma^2}\right)
+  \tag{Chen~15}
+\end{equation}
+
+\noindent where $h_{v,u}(t) = g_0 / l_{u,v}^2(t)$ (free-space path loss).
+$B_{u,v}$ is allocated equally among associated users.
+
+% =============================================================================
+\section{Content Popularity Model}
+% Source: [Chen] Eq.(1)
+% =============================================================================
+
+\begin{equation}
+  p_f = \frac{f^{-\gamma}}{\displaystyle\sum_{j=1}^{F} j^{-\gamma}}
+  \tag{Chen~1}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$p_f$ = request probability of content $f$;
+$\gamma$ = Zipf exponent (skewness);
+$F$ = total number of contents in the library.
+
+% =============================================================================
+\section{Cache Model}
+% Source: [Chen] Eq.(4)--(8), [Xie] constraint (15a)
+% =============================================================================
+
+\subsection{Cache State Matrix}
+
+\begin{equation}
+  C = \begin{pmatrix}
+    c_{1,f_1} & \cdots & c_{1,f_n} \\
+    \vdots    & \ddots & \vdots    \\
+    c_{M,f_1} & \cdots & c_{M,f_n}
+  \end{pmatrix}, \quad c_{M,f} \in \{0,1\}
+  \tag{Chen~4}
+\end{equation}
+
+\subsection{Cache Capacity Constraint}
+
+\begin{equation}
+  \sum_{f=1}^{F} s_f \, c_{M,f}^t \leq C_M, \quad \forall\, M \in \mathcal{V} \cup \mathcal{U}
+  \tag{Chen~C3}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$s_f$ = size of content $f$;
+$C_M$ = cache capacity of node $M$ (UAV or vehicle).
+
+\subsection{Cache Replacement Trigger}
+
+\begin{equation}
+  C_{M}^{t-1} + \sum_{f=1}^{F} \left(c_{M,f}^t - c_{M,f}^{t-1}\right) \times s_f > C_M
+  \tag{Chen~6}
+\end{equation}
+
+\subsection{Caching Value Function}
+
+\begin{equation}
+  V_f^t = \omega_1\,\phi_{v_m, f_k} + \omega_2\!\left(p_f + \alpha\, SC_i\right)
+  \tag{Chen~11}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$\omega_1, \omega_2$ = weighting coefficients;
+$\phi_{v_m,f_k}$ = user preference level (Section~\ref{sec:preference});
+$p_f$ = content popularity;
+$\alpha$ = incentive adjustment factor;
+$SC_i$ = social contribution rate (Section~\ref{sec:incentive}).
+
+\subsection{Cache Replacement Decision}
+
+\begin{equation}
+  x_{f_k}^t = e^{V_f^t - \mu\, s_f^t}
+  \tag{Chen~8-def}
+\end{equation}
+
+\begin{equation}
+  c_{M,f_k}^t = \begin{cases} 1 & \text{if } x_{f_k}^t > x_{f_k'}^{t-1} \\ 0 & \text{otherwise} \end{cases}
+  \tag{Chen~8}
+\end{equation}
+
+% =============================================================================
+\section{Video Delivery Delay Model}
+% Source: [Xie] Eq.(10)--(13), [Chen] Eq.(21)--(26)
+% =============================================================================
+
+\subsection{Total Delivery Delay}
+
+\begin{equation}
+  D_{l,k} = D_{l,k}^1 + D_{l,k}^2 + D_{l,k}^3
+  \tag{Xie~13}
+\end{equation}
+
+\subsection{Scenario 1 — Direct Cache Hit}
+\emph{UAV $l$ caches content $f$ at exactly the requested bitrate $z$.}
+
+\begin{equation}
+  D_{l,k}^1 = \sum_{f=1}^{F}\sum_{z=1}^{Z}
+    p_{k,f,z}\, y_{l,f,z}\, \frac{s_{f,z}}{r_{l,k}}
+  \tag{Xie~10}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$p_{k,f,z}$ = probability user $k$ requests content $f$ at bitrate $z$;
+$y_{l,f,z} \in \{0,1\}$ = cache indicator (UAV $l$, content $f$, bitrate $z$);
+$s_{f,z}$ = chunk size at bitrate $z$;
+$r_{l,k}$ = downlink rate from Eq.~(Xie~5).
+
+\subsection{Scenario 2 — Transcoding Hit}
+\emph{UAV $l$ has a higher-bitrate version $z^+$ and transcodes down to $z$.}
+
+\begin{equation}
+  D_{l,k}^2 = \sum_{f=1}^{F}\sum_{z=1}^{Z}
+    p_{k,f,z}\,(1 - y_{l,f,z})\, h_{l,f,z}
+    \left(\frac{s_{f,z}}{r_{l,k}} + \frac{w_0\,(s_{f,z^+} - s_{f,z})}{c_{l,k}}\right)
+  \tag{Xie~11}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$h_{l,f,z} = \min\!\left(\sum_{z'>z} y_{l,f,z'},\,1\right)$ = indicator that a higher bitrate is cached;
+$z^+$ = lowest cached bitrate above $z$;
+$w_0$ = CPU cycles per bit for transcoding;
+$c_{l,k} = C_{\mathrm{comp}} / M$ = computing resource allocated to user $k$.
+
+\subsection{Scenario 3 — Cache Miss}
+\emph{Content not available; UAV fetches from MBS backhaul.}
+
+\begin{equation}
+  D_{l,k}^3 = \sum_{f=1}^{F}\sum_{z=1}^{Z}
+    p_{k,f,z}
+    \left(1 - \sum_{z'=z}^{Z} y_{l,f,z'}\right)
+    \left(\frac{s_{f,z}}{r_{l,k}} + \frac{s_{f,z}}{r_{\mathrm{BS},l}}\right)
+  \tag{Xie~12}
+\end{equation}
+
+\noindent $r_{\mathrm{BS},l}$ = backhaul rate from Eq.~(Xie~9).
+
+\subsection{Total System Delay Objective}
+
+\begin{equation}
+  D_{\mathrm{tot}} = \sum_{l \in \mathcal{L}} \sum_{k \in \mathcal{K}}
+    x_{l,k} \cdot D_{l,k}
+  \tag{Xie~14}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$x_{l,k} \in \{0,1\}$ = user association indicator (user $k$ assigned to UAV $l$);
+$\mathcal{L}$ = set of UAVs; $\mathcal{K}$ = set of users.
+
+\subsection{Total User Delivery Delay (Chen multi-path)}
+
+\begin{equation}
+  D_{f,v}^{\mathrm{total}} =
+  \begin{cases}
+    c_{v,f}^t \, d_{v',v}^f \\
+    \quad + (1-c_{v,f}^t)\, k_1 c_{u,f}^t \, d_{u,v}^f \\
+    \quad + (1-c_{v,f}^t)(1-k_1 c_{u,f}^t)\, k_2 c_{u',f}^t \, d_{u',v}^f \\
+    \quad + (1-c_{v,f}^t)(1-k_1 c_{u,f}^t)(1-k_2 c_{u',f}^t)\, d_{b,v}^f
+  \end{cases}
+  \tag{Chen~26}
+\end{equation}
+
+\noindent The four paths in priority order: V2V $\to$ V2U $\to$ V2U' (neighboring UAV) $\to$ V2B.
+
+% =============================================================================
+\section{User Preference \& Incentive Model}
+\label{sec:preference}
+% Source: [Chen] Eq.(2)--(3), (9)--(11)
+% =============================================================================
+
+\subsection{Topic Similarity Between Contents}
+
+\begin{equation}
+  Q(f, f') = \frac{2}{K(K-1)}
+    \sum_{f,f'} \frac{\displaystyle\sum_{j=1}^{J} e(f,w_j)\,e(f',w_j)}
+    {\sqrt{\displaystyle\sum_{j=1}^{J} e(f,w_j)^2}\;\sqrt{\displaystyle\sum_{j=1}^{J} e(f',w_j)^2}}
+  \tag{Chen~2}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$e(f,w_j) \in \{0,1\}$ = relevance of content $f$ to topic $w_j$;
+$K$ = number of historically requested contents;
+$J$ = number of topics.
+
+\subsection{User Preference Level}
+\label{sec:phi}
+
+\begin{equation}
+  \phi_{v_m, f_k} =
+    \frac{\displaystyle\sum_{j=1}^{J} e(f_k, w_j)\, Q(f, f')}
+    {\sqrt{\displaystyle\sum_{j=1}^{J} [e(f_k,w_j)]^2}\;
+     \sqrt{\displaystyle\sum_{j=1}^{J} [Q(f,f')]^2}}
+  \tag{Chen~3}
+\end{equation}
+
+\subsection{Social Contribution Rate}
+\label{sec:incentive}
+
+\begin{equation}
+  SC_i(t) = \frac{1}{T} \sum_{t=1}^{T}
+    \frac{h_{v2v}\, s_f\, p_f}{\displaystyle\sum_{f=1}^{F} c_{M,f}^t\, s_f}
+  \tag{Chen~10}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$h_{v2v} \in \{0,1\}$ = V2V sharing decision;
+$s_f\,p_f$ = effective contribution of sharing content $f$;
+denominator = total cached content size at node $M$.
+
+% =============================================================================
+\section{Optimization Problem}
+% Source: [Xie] Problem (15), [Chen] Problem P (35)--(36)
+% =============================================================================
+
+\subsection{Joint CA+UA Optimization (Xie et al.)}
+
+\begin{equation}
+  \min_{\mathbf{x},\,\mathbf{y}} \quad D_{\mathrm{tot}}
+    = \sum_{l \in \mathcal{L}} \sum_{k \in \mathcal{K}} x_{l,k} \cdot D_{l,k}
+  \tag{Xie~P}
+\end{equation}
+\begin{align}
+  \text{s.t.}\quad
+  & \sum_{l \in \mathcal{L}} x_{l,k} = 1, \quad \forall\, k \in \mathcal{K}
+    \tag{15b} \\
+  & \sum_{k \in \mathcal{K}} x_{l,k} \leq M, \quad \forall\, l \in \mathcal{L}
+    \tag{15c} \\
+  & \sum_{f,z} y_{l,f,z} \cdot s_{f,z} \leq C_l^{\mathrm{cache}}, \quad \forall\, l
+    \tag{15a} \\
+  & x_{l,k},\, y_{l,f,z} \in \{0,1\}
+    \tag{15d}
+\end{align}
+
+\subsection{Cache Utility Maximization (Chen et al.)}
+
+\begin{equation}
+  \max_{c_{v,f}^t,\, c_{u,f}^t} \quad
+    \lim_{T\to\infty} \frac{1}{T} \sum_{t=1}^{T}
+    \sum_{f=1}^{F} \sum_{v=1}^{m} \sum_{u=1}^{n} U
+  \tag{Chen~35}
+\end{equation}
+
+\noindent where the normalized utility $U = (U_t + U_e)\,p_f$ with:
+\begin{equation}
+  U_t = \frac{d_{b,v}^f - D_{f,v}^{\mathrm{total}}}{d_{b,v}^f}
+  \tag{Chen~33}
+\end{equation}
+
+\noindent \textbf{Note:} This project omits the energy component $U_e$; only delay is optimized: $U \approx U_t \cdot p_f$.
+
+% =============================================================================
+\section{D3QN Reinforcement Learning Model}
+% Source: [Chen] Eq.(47)--(57), [Xie] Algorithm 1 (baseline QEA)
+% =============================================================================
+
+\subsection{Q-Value Update (Double DQN)}
+
+\begin{align}
+  Q_1(s_t, a_t) &\leftarrow Q_1(s_t,a_t) + \alpha\!\left(
+    r_{t+1} + \gamma\, Q_2\!\left(s_{t+1}, \arg\max_{a'} Q_1(s_{t+1},a')\right)
+    - Q_1(s_t,a_t)\right)
+  \tag{Chen~48} \\
+  Q_2(s_t, a_t) &\leftarrow Q_2(s_t,a_t) + \alpha\!\left(
+    r_{t+1} + \gamma\, Q_1\!\left(s_{t+1}, \arg\max_{a'} Q_2(s_{t+1},a')\right)
+    - Q_2(s_t,a_t)\right)
+  \tag{Chen~49}
+\end{align}
+
+\subsection{Dueling Network Q-Value Decomposition}
+
+\begin{equation}
+  Q(s,a) = V(s) + \left( A(s,a) - \frac{1}{|\mathcal{A}|} \sum_{a'} A(s,a') \right)
+  \tag{Chen~50}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$V(s)$ = state value function;
+$A(s,a)$ = advantage function;
+normalization term ensures identifiability.
+
+\subsection{Action Selection}
+
+\begin{equation}
+  a_t = \arg\max_{a}
+    \left( V(s_t) + A(s_t,a) - \frac{1}{|\mathcal{A}|}\sum_{a'} A(s_t,a') \right)
+  \tag{Chen~51}
+\end{equation}
+
+\subsection{Target Value (D3QN)}
+
+\begin{equation}
+  Q_{\mathrm{target}} = R_{t+1} + \gamma\,\max_{A}\,Q(S_{t+1}, A;\,\theta_t^-)
+  \tag{Chen~52}
+\end{equation}
+
+\subsection{Reward Function}
+
+\begin{equation}
+  R_i(t) = R(t) + \alpha\, SC_i(t)
+  \tag{Chen~56}
+\end{equation}
+
+\begin{equation}
+  R(t) = \begin{cases}
+    U_t  & \text{if } D^t < \delta_f \\
+   -U_t  & \text{if } D^t > \delta_f \\
+    R_{\max} & \text{if cache hit } \varsigma = 1
+  \end{cases}
+  \tag{Chen~57}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$U_t$ = normalized delay improvement (Eq.~Chen~33);
+$\delta_f$ = maximum tolerable delay for content $f$;
+$SC_i(t)$ = social contribution rate;
+$\alpha$ = incentive weight.\\
+\textbf{Note:} This project omits $\alpha\,SC_i$ (simplified reward): $R(t) = U_t = (D_{\mathrm{miss}} - D_{l,k}) / D_{\mathrm{miss}}$.
+
+\subsection{State Space}
+
+\begin{equation}
+  \mathcal{S} = \left\{ H_v^t,\; \vartheta,\; \omega_\theta,\; \rho_\nu,\;
+    c_{M,f_n},\; C_M,\; \Theta_m(t),\; V_f^t \right\}
+  \tag{Chen~54}
+\end{equation}
+
+\noindent \textbf{Variables:}
+$H_v^t$ = vehicle position;
+$\vartheta$ = requested content list;
+$\omega_\theta$ = movement angle;
+$\rho_\nu$ = traffic density;
+$c_{M,f_n}$ = cache status at node $M$;
+$C_M$ = available storage;
+$\Theta_m(t)$ = social contribution;
+$V_f^t$ = content caching value.
+
+\subsection{Action Space}
+
+\begin{equation}
+  a_t = \begin{bmatrix}
+    c_{v_1}^t \cdots c_{v,f}^t \cdots c_{v'_1}^t \cdots c_{v',f}^t \\
+    c_{u_1}^t \cdots c_{u,f}^t \cdots c_{u'_1}^t \cdots c_{u',f}^t
+  \end{bmatrix}
+  \tag{Chen~55}
+\end{equation}
+
+\noindent Actions: no caching / cache to vehicle / cache to neighboring vehicle /
+cache to UAV / cache to neighboring UAV.
+
+% =============================================================================
+\section{QEA Baseline (for Comparison)}
+% Source: [Xie] Algorithm 1--2, Eq.(21)--(24), Table 1
+% =============================================================================
+
+\subsection{Q-bit Observation}
+
+\begin{equation}
+  x_{l,k} = \begin{cases} 1 & \text{if } \mathrm{rand}() < |\beta_{l,k}|^2 \\ 0 & \text{otherwise} \end{cases}
+  \tag{Xie~21}
+\end{equation}
+
+\begin{equation}
+  y_{l,f,z} = \begin{cases} 1 & \text{if } \mathrm{rand}() < |\beta_{l,f,z}|^2 \\ 0 & \text{otherwise} \end{cases}
+  \tag{Xie~22}
+\end{equation}
+
+\subsection{Rotation Gate Update}
+
+\begin{equation}
+  \begin{pmatrix} \alpha' \\ \beta' \end{pmatrix}
+  = \begin{pmatrix} \cos\Delta\theta & -\sin\Delta\theta \\
+                    \sin\Delta\theta &  \cos\Delta\theta \end{pmatrix}
+  \begin{pmatrix} \alpha \\ \beta \end{pmatrix}
+  \tag{Xie~23--24}
+\end{equation}
+
+\noindent $\Delta\theta$ is determined by the lookup Table~1 in \cite{Xie} based on
+$(x_{\mathrm{cur}},\, b_{\mathrm{best}},\, f(\mathbf{X}_i) \geq f(\mathbf{B}))$.
+
+% =============================================================================
+\section*{Symbol Table}
+% =============================================================================
+
+\begin{table}[h!]
+\centering
+\caption{Main Notation Summary}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Symbol & Definition & Source \\
+\midrule
+$r_{l,k}$              & Downlink rate UAV $l$ -- user $k$           & Xie~5  \\
+$r_{\mathrm{BS},l}$    & Backhaul rate MBS -- UAV $l$                & Xie~9  \\
+$g_{l,k}$              & Average path loss (dB)                      & Xie~1--2 \\
+$P_{l,k}^{\mathrm{LoS}}$ & LoS probability                           & Xie~3  \\
+$D_{l,k}^1$            & Direct hit delay                            & Xie~10 \\
+$D_{l,k}^2$            & Transcoding hit delay                       & Xie~11 \\
+$D_{l,k}^3$            & Cache miss delay                            & Xie~12 \\
+$D_{\mathrm{tot}}$     & Total system delay objective                & Xie~14 \\
+$x_{l,k}$              & User association indicator                  & Xie~15 \\
+$y_{l,f,z}$            & Cache placement indicator                   & Xie~15 \\
+$p_f$                  & Content popularity (Zipf)                   & Chen~1 \\
+$\phi_{v_m,f_k}$       & User preference level                       & Chen~3 \\
+$SC_i(t)$              & Social contribution rate                    & Chen~10 \\
+$V_f^t$                & Integrated caching value                    & Chen~11 \\
+$Q(s,a)$               & Q-value (D3QN)                              & Chen~50 \\
+$R_i(t)$               & Reward function                             & Chen~56 \\
+$U_t$                  & Normalized delay utility                    & Chen~33 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =============================================================================
+\begin{thebibliography}{9}
+\bibitem{Xie}
+  Y. Xie et al., ``Joint Caching and User Association Optimization for
+  Adaptive Bitrate Video Streaming in UAV-Assisted Cellular Networks,''
+  \textit{IEEE Access}, 2022.
+
+\bibitem{Chen}
+  G. Chen et al., ``Edge Collaborative Caching Based on Incentive-Driven
+  D3QN Combined With User Preferences in UAV-Assisted Vehicular Networks,''
+  \textit{IEEE Trans. Intell. Transp. Syst.}, vol.~26, no.~12, Dec.~2025.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,2211 @@
+[2026-03-05 04:41:30] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-05 04:41:30] step 1 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:41:36] step 101 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:41:42] step 201 offload → UAV3 cache=True R=-0.00
+[2026-03-05 04:41:48] step 301 offload → RSU1 cache=False R=-0.00
+[2026-03-05 04:41:56] step 401 offload → Local cache=True R=-0.00
+[2026-03-05 04:42:13] step 501 offload → UAV1 cache=False R=-0.00
+[2026-03-05 04:42:37] step 601 offload → Local cache=True R=-0.00
+[2026-03-05 04:43:01] step 701 offload → UAV2 cache=False R=-0.00
+[2026-03-05 04:43:16] step 801 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:43:33] step 901 offload → UAV1 cache=False R=-0.00
+[2026-03-05 04:43:48] step 999 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:43:48] step 1000 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:43:48] Epoch 1/100 steps=1000 R=-0.01
+[2026-03-05 04:43:48] step 1 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:44:08] step 101 offload → UAV1 cache=True R=-0.00
+[2026-03-05 04:44:20] *** Stopped.
+[2026-03-05 04:51:54] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-05 04:51:54] step 1 offload → UAV1 cache=False R=-0.00
+[2026-03-05 04:52:00] step 101 offload → UAV2 cache=False R=-0.00
+[2026-03-05 04:52:07] step 201 offload → UAV3 cache=True R=-0.00
+[2026-03-05 04:52:14] step 301 offload → UAV3 cache=False R=-0.00
+[2026-03-05 04:52:20] step 401 offload → UAV2 cache=True R=-0.00
+[2026-03-05 04:52:28] step 501 offload → RSU1 cache=True R=-0.00
+[2026-03-05 04:52:43] step 601 offload → UAV3 cache=False R=-0.00
+[2026-03-05 04:52:50] *** Stopped.
+[2026-03-05 08:52:36] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-05 08:52:36] step 1 offload → Local cache=False R=-0.00
+[2026-03-05 08:52:42] step 101 offload → UAV1 cache=False R=-0.00
+[2026-03-05 08:52:48] step 201 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:52:54] step 301 offload → UAV2 cache=False R=-0.00
+[2026-03-05 08:53:00] step 401 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:53:07] step 501 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:53:13] step 601 offload → UAV3 cache=False R=-0.00
+[2026-03-05 08:53:18] *** Stopped.
+[2026-03-05 08:54:10] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-05 08:54:10] step 1 offload → UAV2 cache=False R=-0.00
+[2026-03-05 08:54:16] step 101 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:54:23] step 201 offload → UAV2 cache=False R=-0.00
+[2026-03-05 08:54:30] step 301 offload → UAV2 cache=False R=-0.00
+[2026-03-05 08:54:36] step 401 offload → Local cache=False R=-0.00
+[2026-03-05 08:54:43] step 501 offload → Local cache=True R=-0.00
+[2026-03-05 08:54:50] step 601 offload → UAV1 cache=True R=-0.00
+[2026-03-05 08:54:56] step 701 offload → UAV1 cache=False R=-0.00
+[2026-03-05 08:55:03] step 801 offload → Local cache=True R=-0.00
+[2026-03-05 08:55:11] step 901 offload → Local cache=True R=-0.00
+[2026-03-05 08:55:18] step 999 offload → UAV1 cache=False R=-0.00
+[2026-03-05 08:55:18] step 1000 offload → UAV1 cache=False R=-0.00
+[2026-03-05 08:55:18] Epoch 1/100 steps=1000 R=-0.01
+[2026-03-05 08:55:18] step 1 offload → UAV1 cache=True R=-0.00
+[2026-03-05 08:55:35] step 101 offload → UAV1 cache=False R=-0.00
+[2026-03-05 08:55:49] step 201 offload → UAV1 cache=True R=-0.00
+[2026-03-05 08:56:05] step 301 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:56:21] step 401 offload → Local cache=False R=-0.00
+[2026-03-05 08:56:37] step 501 offload → UAV1 cache=True R=-0.00
+[2026-03-05 08:56:52] step 601 offload → Local cache=True R=-0.00
+[2026-03-05 08:57:07] step 701 offload → UAV2 cache=False R=-0.00
+[2026-03-05 08:57:25] step 801 offload → UAV1 cache=True R=-0.00
+[2026-03-05 08:57:41] step 901 offload → UAV2 cache=True R=-0.00
+[2026-03-05 08:57:56] step 999 offload → UAV3 cache=False R=-0.00
+[2026-03-05 08:57:56] step 1000 offload → UAV3 cache=False R=-0.00
+[2026-03-05 08:57:56] Epoch 2/100 steps=1000 R=-0.01
+[2026-03-05 08:57:56] step 1 offload → UAV3 cache=False R=-0.00
+[2026-03-05 08:58:10] step 101 offload → UAV1 cache=False R=-0.00
+[2026-03-05 08:58:26] step 201 offload → UAV3 cache=False R=-0.00
+[2026-03-05 08:58:44] step 301 offload → UAV2 cache=False R=-0.00
+[2026-03-05 08:59:01] step 401 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:59:13] step 501 offload → RSU1 cache=True R=-0.00
+[2026-03-05 08:59:31] step 601 offload → UAV3 cache=False R=-0.00
+[2026-03-05 08:59:46] step 701 offload → Local cache=True R=-0.00
+[2026-03-05 09:00:03] step 801 offload → Local cache=True R=-0.00
+[2026-03-05 09:00:19] step 901 offload → UAV1 cache=True R=-0.00
+[2026-03-05 09:00:38] step 999 offload → UAV1 cache=True R=-0.00
+[2026-03-05 09:00:38] step 1000 offload → RSU1 cache=True R=-0.00
+[2026-03-05 09:00:38] Epoch 3/100 steps=1000 R=-0.01
+[2026-03-05 09:00:38] step 1 offload → UAV2 cache=True R=-0.00
+[2026-03-05 09:00:58] step 101 offload → UAV2 cache=False R=-0.00
+[2026-03-05 09:01:17] step 201 offload → UAV1 cache=False R=-0.00
+[2026-03-05 09:01:38] step 301 offload → Local cache=False R=-0.00
+[2026-03-05 09:02:00] step 401 offload → UAV2 cache=False R=-0.00
+[2026-03-05 09:02:29] step 501 offload → UAV3 cache=False R=-0.00
+[2026-03-05 09:02:47] step 601 offload → Local cache=False R=-0.00
+[2026-03-05 09:03:06] step 701 offload → UAV1 cache=True R=-0.00
+[2026-03-05 09:03:22] step 801 offload → UAV3 cache=False R=-0.00
+[2026-03-05 09:03:41] step 901 offload → UAV3 cache=True R=-0.00
+[2026-03-05 09:03:58] step 999 offload → UAV2 cache=True R=-0.00
+[2026-03-05 09:03:58] step 1000 offload → UAV3 cache=False R=-0.00
+[2026-03-05 09:03:58] Epoch 4/100 steps=1000 R=-0.01
+[2026-03-05 09:03:58] step 1 offload → UAV2 cache=True R=-0.00
+[2026-03-05 09:04:13] step 101 offload → UAV2 cache=False R=-0.00
+[2026-03-05 09:04:32] step 201 offload → UAV3 cache=False R=-0.00
+[2026-03-05 09:04:48] step 301 offload → UAV1 cache=True R=-0.00
+[2026-03-05 09:05:03] step 401 offload → RSU1 cache=True R=-0.00
+[2026-03-05 09:05:23] step 501 offload → UAV1 cache=True R=-0.00
+[2026-03-05 09:05:40] step 601 offload → Local cache=True R=-0.00
+[2026-03-05 09:06:00] step 701 offload → UAV1 cache=False R=-0.00
+[2026-03-05 09:06:18] step 801 offload → Local cache=True R=-0.00
+[2026-03-05 09:06:33] step 901 offload → RSU1 cache=False R=-0.00
+[2026-03-05 09:06:51] step 999 offload → UAV1 cache=False R=-0.00
+[2026-03-05 09:06:51] step 1000 offload → UAV1 cache=False R=-0.00
+[2026-03-05 09:06:51] Epoch 5/100 steps=1000 R=-0.01
+[2026-03-05 09:06:51] step 1 offload → UAV1 cache=False R=-0.00
+[2026-03-05 09:07:09] step 101 offload → RSU1 cache=False R=-0.00
+[2026-03-05 09:07:30] step 201 offload → Local cache=True R=-0.00
+[2026-03-05 09:07:47] step 301 offload → UAV2 cache=True R=-0.00
+[2026-03-05 09:08:04] step 401 offload → Local cache=True R=-0.00
+[2026-03-05 09:08:22] step 501 offload → UAV3 cache=False R=-0.00
+[2026-03-05 09:08:41] step 601 offload → Local cache=True R=-0.00
+[2026-03-05 09:08:54] *** Stopped.
+[2026-03-05 09:10:35] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-05 09:10:35] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:10:41] step 101 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:10:48] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 09:10:55] step 301 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:11:02] step 401 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:11:12] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:11:28] step 601 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:11:45] step 701 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:12:05] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 09:12:30] step 901 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:12:48] step 999 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:12:48] step 1000 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:12:48] Epoch 1/100 steps=1000 R=-0.009810
+[2026-03-05 09:12:49] step 1 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:13:13] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 09:13:33] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 09:13:52] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 09:14:13] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 09:14:28] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:14:54] step 601 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:15:22] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:15:44] step 801 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:16:03] step 901 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:16:19] step 999 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:16:19] step 1000 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:16:19] Epoch 2/100 steps=1000 R=-0.006575
+[2026-03-05 09:16:19] step 1 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:16:37] step 101 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:16:51] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:17:09] step 301 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:17:26] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 09:17:39] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 09:18:02] step 601 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:18:23] step 701 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 09:18:40] step 801 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:19:00] step 901 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:19:17] step 999 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:19:17] step 1000 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:19:17] Epoch 3/100 steps=1000 R=-0.009590
+[2026-03-05 09:19:17] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 09:19:31] step 101 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:19:51] step 201 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:20:08] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:20:25] step 401 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 09:20:45] step 501 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:21:05] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 09:21:30] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 09:21:59] step 801 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:22:13] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:22:32] step 999 offload → Local cache=True R=-0.000000
+[2026-03-05 09:22:32] step 1000 offload → Local cache=True R=-0.000000
+[2026-03-05 09:22:32] Epoch 4/100 steps=1000 R=-0.009914
+[2026-03-05 09:22:33] step 1 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:22:49] step 101 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:23:09] step 201 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:23:28] step 301 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 09:23:43] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 09:24:30] step 501 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 09:24:51] step 601 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:25:17] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:25:35] step 801 offload → Local cache=False R=-0.000000
+[2026-03-05 09:25:55] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 09:26:44] step 999 offload → Local cache=False R=-0.000000
+[2026-03-05 09:26:45] step 1000 offload → Local cache=False R=-0.000000
+[2026-03-05 09:26:45] Epoch 5/100 steps=1000 R=-0.008481
+[2026-03-05 09:26:45] step 1 offload → Local cache=False R=-0.000000
+[2026-03-05 09:27:40] step 101 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:28:07] step 201 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:28:28] step 301 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:28:49] step 401 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:29:13] step 501 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:29:36] step 601 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:29:54] step 701 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:30:12] step 801 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:30:34] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:30:57] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:30:57] step 1000 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:30:57] Epoch 6/100 steps=1000 R=-0.010859
+[2026-03-05 09:30:57] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:31:19] step 101 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 09:31:43] step 201 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:32:06] step 301 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:32:28] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:33:27] step 501 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:33:49] step 601 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 09:34:09] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:34:31] step 801 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:34:50] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:35:10] step 999 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 09:35:10] step 1000 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:35:10] Epoch 7/100 steps=1000 R=-0.008506
+[2026-03-05 09:35:10] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:35:31] step 101 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 09:35:52] step 201 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:36:08] step 301 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:36:29] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:36:48] step 501 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:37:07] step 601 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:37:28] step 701 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:37:46] step 801 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:38:05] step 901 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:38:27] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:38:27] step 1000 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:38:27] Epoch 8/100 steps=1000 R=-0.009467
+[2026-03-05 09:38:27] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:38:46] step 101 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:39:07] step 201 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:39:26] step 301 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 09:39:44] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 09:40:02] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:40:19] step 601 offload → Local cache=True R=-0.000000
+[2026-03-05 09:40:39] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:40:57] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 09:41:12] step 901 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:41:37] step 999 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:41:38] step 1000 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:41:38] Epoch 9/100 steps=1000 R=-0.008905
+[2026-03-05 09:41:38] step 1 offload → Local cache=True R=-0.000000
+[2026-03-05 09:41:58] step 101 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:42:16] step 201 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 09:42:38] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 09:43:00] step 401 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:43:22] step 501 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:43:41] step 601 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:43:59] step 701 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:44:24] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 09:44:44] step 901 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:45:03] step 999 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:45:03] step 1000 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:45:03] Epoch 10/100 steps=1000 R=-0.008523
+[2026-03-05 09:45:03] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 09:45:23] step 101 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:45:43] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:46:08] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 09:46:27] step 401 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 09:46:47] step 501 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:47:06] step 601 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:47:27] step 701 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:47:46] step 801 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:48:06] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:48:24] step 999 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:48:24] step 1000 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:48:24] Epoch 11/100 steps=1000 R=-0.008429
+[2026-03-05 09:48:24] step 1 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:48:44] step 101 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 09:49:02] step 201 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:49:26] step 301 offload → Local cache=False R=-0.000000
+[2026-03-05 09:49:43] step 401 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:50:00] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:50:21] step 601 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 09:50:38] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 09:50:52] step 801 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:51:08] step 901 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:51:25] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:51:25] step 1000 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 09:51:25] Epoch 12/100 steps=1000 R=-0.011144
+[2026-03-05 09:51:26] step 1 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:51:45] step 101 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 09:52:03] step 201 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 09:52:18] step 301 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:52:36] step 401 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:52:55] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:53:10] step 601 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:53:26] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 09:53:44] step 801 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:54:00] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 09:54:15] step 999 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:54:15] step 1000 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 09:54:15] Epoch 13/100 steps=1000 R=-0.010749
+[2026-03-05 09:54:15] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 09:54:33] step 101 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 09:54:59] step 201 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 09:55:15] step 301 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:55:33] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 09:55:54] step 501 offload → Local cache=False R=-0.000000
+[2026-03-05 09:56:11] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:56:28] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 09:56:46] step 801 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 09:57:04] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 09:57:21] step 999 offload → Local cache=False R=-0.000000
+[2026-03-05 09:57:21] step 1000 offload → Local cache=False R=-0.000000
+[2026-03-05 09:57:21] Epoch 14/100 steps=1000 R=-0.009539
+[2026-03-05 09:57:21] step 1 offload → Local cache=False R=-0.000000
+[2026-03-05 09:57:38] step 101 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:57:57] step 201 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 09:58:13] step 301 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 09:58:33] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 09:58:49] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 09:59:07] step 601 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 09:59:25] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 09:59:42] step 801 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:00:02] step 901 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:00:23] step 999 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:00:24] step 1000 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:00:24] Epoch 15/100 steps=1000 R=-0.008684
+[2026-03-05 10:00:24] step 1 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:00:41] step 101 offload → Local cache=False R=-0.000000
+[2026-03-05 10:01:00] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 10:01:17] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 10:01:33] step 401 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:01:52] step 501 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 10:02:08] step 601 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:02:24] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 10:02:41] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 10:02:59] step 901 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:03:15] step 999 offload → Local cache=False R=-0.000000
+[2026-03-05 10:03:16] step 1000 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 10:03:16] Epoch 16/100 steps=1000 R=-0.009712
+[2026-03-05 10:03:16] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:03:36] step 101 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:03:50] step 201 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:04:09] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:04:25] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 10:04:42] step 501 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:04:56] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 10:05:12] step 701 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:05:29] step 801 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:05:46] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 10:06:01] step 999 offload → Local cache=True R=-0.000000
+[2026-03-05 10:06:01] step 1000 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:06:01] Epoch 17/100 steps=1000 R=-0.007989
+[2026-03-05 10:06:01] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:06:26] step 101 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:06:45] step 201 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:07:04] step 301 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:07:24] step 401 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:07:43] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:08:01] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:08:19] step 701 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:08:38] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 10:08:55] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 10:09:13] step 999 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:09:14] step 1000 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:09:14] Epoch 18/100 steps=1000 R=-0.009558
+[2026-03-05 10:09:14] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:09:33] step 101 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:09:49] step 201 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:10:06] step 301 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:10:23] step 401 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:10:41] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:11:00] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:11:17] step 701 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:11:37] step 801 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:11:56] step 901 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:12:19] step 999 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:12:20] step 1000 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 10:12:20] Epoch 19/100 steps=1000 R=-0.009046
+[2026-03-05 10:12:20] step 1 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:13:10] step 101 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:13:28] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 10:13:49] step 301 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:14:04] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:14:22] step 501 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:14:39] step 601 offload → Local cache=True R=-0.000000
+[2026-03-05 10:14:55] step 701 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:15:10] step 801 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:15:28] step 901 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:15:49] step 999 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:15:49] step 1000 offload → Local cache=False R=-0.000000
+[2026-03-05 10:15:49] Epoch 20/100 steps=1000 R=-0.010084
+[2026-03-05 10:15:49] step 1 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:16:06] step 101 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:16:21] step 201 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:16:37] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:16:51] step 401 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:17:06] step 501 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:17:20] step 601 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:17:35] step 701 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 10:17:51] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 10:18:03] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 10:18:19] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:18:20] step 1000 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:18:20] Epoch 21/100 steps=1000 R=-0.008748
+[2026-03-05 10:18:20] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:18:33] step 101 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:18:55] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:19:11] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:19:27] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 10:19:39] step 501 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:19:57] step 601 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:20:17] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:20:31] step 801 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 10:20:45] step 901 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:21:01] step 999 offload → Local cache=True R=-0.000000
+[2026-03-05 10:21:01] step 1000 offload → Local cache=True R=-0.000000
+[2026-03-05 10:21:01] Epoch 22/100 steps=1000 R=-0.007949
+[2026-03-05 10:21:01] step 1 offload → Local cache=True R=-0.000000
+[2026-03-05 10:21:16] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 10:21:32] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 10:21:47] step 301 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:22:03] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 10:22:20] step 501 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:22:35] step 601 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 10:22:49] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:23:03] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 10:23:18] step 901 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:23:31] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:23:31] step 1000 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:23:31] Epoch 23/100 steps=1000 R=-0.009180
+[2026-03-05 10:23:32] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:23:46] step 101 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 10:24:00] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:24:15] step 301 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 10:24:34] step 401 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:24:47] step 501 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:24:59] step 601 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:25:12] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 10:25:23] step 801 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:25:34] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 10:25:46] step 999 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:25:46] step 1000 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:25:46] Epoch 24/100 steps=1000 R=-0.009392
+[2026-03-05 10:25:46] step 1 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:26:00] step 101 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:26:11] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 10:26:22] step 301 offload → Local cache=False R=-0.000000
+[2026-03-05 10:26:35] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:26:49] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:27:04] step 601 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:27:15] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 10:27:26] step 801 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:27:41] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 10:27:52] step 999 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:27:52] step 1000 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:27:52] Epoch 25/100 steps=1000 R=-0.010113
+[2026-03-05 10:27:52] step 1 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:28:05] step 101 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:28:18] step 201 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:28:30] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 10:28:43] step 401 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:28:58] step 501 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:29:17] step 601 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:29:33] step 701 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:29:55] step 801 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:30:25] step 901 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:30:54] step 999 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:30:54] step 1000 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:30:54] Epoch 26/100 steps=1000 R=-0.010125
+[2026-03-05 10:30:55] step 1 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 10:31:37] step 101 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:32:11] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 10:32:34] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:32:57] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:33:21] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 10:33:53] step 601 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:34:14] step 701 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:34:35] step 801 offload → Local cache=False R=-0.000000
+[2026-03-05 10:34:56] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:35:18] step 999 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:35:18] step 1000 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:35:18] Epoch 27/100 steps=1000 R=-0.008924
+[2026-03-05 10:35:18] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:35:45] step 101 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:36:04] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:36:22] step 301 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 10:36:42] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 10:37:03] step 501 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:37:39] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:38:07] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 10:38:27] step 801 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:38:48] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:39:08] step 999 offload → Local cache=True R=-0.000000
+[2026-03-05 10:39:08] step 1000 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:39:08] Epoch 28/100 steps=1000 R=-0.009129
+[2026-03-05 10:39:08] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:39:29] step 101 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:39:47] step 201 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 10:40:04] step 301 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:40:22] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:40:44] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:41:03] step 601 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:41:24] step 701 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:41:42] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 10:42:03] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 10:42:20] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:42:20] step 1000 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:42:20] Epoch 29/100 steps=1000 R=-0.009136
+[2026-03-05 10:42:20] step 1 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:42:39] step 101 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:42:55] step 201 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:43:13] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:43:33] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:43:54] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 10:44:12] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:44:29] step 701 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:44:48] step 801 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:45:09] step 901 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:45:25] step 999 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:45:25] step 1000 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:45:25] Epoch 30/100 steps=1000 R=-0.008534
+[2026-03-05 10:45:25] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:45:41] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 10:46:00] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:46:17] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 10:46:33] step 401 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:47:03] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:47:21] step 601 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 10:47:35] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 10:47:52] step 801 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:48:10] step 901 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:48:26] step 999 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:48:26] step 1000 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:48:26] Epoch 31/100 steps=1000 R=-0.008711
+[2026-03-05 10:48:26] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 10:48:43] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 10:49:00] step 201 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 10:49:15] step 301 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:49:33] step 401 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:49:48] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 10:50:05] step 601 offload → Local cache=True R=-0.000000
+[2026-03-05 10:50:20] step 701 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:50:37] step 801 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 10:50:54] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 10:51:11] step 999 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 10:51:12] step 1000 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 10:51:12] Epoch 32/100 steps=1000 R=-0.009650
+[2026-03-05 10:51:12] step 1 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:51:31] step 101 offload → Local cache=False R=-0.000000
+[2026-03-05 10:51:50] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:52:10] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:52:29] step 401 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:52:50] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:53:08] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 10:53:28] step 701 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:53:44] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 10:54:03] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:54:23] step 999 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:54:23] step 1000 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 10:54:23] Epoch 33/100 steps=1000 R=-0.008310
+[2026-03-05 10:54:24] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:54:41] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 10:55:00] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 10:55:20] step 301 offload → Local cache=False R=-0.000000
+[2026-03-05 10:55:38] step 401 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 10:55:54] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 10:56:10] step 601 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:56:29] step 701 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:56:47] step 801 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:57:02] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 10:57:19] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:57:19] step 1000 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:57:19] Epoch 34/100 steps=1000 R=-0.009829
+[2026-03-05 10:57:19] step 1 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:57:37] step 101 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 10:57:57] step 201 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 10:58:16] step 301 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 10:58:32] step 401 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 10:58:48] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:59:03] step 601 offload → Local cache=True R=-0.000000
+[2026-03-05 10:59:18] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 10:59:36] step 801 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 10:59:55] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:00:26] step 999 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:00:26] step 1000 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:00:26] Epoch 35/100 steps=1000 R=-0.008465
+[2026-03-05 11:00:26] step 1 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:00:43] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 11:01:03] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 11:01:23] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:01:43] step 401 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:02:04] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:02:21] step 601 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:02:38] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 11:02:57] step 801 offload → Local cache=False R=-0.000000
+[2026-03-05 11:03:14] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:03:32] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:03:32] step 1000 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:03:32] Epoch 36/100 steps=1000 R=-0.009086
+[2026-03-05 11:03:33] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:03:56] step 101 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:04:16] step 201 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:04:36] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:04:53] step 401 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:05:13] step 501 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:05:32] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 11:05:51] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 11:06:12] step 801 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:06:31] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:06:48] step 999 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:06:48] step 1000 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:06:48] Epoch 37/100 steps=1000 R=-0.009176
+[2026-03-05 11:06:48] step 1 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:07:04] step 101 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 11:07:20] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 11:07:36] step 301 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:07:51] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:08:09] step 501 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:08:26] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:08:45] step 701 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:09:03] step 801 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:09:19] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:09:37] step 999 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:09:37] step 1000 offload → Local cache=True R=-0.000000
+[2026-03-05 11:09:37] Epoch 38/100 steps=1000 R=-0.009382
+[2026-03-05 11:09:37] step 1 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:09:56] step 101 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:10:14] step 201 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:10:32] step 301 offload → Local cache=False R=-0.000000
+[2026-03-05 11:10:48] step 401 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:11:07] step 501 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:11:24] step 601 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:11:51] step 701 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:12:10] step 801 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:12:26] step 901 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:12:42] step 999 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:12:42] step 1000 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:12:42] Epoch 39/100 steps=1000 R=-0.008565
+[2026-03-05 11:12:42] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:12:58] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 11:13:10] step 201 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 11:13:31] step 301 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:13:49] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:14:17] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 11:14:32] step 601 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:14:47] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 11:15:00] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 11:15:14] step 901 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:15:33] step 999 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:15:33] step 1000 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:15:33] Epoch 40/100 steps=1000 R=-0.009707
+[2026-03-05 11:15:33] step 1 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:15:49] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 11:16:07] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 11:16:24] step 301 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:16:40] step 401 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:16:58] step 501 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:17:14] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 11:17:29] step 701 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 11:17:44] step 801 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:17:58] step 901 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:18:18] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:18:18] step 1000 offload → Local cache=True R=-0.000000
+[2026-03-05 11:18:18] Epoch 41/100 steps=1000 R=-0.009716
+[2026-03-05 11:18:19] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:18:40] step 101 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:19:25] step 201 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:19:43] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:20:05] step 401 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:20:24] step 501 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:20:45] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:21:01] step 701 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:21:21] step 801 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:21:39] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:21:56] step 999 offload → Local cache=False R=-0.000000
+[2026-03-05 11:21:56] step 1000 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:21:56] Epoch 42/100 steps=1000 R=-0.009197
+[2026-03-05 11:21:56] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:22:12] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 11:22:27] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 11:22:41] step 301 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 11:22:57] step 401 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:23:17] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:23:35] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:23:53] step 701 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:24:10] step 801 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:24:27] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:24:46] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:24:46] step 1000 offload → Local cache=False R=-0.000000
+[2026-03-05 11:24:46] Epoch 43/100 steps=1000 R=-0.008872
+[2026-03-05 11:24:46] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 11:25:08] step 101 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:25:25] step 201 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:25:43] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:25:59] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 11:26:14] step 501 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:26:28] step 601 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:26:41] step 701 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:26:56] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 11:27:12] step 901 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:28:34] step 999 offload → Local cache=True R=-0.000000
+[2026-03-05 11:28:34] step 1000 offload → Local cache=True R=-0.000000
+[2026-03-05 11:28:34] Epoch 44/100 steps=1000 R=-0.009333
+[2026-03-05 11:28:34] step 1 offload → Local cache=True R=-0.000000
+[2026-03-05 11:28:58] step 101 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:29:13] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 11:29:37] step 301 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:29:53] step 401 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:30:08] step 501 offload → Local cache=False R=-0.000000
+[2026-03-05 11:30:22] step 601 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:30:35] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 11:30:51] step 801 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:31:08] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 11:31:23] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:31:23] step 1000 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:31:23] Epoch 45/100 steps=1000 R=-0.009803
+[2026-03-05 11:31:23] step 1 offload → Local cache=False R=-0.000000
+[2026-03-05 11:31:38] step 101 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:31:54] step 201 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:32:13] step 301 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:32:30] step 401 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:32:46] step 501 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:33:03] step 601 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:33:26] step 701 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 11:33:48] step 801 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:34:14] step 901 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:34:31] step 999 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:34:32] step 1000 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:34:32] Epoch 46/100 steps=1000 R=-0.009984
+[2026-03-05 11:34:32] step 1 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:34:48] step 101 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:35:04] step 201 offload → Local cache=False R=-0.000000
+[2026-03-05 11:35:21] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:35:36] step 401 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:35:56] step 501 offload → Local cache=False R=-0.000000
+[2026-03-05 11:36:15] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:36:35] step 701 offload → Local cache=False R=-0.000000
+[2026-03-05 11:36:51] step 801 offload → Local cache=True R=-0.000000
+[2026-03-05 11:37:08] step 901 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 11:37:28] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:37:28] step 1000 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:37:28] Epoch 47/100 steps=1000 R=-0.008470
+[2026-03-05 11:37:28] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:37:44] step 101 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:37:58] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 11:38:14] step 301 offload → Local cache=True R=-0.000000
+[2026-03-05 11:38:32] step 401 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:38:49] step 501 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:39:03] step 601 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:39:24] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 11:39:41] step 801 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:40:00] step 901 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:40:24] step 999 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:40:24] step 1000 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:40:24] Epoch 48/100 steps=1000 R=-0.008093
+[2026-03-05 11:40:24] step 1 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:40:43] step 101 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:41:00] step 201 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:41:18] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:41:33] step 401 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:41:49] step 501 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:42:16] step 601 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:42:44] step 701 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:43:04] step 801 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:43:26] step 901 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:43:45] step 999 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:43:46] step 1000 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:43:46] Epoch 49/100 steps=1000 R=-0.008420
+[2026-03-05 11:43:46] step 1 offload → Local cache=False R=-0.000000
+[2026-03-05 11:44:04] step 101 offload → Local cache=False R=-0.000000
+[2026-03-05 11:44:23] step 201 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 11:44:40] step 301 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:46:19] step 401 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:46:35] step 501 offload → Local cache=False R=-0.000000
+[2026-03-05 11:46:51] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:47:21] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 11:47:47] step 801 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:48:05] step 901 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:48:24] step 999 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:48:24] step 1000 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:48:25] Epoch 50/100 steps=1000 R=-0.009645
+[2026-03-05 11:48:25] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 11:48:41] step 101 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:49:00] step 201 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:49:16] step 301 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 11:49:35] step 401 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:49:53] step 501 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:50:14] step 601 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:50:37] step 701 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:50:54] step 801 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:51:08] step 901 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 11:51:22] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:51:22] step 1000 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:51:22] Epoch 51/100 steps=1000 R=-0.008552
+[2026-03-05 11:51:22] step 1 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 11:51:37] step 101 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:51:51] step 201 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 11:52:06] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:52:21] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:52:37] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 11:52:52] step 601 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:53:07] step 701 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:53:24] step 801 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:53:40] step 901 offload → Local cache=True R=-0.000000
+[2026-03-05 11:53:58] step 999 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:53:58] step 1000 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:53:58] Epoch 52/100 steps=1000 R=-0.008974
+[2026-03-05 11:53:58] step 1 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 11:54:21] step 101 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:54:43] step 201 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:55:05] step 301 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 11:55:24] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 11:55:40] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:55:55] step 601 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:56:11] step 701 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 11:56:30] step 801 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:56:50] step 901 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 11:57:09] step 999 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 11:57:10] step 1000 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:57:10] Epoch 53/100 steps=1000 R=-0.009805
+[2026-03-05 11:57:10] step 1 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:57:36] step 101 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 11:58:10] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 11:58:28] step 301 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 11:58:46] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 11:59:03] step 501 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:59:18] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 11:59:33] step 701 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 11:59:49] step 801 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:00:06] step 901 offload → UAV1 cache=True R=-0.000008
+[2026-03-05 12:00:22] step 999 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 12:00:22] step 1000 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:00:22] Epoch 54/100 steps=1000 R=-0.008182
+[2026-03-05 12:00:22] step 1 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:00:42] step 101 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 12:00:57] step 201 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:01:16] step 301 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 12:01:33] step 401 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 12:01:49] step 501 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:02:08] step 601 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 12:02:32] step 701 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:02:45] step 801 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:03:01] step 901 offload → UAV1 cache=False R=-0.000008
+[2026-03-05 12:03:16] step 999 offload → Local cache=False R=-0.000000
+[2026-03-05 12:03:16] step 1000 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:03:16] Epoch 55/100 steps=1000 R=-0.009470
+[2026-03-05 12:03:16] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 12:03:29] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 12:03:46] step 201 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 12:04:01] step 301 offload → Local cache=False R=-0.000000
+[2026-03-05 12:09:35] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 12:09:58] step 501 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:10:15] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:10:30] step 701 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:10:44] step 801 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 12:11:00] step 901 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:11:17] step 999 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:11:17] step 1000 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:11:17] Epoch 56/100 steps=1000 R=-0.008134
+[2026-03-05 12:11:18] step 1 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 12:11:33] step 101 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 12:11:48] step 201 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:12:03] step 301 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:12:18] step 401 offload → Local cache=False R=-0.000000
+[2026-03-05 12:12:32] step 501 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 12:12:45] step 601 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:12:58] step 701 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 12:13:10] step 801 offload → Local cache=False R=-0.000000
+[2026-03-05 12:13:23] step 901 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 12:13:36] step 999 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 12:13:36] step 1000 offload → Local cache=True R=-0.000000
+[2026-03-05 12:13:36] Epoch 57/100 steps=1000 R=-0.009359
+[2026-03-05 12:13:36] step 1 offload → Local cache=True R=-0.000000
+[2026-03-05 12:13:51] step 101 offload → UAV2 cache=False R=-0.000008
+[2026-03-05 12:14:04] step 201 offload → UAV3 cache=True R=-0.000024
+[2026-03-05 12:14:18] step 301 offload → Local cache=False R=-0.000000
+[2026-03-05 12:14:31] step 401 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 12:14:45] step 501 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 12:14:59] step 601 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:15:13] step 701 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:15:26] step 801 offload → UAV2 cache=False R=-0.000024
+[2026-03-05 12:15:41] step 901 offload → UAV3 cache=False R=-0.000024
+[2026-03-05 12:15:54] step 999 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:15:54] step 1000 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:15:54] Epoch 58/100 steps=1000 R=-0.009593
+[2026-03-05 12:15:54] step 1 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:16:08] step 101 offload → Local cache=True R=-0.000000
+[2026-03-05 12:16:25] step 201 offload → RSU1 cache=True R=-0.000000
+[2026-03-05 12:16:42] step 301 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 12:16:56] step 401 offload → Local cache=True R=-0.000000
+[2026-03-05 12:17:07] step 501 offload → Local cache=True R=-0.000000
+[2026-03-05 12:17:20] step 601 offload → Local cache=False R=-0.000000
+[2026-03-05 12:17:34] step 701 offload → UAV1 cache=True R=-0.000024
+[2026-03-05 12:17:49] step 801 offload → UAV3 cache=False R=-0.000008
+[2026-03-05 12:18:05] step 901 offload → Local cache=False R=-0.000000
+[2026-03-05 12:18:21] step 999 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:18:21] step 1000 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:18:21] Epoch 59/100 steps=1000 R=-0.008127
+[2026-03-05 12:18:21] step 1 offload → UAV1 cache=False R=-0.000024
+[2026-03-05 12:18:36] step 101 offload → UAV2 cache=True R=-0.000008
+[2026-03-05 12:18:52] step 201 offload → Local cache=True R=-0.000000
+[2026-03-05 12:19:08] step 301 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:19:23] step 401 offload → RSU1 cache=False R=-0.000000
+[2026-03-05 12:19:38] step 501 offload → UAV2 cache=True R=-0.000024
+[2026-03-05 12:19:52] step 601 offload → UAV3 cache=True R=-0.000008
+[2026-03-05 12:20:09] step 701 offload → Local cache=True R=-0.000000
+[2026-03-05 12:20:27] step 801 offload → Local cache=False R=-0.000000
+[2026-03-05 12:20:43] step 901 offload → Local cache=True R=-0.000000
+[2026-03-06 07:10:48] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-06 07:10:48] step 1 offload→UAV2 bitrate=low(480p) cache=True R=-6.932641
+[2026-03-06 07:10:57] step 101 offload→UAV3 bitrate=high(1080p) cache=True R=-107.452320
+[2026-03-06 07:11:14] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:11:25] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:11:32] *** Stopped.
+[2026-03-06 07:13:13] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-06 07:13:13] step 1 offload→UAV3 bitrate=high(1080p) cache=True R=-119.739456
+[2026-03-06 07:13:18] step 101 offload→UAV2 bitrate=high(1080p) cache=False R=-13.865282
+[2026-03-06 07:13:24] step 201 offload→UAV1 bitrate=low(480p) cache=True R=-82.187255
+[2026-03-06 07:13:31] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:13:37] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:13:44] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:13:58] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:14:15] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:14:35] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:15:06] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:16:00] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:16:00] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:16:00] Epoch 1/100 steps=1000 R=-22516.028255
+[2026-03-06 07:16:01] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:16:19] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:16:49] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:17:08] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:17:23] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:17:40] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:17:58] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:18:17] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:18:32] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:18:49] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:19:09] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:19:09] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:19:09] Epoch 2/100 steps=1000 R=-5200.152113
+[2026-03-06 07:19:09] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:19:25] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:19:40] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:19:54] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:20:10] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:20:27] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:20:41] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:20:53] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:21:07] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:21:21] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:21:37] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:21:37] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:21:37] Epoch 3/100 steps=1000 R=-4654.153109
+[2026-03-06 07:21:37] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:21:55] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:22:14] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:22:32] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:22:53] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:23:09] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:23:27] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:23:44] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:24:02] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:24:21] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:24:37] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:24:37] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:24:37] Epoch 4/100 steps=1000 R=-6853.373881
+[2026-03-06 07:24:37] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:24:51] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:25:08] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:25:24] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:25:46] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:26:17] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:26:38] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:27:05] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:27:27] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:27:50] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:28:16] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:28:16] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:28:16] Epoch 5/100 steps=1000 R=-7251.252582
+[2026-03-06 07:28:17] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:28:59] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:29:31] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:30:00] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:30:19] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:30:37] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:31:04] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:31:26] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:31:41] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:32:00] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:32:18] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:32:19] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:32:19] Epoch 6/100 steps=1000 R=-5860.390186
+[2026-03-06 07:32:19] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:32:38] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:32:57] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:33:11] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:33:28] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:33:44] step 501 offload→UAV3 bitrate=high(1080p) cache=True R=-10.257254
+[2026-03-06 07:34:00] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:34:22] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:34:39] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:34:56] step 901 offload→UAV2 bitrate=low(480p) cache=True R=-910.055335
+[2026-03-06 07:35:13] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:35:13] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:35:13] Epoch 7/100 steps=1000 R=-119814.703872
+[2026-03-06 07:35:13] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:35:31] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:35:46] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:36:01] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:36:20] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:36:31] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:36:51] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:37:08] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:37:23] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:37:39] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:37:56] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:37:56] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:37:56] Epoch 8/100 steps=1000 R=-6712.703073
+[2026-03-06 07:37:56] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:38:11] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:38:25] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:38:39] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:38:53] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:39:08] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:39:24] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:39:37] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:39:53] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:40:06] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:40:19] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:40:19] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:40:19] Epoch 9/100 steps=1000 R=-7373.133345
+[2026-03-06 07:40:19] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:40:32] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:40:44] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:40:55] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:41:07] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:41:22] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:41:36] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:41:49] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:42:01] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:42:16] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:42:29] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:42:29] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:42:29] Epoch 10/100 steps=1000 R=-5321.194247
+[2026-03-06 07:42:29] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:42:39] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:42:51] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:43:02] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:43:14] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:43:27] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:43:41] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:43:53] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:44:09] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:44:23] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:44:33] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:44:33] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:44:33] Epoch 11/100 steps=1000 R=-7652.076285
+[2026-03-06 07:44:33] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:44:46] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:44:57] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:45:09] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:45:23] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:45:33] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:45:45] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:45:57] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:46:09] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:46:21] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:46:33] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:46:33] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:46:33] Epoch 12/100 steps=1000 R=-5908.817455
+[2026-03-06 07:46:33] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:46:43] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:46:56] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:47:11] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:47:25] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:47:39] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:47:49] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:48:01] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:48:12] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:48:26] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:48:36] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:48:36] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:48:36] Epoch 13/100 steps=1000 R=-6825.181468
+[2026-03-06 07:48:36] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:48:48] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:49:00] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:49:12] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:49:25] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:49:37] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:49:49] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:02] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:15] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:31] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:45] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:45] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:45] Epoch 14/100 steps=1000 R=-5769.131931
+[2026-03-06 07:50:45] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:50:57] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:51:09] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:51:23] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:51:36] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:51:46] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:51:57] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:52:08] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:52:18] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:52:30] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:52:42] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:52:42] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:52:42] Epoch 15/100 steps=1000 R=-7549.532159
+[2026-03-06 07:52:42] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:52:54] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:53:05] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:53:17] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:53:29] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:53:39] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:53:51] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:54:03] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:54:21] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:54:32] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:54:45] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:54:45] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:54:45] Epoch 16/100 steps=1000 R=-8330.745266
+[2026-03-06 07:54:45] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:55:00] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:55:12] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:55:22] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:55:34] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:55:45] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:55:57] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:56:08] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:56:21] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:56:34] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:56:47] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:56:47] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:56:47] Epoch 17/100 steps=1000 R=-5600.948604
+[2026-03-06 07:56:47] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:56:59] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:57:11] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:57:24] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:57:34] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:57:47] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:57:58] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:58:09] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:58:20] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:58:35] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:58:48] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 07:58:48] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:58:48] Epoch 18/100 steps=1000 R=-9109.860731
+[2026-03-06 07:58:48] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:59:00] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:59:15] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:59:28] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:59:40] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 07:59:53] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:00:03] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:00:17] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:00:28] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:00:40] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:00:50] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:00:50] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:00:50] Epoch 19/100 steps=1000 R=-7064.749144
+[2026-03-06 08:00:50] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:01:01] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:01:11] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:01:24] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:01:35] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:01:47] step 501 offload→Local bitrate=high(1080p) cache=False R=-9.250074
+[2026-03-06 08:01:58] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:09] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:21] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:32] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:44] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:44] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:44] Epoch 20/100 steps=1000 R=-6139.102903
+[2026-03-06 08:02:44] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:02:55] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:03:09] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:03:21] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:03:38] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:03:51] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:04:06] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:04:17] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:04:28] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:04:41] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:04:52] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:04:52] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:04:52] Epoch 21/100 steps=1000 R=-5561.799813
+[2026-03-06 08:04:52] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:05:05] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:05:16] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:05:27] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:05:39] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:05:49] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:06:01] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:06:12] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:06:22] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:06:34] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:06:46] step 999 offload→UAV3 bitrate=low(480p) cache=True R=-8.849435
+[2026-03-06 08:06:46] step 1000 offload→UAV3 bitrate=low(480p) cache=True R=-10.590901
+[2026-03-06 08:06:46] Epoch 22/100 steps=1000 R=-5505.118257
+[2026-03-06 08:06:46] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:06:57] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:07:09] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:07:19] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:07:32] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:07:45] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:07:59] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:08:11] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:08:22] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:08:34] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:08:44] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:08:44] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:08:44] Epoch 23/100 steps=1000 R=-7278.408084
+[2026-03-06 08:08:44] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:08:54] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:09:12] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:09:24] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:09:35] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:09:47] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:10:00] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:10:11] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:10:23] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:10:36] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:10:48] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:10:48] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:10:48] Epoch 24/100 steps=1000 R=-5391.676053
+[2026-03-06 08:10:48] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:11:00] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:11:13] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:11:26] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:11:38] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:11:49] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:01] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:12] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:25] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:36] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:50] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:50] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:12:50] Epoch 25/100 steps=1000 R=-5814.065071
+[2026-03-06 08:12:50] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:13:02] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:13:13] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:13:26] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:13:37] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:13:48] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:14:01] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:14:12] step 701 offload→UAV3 bitrate=low(480p) cache=True R=-33.792080
+[2026-03-06 08:14:23] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:14:35] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:14:44] step 999 offload→UAV3 bitrate=low(480p) cache=False R=-4.657215
+[2026-03-06 08:14:44] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:14:44] Epoch 26/100 steps=1000 R=-7213.873173
+[2026-03-06 08:14:44] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:14:55] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:15:11] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:15:29] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:15:43] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:15:56] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:16:07] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:16:22] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:16:34] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:16:47] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:16:59] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:16:59] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:16:59] Epoch 27/100 steps=1000 R=-5502.754783
+[2026-03-06 08:16:59] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:17:10] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:17:23] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:17:33] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:17:44] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:17:57] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:18:09] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:18:23] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:18:35] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:18:48] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:19:02] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:19:02] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:19:02] Epoch 28/100 steps=1000 R=-7972.371251
+[2026-03-06 08:19:02] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:19:13] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:19:27] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:19:38] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:19:52] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:20:05] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:20:17] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:20:31] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:20:42] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:20:56] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:21:06] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:21:07] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:21:07] Epoch 29/100 steps=1000 R=-7487.874063
+[2026-03-06 08:21:07] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:21:17] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:21:31] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:21:44] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:21:56] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:22:09] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:22:21] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:22:34] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:22:53] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:23:06] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:23:21] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:23:21] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:23:21] Epoch 30/100 steps=1000 R=-6485.144435
+[2026-03-06 08:23:21] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:23:33] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:23:45] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:23:59] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:24:11] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:24:26] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:24:38] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:24:52] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:25:02] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:25:15] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:25:27] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:25:27] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:25:27] Epoch 31/100 steps=1000 R=-8351.394721
+[2026-03-06 08:25:27] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:25:39] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:25:50] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:26:03] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:26:15] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:26:29] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:26:41] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:26:51] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:27:03] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:27:13] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:27:26] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:27:26] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:27:26] Epoch 32/100 steps=1000 R=-7632.557448
+[2026-03-06 08:27:26] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:27:37] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:27:48] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:28:01] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:28:16] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:28:27] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:28:39] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:28:50] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:29:03] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:29:15] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:29:28] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:29:28] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:29:28] Epoch 33/100 steps=1000 R=-10026.893157
+[2026-03-06 08:29:28] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:29:40] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:29:52] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:30:04] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:30:20] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:30:32] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:30:44] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:30:59] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:31:09] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:31:20] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:31:38] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:31:38] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:31:38] Epoch 34/100 steps=1000 R=-6708.466745
+[2026-03-06 08:31:38] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:31:51] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:32:04] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:32:18] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:32:30] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:32:42] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:32:54] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:33:07] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:33:21] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:33:33] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:33:46] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:33:46] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:33:46] Epoch 35/100 steps=1000 R=-9670.867769
+[2026-03-06 08:33:46] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:33:57] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:34:11] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:34:24] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:34:36] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:34:46] step 501 offload→UAV3 bitrate=high(1080p) cache=False R=-22.130234
+[2026-03-06 08:34:56] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:35:07] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:35:18] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:35:30] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:35:42] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:35:42] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:35:42] Epoch 36/100 steps=1000 R=-6498.012644
+[2026-03-06 08:35:43] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:35:55] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:36:07] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:36:18] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:36:27] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:36:39] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:36:52] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:37:04] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:37:15] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:37:28] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:37:38] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:37:38] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:37:38] Epoch 37/100 steps=1000 R=-5710.949792
+[2026-03-06 08:37:38] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:37:50] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:38:01] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:38:13] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:38:24] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:38:35] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:38:47] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:38:57] step 701 offload→Local bitrate=high(1080p) cache=True R=-9.250074
+[2026-03-06 08:39:08] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:39:20] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:39:31] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:39:31] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:39:31] Epoch 38/100 steps=1000 R=-6357.152402
+[2026-03-06 08:39:32] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:39:42] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:39:53] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:40:05] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:40:15] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:40:27] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:40:39] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:40:50] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:41:03] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:41:17] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:41:29] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:41:29] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:41:29] Epoch 39/100 steps=1000 R=-6445.192303
+[2026-03-06 08:41:29] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:41:48] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:42:02] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:42:16] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:42:29] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:42:42] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:42:53] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:43:05] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:43:19] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:43:31] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:43:43] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:43:43] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:43:43] Epoch 40/100 steps=1000 R=-6349.941252
+[2026-03-06 08:43:43] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:43:57] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:44:09] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:44:21] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:44:31] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:44:43] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:44:56] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:45:07] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:45:18] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:45:29] step 901 offload→UAV3 bitrate=low(480p) cache=True R=-7.430250
+[2026-03-06 08:45:40] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:45:41] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:45:41] Epoch 41/100 steps=1000 R=-7736.091007
+[2026-03-06 08:45:41] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:45:51] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:46:03] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:46:16] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:46:28] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:46:41] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:46:54] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:47:05] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:47:16] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:47:27] step 901 offload→UAV1 bitrate=high(1080p) cache=False R=-1210.489155
+[2026-03-06 08:47:38] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:47:39] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:47:39] Epoch 42/100 steps=1000 R=-9723.268384
+[2026-03-06 08:47:39] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:47:50] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:47:59] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:48:13] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:48:24] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:48:37] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:48:49] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:49:00] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:49:12] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:49:26] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:49:36] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:49:36] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:49:36] Epoch 43/100 steps=1000 R=-7985.404305
+[2026-03-06 08:49:36] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:49:48] step 101 offload→UAV3 bitrate=low(480p) cache=False R=-10.959618
+[2026-03-06 08:49:59] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:50:12] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:50:24] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:50:36] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:50:47] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:50:58] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:51:09] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:51:21] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:51:31] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:51:31] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:51:31] Epoch 44/100 steps=1000 R=-5115.832297
+[2026-03-06 08:51:31] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:51:42] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:51:54] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:52:06] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:52:19] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:52:30] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:52:54] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:53:06] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:53:18] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:53:30] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:53:42] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:53:42] step 1000 offload→UAV3 bitrate=low(480p) cache=True R=-871.486455
+[2026-03-06 08:53:42] Epoch 45/100 steps=1000 R=-17593.901952
+[2026-03-06 08:53:42] step 1 offload→UAV3 bitrate=low(480p) cache=True R=-823.229773
+[2026-03-06 08:53:54] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:54:05] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:54:16] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:54:28] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:54:42] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:54:54] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:55:06] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:55:16] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:55:28] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:55:42] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:55:42] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:55:42] Epoch 46/100 steps=1000 R=-10402.627800
+[2026-03-06 08:55:42] step 1 offload→UAV3 bitrate=low(480p) cache=True R=-3.199655
+[2026-03-06 08:55:54] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:56:05] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:56:18] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:56:28] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:56:41] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:56:52] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:57:05] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:57:16] step 801 offload→UAV3 bitrate=low(480p) cache=True R=-2.788339
+[2026-03-06 08:57:28] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:57:40] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:57:40] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:57:40] Epoch 47/100 steps=1000 R=-20930.210693
+[2026-03-06 08:57:40] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:57:53] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:58:03] step 201 offload→UAV3 bitrate=low(480p) cache=True R=-27.517200
+[2026-03-06 08:58:14] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:58:24] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:58:35] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:58:48] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:59:00] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:59:11] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:59:25] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:59:36] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 08:59:36] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 08:59:36] Epoch 48/100 steps=1000 R=-7321.329399
+[2026-03-06 08:59:36] step 1 offload→UAV3 bitrate=low(480p) cache=True R=-20.142558
+[2026-03-06 08:59:49] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:00:01] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:00:12] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:00:25] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:00:37] step 501 offload→UAV3 bitrate=low(480p) cache=True R=-5.375203
+[2026-03-06 09:00:49] step 601 offload→UAV2 bitrate=low(480p) cache=False R=-127.682714
+[2026-03-06 09:00:59] step 701 offload→UAV3 bitrate=low(480p) cache=True R=-13.827228
+[2026-03-06 09:01:11] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:01:23] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:01:34] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:01:35] step 1000 offload→UAV1 bitrate=high(1080p) cache=False R=-6.822789
+[2026-03-06 09:01:35] Epoch 49/100 steps=1000 R=-13005.770257
+[2026-03-06 09:01:35] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:01:47] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:01:58] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:02:09] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:02:22] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:02:34] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:02:46] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:02:58] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:03:09] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:03:20] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:03:34] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:03:34] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:03:34] Epoch 50/100 steps=1000 R=-5273.325048
+[2026-03-06 09:03:34] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:03:47] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:03:59] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:04:12] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:04:22] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:04:35] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:04:46] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:05:00] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:05:12] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:05:23] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:05:45] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:05:45] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:05:45] Epoch 51/100 steps=1000 R=-7553.865071
+[2026-03-06 09:05:45] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:05:57] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:06:08] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:06:20] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:06:31] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:06:44] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:06:54] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:07:06] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:07:17] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:07:30] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:07:42] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:07:42] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:07:42] Epoch 52/100 steps=1000 R=-9641.112225
+[2026-03-06 09:07:42] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:07:54] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:08:07] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:08:21] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:08:34] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:08:47] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:08:59] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:09:11] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:09:22] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:09:33] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:09:45] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:09:45] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:09:45] Epoch 53/100 steps=1000 R=-9888.340912
+[2026-03-06 09:09:45] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:09:55] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:10:08] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:10:21] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:10:33] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:10:44] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:10:57] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:11:12] step 701 offload→UAV3 bitrate=low(480p) cache=False R=-16.662357
+[2026-03-06 09:11:24] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:11:38] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:11:49] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:11:50] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:11:50] Epoch 54/100 steps=1000 R=-7303.856276
+[2026-03-06 09:11:50] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:12:00] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:12:13] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:12:25] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:12:38] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:12:50] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:13:03] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:13:12] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:13:25] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:13:36] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:13:48] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:13:48] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:13:48] Epoch 55/100 steps=1000 R=-4821.560499
+[2026-03-06 09:13:48] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:14:00] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:14:12] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:14:24] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:14:36] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:14:49] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:14:59] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:15:12] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:15:23] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:15:34] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:15:46] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:15:46] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:15:46] Epoch 56/100 steps=1000 R=-11642.576406
+[2026-03-06 09:15:46] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:15:58] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:16:11] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:16:23] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:16:36] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:16:48] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:17:02] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:17:16] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:17:28] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:17:41] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:17:56] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:17:56] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:17:56] Epoch 57/100 steps=1000 R=-8801.256747
+[2026-03-06 09:17:56] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:18:09] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:18:22] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:18:35] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:18:48] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:19:02] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:19:14] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:19:24] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:19:37] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:20:47] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:21:04] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:21:04] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:21:04] Epoch 58/100 steps=1000 R=-6560.345295
+[2026-03-06 09:21:04] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:21:18] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:21:32] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:21:43] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:21:56] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:22:12] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:22:23] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:22:34] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:22:48] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:23:03] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:23:16] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:23:16] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:23:16] Epoch 59/100 steps=1000 R=-5451.655271
+[2026-03-06 09:23:16] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:23:28] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:23:42] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:23:57] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:24:10] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:24:21] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:24:32] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:24:42] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:24:55] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:25:07] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:25:18] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:25:18] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:25:18] Epoch 60/100 steps=1000 R=-8986.303334
+[2026-03-06 09:25:18] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:25:30] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:25:46] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:25:58] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:26:12] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:26:26] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:26:36] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:26:48] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:27:00] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:27:14] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:27:26] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:27:26] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:27:26] Epoch 61/100 steps=1000 R=-7955.107433
+[2026-03-06 09:27:26] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:27:39] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:27:53] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:28:08] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:28:24] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:28:37] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:28:50] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:29:01] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:29:16] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:29:29] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:29:40] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:29:40] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:29:40] Epoch 62/100 steps=1000 R=-11807.772217
+[2026-03-06 09:29:40] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:29:52] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:30:07] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:30:21] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:30:33] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:30:45] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:31:02] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:31:17] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:31:30] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:31:44] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:31:55] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:31:55] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:31:55] Epoch 63/100 steps=1000 R=-4685.188284
+[2026-03-06 09:31:56] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:32:10] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:32:24] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:32:38] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:32:49] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:33:03] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:33:17] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:33:28] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:33:43] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:33:56] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:34:09] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:34:09] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:34:09] Epoch 64/100 steps=1000 R=-5724.685952
+[2026-03-06 09:34:10] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:34:24] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:34:36] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:34:48] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:35:01] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:35:13] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:35:24] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:35:38] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:35:51] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:36:06] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:36:19] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:36:19] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:36:19] Epoch 65/100 steps=1000 R=-6768.526374
+[2026-03-06 09:36:19] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:36:33] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:36:46] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:40:29] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:40:45] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:40:59] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:41:12] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:41:26] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:41:42] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:41:56] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:42:08] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:42:08] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:42:08] Epoch 66/100 steps=1000 R=-5253.017851
+[2026-03-06 09:42:09] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:42:22] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:42:36] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:42:49] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:43:01] step 401 offload→UAV3 bitrate=low(480p) cache=True R=-1083.317074
+[2026-03-06 09:43:15] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:43:27] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:43:39] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:43:53] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:44:05] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:44:16] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:44:17] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:44:17] Epoch 67/100 steps=1000 R=-59605.469858
+[2026-03-06 09:44:17] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:44:31] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:44:42] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:44:55] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:45:06] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:45:17] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:45:29] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:45:39] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:45:50] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:46:02] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:46:13] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:46:13] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:46:13] Epoch 68/100 steps=1000 R=-6900.403295
+[2026-03-06 09:46:13] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:46:25] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:46:36] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:46:48] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:46:59] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:47:12] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:47:25] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:47:40] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:47:53] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:48:05] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:48:17] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:48:17] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:48:17] Epoch 69/100 steps=1000 R=-6059.788854
+[2026-03-06 09:48:17] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:48:29] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:48:44] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:49:00] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:49:12] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:49:24] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:49:36] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:49:49] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:50:02] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:50:15] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:50:25] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:50:26] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:50:26] Epoch 70/100 steps=1000 R=-7733.751816
+[2026-03-06 09:50:26] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:50:36] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:50:49] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:51:03] step 301 offload→UAV2 bitrate=high(1080p) cache=False R=-462.074261
+[2026-03-06 09:51:15] step 401 offload→Local bitrate=high(1080p) cache=True R=-9.250074
+[2026-03-06 09:51:29] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:51:40] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:51:53] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:52:06] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:52:18] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:52:30] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:52:30] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:52:30] Epoch 71/100 steps=1000 R=-13412.683515
+[2026-03-06 09:52:30] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:52:41] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:52:56] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:53:07] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:53:20] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:53:32] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:53:45] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:53:57] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:54:09] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:54:23] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:54:34] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:54:34] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:54:34] Epoch 72/100 steps=1000 R=-9112.973690
+[2026-03-06 09:54:34] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:54:48] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:55:02] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:55:14] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:55:27] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:55:39] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:55:50] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:56:02] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:56:14] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:56:30] step 901 offload→UAV3 bitrate=high(1080p) cache=False R=-13.339127
+[2026-03-06 09:56:42] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:56:43] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:56:43] Epoch 73/100 steps=1000 R=-6345.914224
+[2026-03-06 09:56:43] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:56:54] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:57:07] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:57:22] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:57:35] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:57:47] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:57:59] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:58:11] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:58:26] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:58:37] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:58:49] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:58:49] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:58:49] Epoch 74/100 steps=1000 R=-6707.206254
+[2026-03-06 09:58:49] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:59:01] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:59:15] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 09:59:26] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:59:38] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 09:59:51] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:05:04] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:05:21] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:05:36] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:05:50] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:06:01] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:06:01] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:06:01] Epoch 75/100 steps=1000 R=-4635.418612
+[2026-03-06 10:06:01] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:06:14] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:06:26] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:06:38] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:06:49] step 401 offload→UAV1 bitrate=low(480p) cache=True R=-124.628895
+[2026-03-06 10:07:01] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:07:11] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:07:25] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:07:36] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:07:49] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:08:01] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:08:01] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:08:01] Epoch 76/100 steps=1000 R=-5706.656568
+[2026-03-06 10:08:01] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:08:12] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:08:25] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:08:39] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:08:53] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:09:06] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:09:20] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:09:33] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:09:48] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:10:01] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:10:14] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:10:14] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:10:14] Epoch 77/100 steps=1000 R=-6863.575439
+[2026-03-06 10:10:14] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:10:30] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:10:44] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:10:57] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:11:10] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:11:23] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:11:34] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:11:47] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:11:59] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:12:12] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:12:25] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:12:25] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:12:25] Epoch 78/100 steps=1000 R=-6335.450693
+[2026-03-06 10:12:25] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:12:38] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:12:49] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:13:02] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:13:17] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:13:29] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:13:42] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:13:56] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:14:10] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:14:23] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:14:36] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:14:36] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:14:36] Epoch 79/100 steps=1000 R=-6123.756044
+[2026-03-06 10:14:36] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:14:50] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:15:05] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:15:16] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:15:27] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:15:42] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:15:54] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:16:07] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:16:18] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:16:31] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:16:43] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:16:43] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:16:43] Epoch 80/100 steps=1000 R=-5240.207751
+[2026-03-06 10:16:43] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:16:54] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:17:06] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:17:16] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:17:30] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:17:44] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:17:59] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:18:13] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:18:26] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:18:38] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:18:50] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:18:50] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:18:50] Epoch 81/100 steps=1000 R=-8201.163223
+[2026-03-06 10:18:50] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:19:04] step 101 offload→RSU1 bitrate=high(1080p) cache=True R=-14.005313
+[2026-03-06 10:19:16] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:19:30] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:19:45] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:19:58] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:20:10] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:20:23] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:20:37] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:20:52] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:21:08] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:21:09] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:21:09] Epoch 82/100 steps=1000 R=-15817.552848
+[2026-03-06 10:21:09] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:21:23] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:21:44] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:22:26] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:22:59] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:23:29] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:24:13] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:24:31] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:24:49] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:25:06] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:25:26] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:25:26] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:25:26] Epoch 83/100 steps=1000 R=-7928.479361
+[2026-03-06 10:25:26] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:25:41] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:26:02] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:26:24] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:26:58] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:27:15] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:27:34] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:27:53] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:28:13] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:28:34] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:29:26] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:29:26] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:29:26] Epoch 84/100 steps=1000 R=-10578.403553
+[2026-03-06 10:29:26] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:29:57] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:30:36] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:30:53] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:31:11] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:31:30] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:31:55] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:32:35] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:32:54] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:33:12] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:33:32] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:33:32] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:33:32] Epoch 85/100 steps=1000 R=-10398.599970
+[2026-03-06 10:33:32] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:33:50] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:49:49] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:50:08] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:50:24] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:51:20] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:51:39] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:52:31] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:53:00] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:53:25] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:54:05] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:54:05] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:54:05] Epoch 86/100 steps=1000 R=-6187.331929
+[2026-03-06 10:54:05] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:54:22] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:54:40] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:55:10] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:55:39] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:55:57] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:56:14] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:56:43] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:57:09] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:57:29] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:57:57] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:57:58] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:57:58] Epoch 87/100 steps=1000 R=-7074.378105
+[2026-03-06 10:58:04] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:58:36] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:58:52] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 10:59:24] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 10:59:53] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 11:00:10] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 11:00:25] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 11:00:49] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 11:01:15] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-06 11:01:43] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 11:02:02] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 11:02:02] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-06 11:02:02] Epoch 88/100 steps=1000 R=-17969.365362
+[2026-03-06 11:02:02] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-09 06:53:32] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-09 06:54:02] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-09 06:54:20] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-09 06:54:42] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-09 06:54:59] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-09 06:55:14] *** Stopped.
+[2026-03-11 01:32:48] *** Loop start, log: /home/mec/DATN/src/results/drl_training.csv
+[2026-03-11 01:32:48] step 1 offload→UAV2 bitrate=high(1080p) cache=True R=-13.865282
+[2026-03-11 01:32:53] step 101 offload→UAV2 bitrate=low(480p) cache=True R=-7.174236
+[2026-03-11 01:33:00] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:33:07] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:33:16] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:33:31] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:33:47] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:34:00] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:34:18] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:34:33] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:34:48] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:34:49] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:34:49] Epoch 1/100 steps=1000 R=-17833.717523
+[2026-03-11 01:34:49] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:35:03] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:35:16] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:35:31] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:35:48] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:36:02] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:36:15] step 601 offload→UAV2 bitrate=low(480p) cache=True R=-5.921899
+[2026-03-11 01:36:32] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:36:45] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:36:59] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:37:13] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:37:13] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:37:13] Epoch 2/100 steps=1000 R=-6844.669565
+[2026-03-11 01:37:13] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:37:27] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:37:41] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:37:58] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:38:15] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:38:28] step 501 offload→UAV2 bitrate=low(480p) cache=True R=-35.478819
+[2026-03-11 01:38:44] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:38:59] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:39:13] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:39:30] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:39:43] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:39:44] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:39:44] Epoch 3/100 steps=1000 R=-34585.010741
+[2026-03-11 01:39:44] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:40:00] step 101 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:40:16] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:40:31] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:40:47] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:41:03] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:41:20] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:41:36] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:41:49] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:42:01] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:42:13] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:42:13] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:42:13] Epoch 4/100 steps=1000 R=-8554.328862
+[2026-03-11 01:42:13] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:42:29] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:42:44] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:42:58] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:43:13] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:43:27] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:43:43] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:43:58] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:44:13] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:44:26] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:44:41] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:44:41] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:44:41] Epoch 5/100 steps=1000 R=-8461.803406
+[2026-03-11 01:44:41] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:44:58] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:45:13] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:45:29] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:45:42] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:45:59] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:46:15] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:46:31] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:46:48] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:47:03] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:47:18] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:47:18] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:47:18] Epoch 6/100 steps=1000 R=-6055.627589
+[2026-03-11 01:47:19] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:47:31] step 101 offload→UAV2 bitrate=low(480p) cache=True R=-10.960812
+[2026-03-11 01:47:47] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:48:01] step 301 offload→UAV2 bitrate=low(480p) cache=True R=-7.475571
+[2026-03-11 01:48:18] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:48:35] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:48:48] step 601 offload→UAV2 bitrate=low(480p) cache=True R=-58.691851
+[2026-03-11 01:48:59] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:49:16] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:49:34] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:49:48] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:49:48] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:49:48] Epoch 7/100 steps=1000 R=-15424.951651
+[2026-03-11 01:49:48] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:50:08] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:50:23] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:50:37] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:50:52] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:51:10] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:51:23] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:51:38] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:51:53] step 801 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:52:12] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:52:29] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:52:29] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:52:29] Epoch 8/100 steps=1000 R=-6102.557417
+[2026-03-11 01:52:29] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:52:44] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:53:00] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:53:13] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:53:31] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:53:47] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:54:01] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:54:15] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:54:32] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:54:48] step 901 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:55:18] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:55:18] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:55:18] Epoch 9/100 steps=1000 R=-6974.753373
+[2026-03-11 01:55:18] step 1 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:56:03] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:56:56] step 201 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:57:14] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:57:29] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:57:48] step 501 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:58:08] step 601 offload→UAV2 bitrate=low(480p) cache=True R=-42.562562
+[2026-03-11 01:58:26] step 701 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 01:58:43] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:59:01] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:59:20] step 999 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:59:20] step 1000 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:59:20] Epoch 10/100 steps=1000 R=-10332.750565
+[2026-03-11 01:59:20] step 1 offload→UAV2 bitrate=high(1080p) cache=True R=-745.743080
+[2026-03-11 01:59:36] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 01:59:54] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:00:33] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:01:19] step 401 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:02:03] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:02:22] step 601 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:02:36] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:02:53] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:03:12] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:03:28] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:03:28] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:03:28] Epoch 11/100 steps=1000 R=-6327.365476
+[2026-03-11 02:03:28] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:03:47] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:04:11] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:04:45] step 301 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:05:04] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:05:27] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:05:48] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:06:23] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:07:19] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:07:49] step 901 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:08:28] step 999 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:08:29] step 1000 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:08:29] Epoch 12/100 steps=1000 R=-8249.822944
+[2026-03-11 02:08:29] step 1 offload→Local bitrate=low(480p) cache=False R=-4.625037
+[2026-03-11 02:09:05] step 101 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:09:48] step 201 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:10:10] step 301 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:10:57] step 401 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:11:19] step 501 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:11:37] step 601 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:11:56] step 701 offload→Local bitrate=low(480p) cache=True R=-4.625037
+[2026-03-11 02:12:15] step 801 offload→Local bitrate=low(480p) cache=True R=-4.625037
