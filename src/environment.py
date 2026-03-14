@@ -116,6 +116,22 @@ class VanetEnvironment:
         # -------------------------------------------------------
         self.requesting_car = self.cars[0] if self.cars else None
 
+        # -------------------------------------------------------
+        # Fix 5: Calibrate config.M theo actual users per UAV
+        #
+        # Vấn đề: Paper dùng M=30 là MAXIMUM capacity của UAV.
+        # Nhưng _rate_uav_user() tính r_lk = (B/M)*log2(1+SINR),
+        # khiến bandwidth/user bị chia cho 30 dù chỉ có ~3 xe/UAV.
+        # Kết quả: r_lk thấp hơn thực tế 10 lần, UAV delay ~10s thay vì ~1s,
+        # agent luôn chọn Local vì Local chỉ có 4.63s.
+        #
+        # Fix: dùng số xe thực tế / số UAV làm M hiệu quả.
+        # cars=10, uavs=3 → M_actual = 3 → r_lk tăng 10x → D1 ≈ 1s << Local ≈ 13s
+        # -------------------------------------------------------
+        if self.uavs:
+            actual_M = max(1, len(self.cars) // len(self.uavs))
+            self.config.M = actual_M  # override Paper's M=30
+
     # ------------------------------------------------------------------
     @staticmethod
     def get_pos_from_node(node):

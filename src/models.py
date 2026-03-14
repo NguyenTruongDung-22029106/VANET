@@ -302,17 +302,39 @@ def _delay_cache_miss(uav_node, user_node, all_uavs, config,
 
 def _delay_local(config, z_req=0):
     """
-    Xe tự xử lý: không có backhaul, không có UAV cache.
-    Dùng CPU xe (giả định băng thông V2V rất giới hạn).
-    Ước lượng: s_{f,z} / r_local với r_local = B_v2v / M_v2v.
-    Theo Table II Chen et al.: V2V BW = 20 MHz, carrier = 5.9 GHz.
+    Local: xe tự xử lý, KHÔNG qua UAV MEC.
+
+    Gồm 2 thành phần vật lý:
+
+    1. Fetch delay: xe kéo nội dung trực tiếp từ MBS qua V2I (không UAV relay).
+       - Xe ở mặt đất, urban environment → SINR_v2i thấp (~-1 dB, SINR_lin=0.8)
+       - Bh chia đều cho N_cars xe cùng kết nối (không có UAV buffer)
+       → r_v2i = (Bh / N_cars) × log2(1 + SINR_v2i)
+
+    2. Compute delay: CPU xe yếu hơn UAV MEC ~30 lần.
+       - UAV: C_comp = 3.4 GHz (từ config)
+       - Xe:  C_car  = C_comp / 30 ≈ 113 MHz (embedded ECU)
+       → compute = w0 × s / C_car
+
+    Fix 5: Trước đây chỉ có TX delay qua V2V (13.84 Mbps, 4.63s),
+    dẫn đến Local luôn thắng UAV. Sau fix: Local ≈ 13s > UAV cache hit ≈ 1s.
     """
-    B_v2v  = 20e6    # Hz
-    M_v2v  = 5       # max 5 xe lân cận
-    SINR0  = 10.0    # SNR điển hình V2V (tuyến tính)
-    r_local = (B_v2v / M_v2v) * math.log2(1 + SINR0)
-    s       = _chunk_size_bits(z_req, config)
-    return s / max(r_local, 1.0)
+    s = _chunk_size_bits(z_req, config)
+
+    # --- Fetch qua V2I (ground-level, không UAV) ---
+    Bh       = _cfg(config, 'Bh')        # 60 MHz (dùng chung backhaul)
+    N_cars   = 10                          # max xe chia sẻ V2I link
+    SINR_v2i = 0.8                         # ~-1 dB (urban V2I ground level)
+    r_v2i    = (Bh / N_cars) * math.log2(1 + SINR_v2i)
+    fetch_delay = s / max(r_v2i, 1.0)
+
+    # --- Compute trên CPU xe ---
+    C_comp   = _cfg(config, 'C_comp')     # UAV: 3.4 GHz
+    C_car    = C_comp / 30.0              # Xe: ~113 MHz
+    w0       = _cfg(config, 'w0')
+    compute_delay = w0 * s / max(C_car, 1.0)
+
+    return fetch_delay + compute_delay
 
 
 # ============================================================

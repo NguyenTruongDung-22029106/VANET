@@ -9,49 +9,34 @@ FIXES:
   - Bug 4 FIX: _create_stub_config() thêm num_videos=100 và zipf_exponent=0.7
     → nhất quán với config.py và environment.py
 """
+import os
+import sys
 import threading
 import time
-from types import SimpleNamespace
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+if THIS_DIR not in sys.path:
+    sys.path.insert(0, THIS_DIR)
 
 from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
 from ryu.ofproto import ofproto_v1_0
 
+from config import get_config
 from environment import VanetEnvironment
 from agents.d3qn_agent import D3QNAgent
-# FIX: dùng ControlLayer từ file chung, không định nghĩa lại
 from control_layer import ControlLayer
 
 
 def _create_stub_config():
     """
-    Config mặc định khi chạy Ryu — đồng bộ với get_config().
+    Config mặc định khi chạy Ryu — đồng bộ hoàn toàn với get_config().
 
-    BUG 4 FIX: thêm num_videos và zipf_exponent để nhất quán với config.py.
-    Trước đây thiếu 2 tham số này → VanetEnvironment phải fallback về default,
-    gây khó debug và không minh bạch.
+    Dùng get_config() trực tiếp thay vì định nghĩa lại từng tham số,
+    tránh hai file bị lệch nhau khi config.py thay đổi.
     """
-    return SimpleNamespace(
-        cars=10, uavs=3, rsus=1,
-        plot_max=400,
-        epochs=100, max_steps_per_epoch=1000,
-        model_path='agents/models/d3qn.pth',
-
-        # BUG 4 FIX: thêm Zipf params — khớp config.py và environment.py
-        num_videos    = 100,   # F: tổng số video (Table 2 Xie: F=100)
-        zipf_exponent = 0.7,   # γ: độ lệch Zipf (Table 2 Xie)
-
-        # Communication params (khớp config.py)
-        B=160e6, Bh=60e6, M=30,
-        PUAV_dBm=30, PBS_dBm=35, sigma2_dBm=-95,
-        H=100.0, fc=5e9, d0=1.0,
-        nLoS=2.0, nNLoS=2.4, sLoS=5.3, sNLoS=5.27,
-        kappa=11.9, zeta=0.13,
-        gamma_bs=3.5, eta_bs=100.0,
-        w0=1.0, C_comp=3.4e9, chunk_size_MB=8.0,
-        cache_uav_MB=300,
-    )
+    return get_config()
 
 
 def _create_stub_nodes(config):
@@ -60,6 +45,7 @@ def _create_stub_nodes(config):
     UAV1, UAV2, UAV3 cách đều nhau trong vùng 400×400m.
     """
     import math
+    from types import SimpleNamespace
     plot_max = getattr(config, 'plot_max', 400)
     cx, cy   = plot_max / 2.0, plot_max / 2.0
     r_tri    = plot_max / 4.0
@@ -122,32 +108,65 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         self.logger.info("*** Control Layer (D3QN) loop started. ***")
 
     def _control_loop(self):
-        """Vòng lặp control plane: mỗi bước gọi control_layer.step() và log ra Ryu."""
-        step = 0
-        while not self._control_stop.is_set():
-            try:
-                step += 1
-                action_idx, reward = self._control_layer.step()
-                # get_decision() trả dict (khớp environment.get_action_components)
-                # BUG 5 FIX (trong environment.py): dict giờ có đủ offload_name
-                # và bitrate_label → không còn KeyError ở đây
-                decision = self._control_layer.get_decision(action_idx)
-                if step % 50 == 1:
-                    self.logger.info(
-                        "step %d offload → %s bitrate = %s cache = %s R= %.2f",
-                        step,
-                        decision['offload_name'],
-                        decision['bitrate_label'],
-                        decision['cache'],
-                        reward,
-                    )
-            except (KeyboardInterrupt, SystemExit):
-                self.logger.info("*** Control loop stopping (KeyboardInterrupt). ***")
-                self._control_stop.set()
+        """
+        Vòng lặp control plane — đồng bộ với run_simulation_loop() trong main_thesis.py.
+
+        Cấu trúc giống hệt main_thesis:
+          - Có epoch loop (epochs × max_steps_per_epoch)
+          - step reset về 0 đầu mỗi epoch
+          - In log mỗi 100 bước (khớp main_thesis)
+          - In tổng kết cuối mỗi epoch
+          - Lưu model sau mỗi epoch
+        """
+        config   = self._control_layer.env.config
+        epochs   = int(getattr(config, 'epochs',               100))
+        max_steps = int(getattr(config, 'max_steps_per_epoch', 1000))
+
+        for epoch in range(1, epochs + 1):
+            if self._control_stop.is_set():
                 break
+
+            self._control_layer.env.reset()
+            total_reward = 0.0
+            step         = 0
+
+            while step < max_steps and not self._control_stop.is_set():
+                try:
+                    step        += 1
+                    action_idx, reward = self._control_layer.step()
+                    total_reward += reward
+                    decision     = self._control_layer.get_decision(action_idx)
+
+                    # Khớp main_thesis: in mỗi 100 bước và bước cuối
+                    if step % 100 == 1 or step >= max_steps:
+                        self.logger.info(
+                            "step %d offload→%s bitrate=%s cache=%s R=%.6f",
+                            step,
+                            decision['offload_name'],
+                            decision['bitrate_label'],
+                            decision['cache'],
+                            reward,
+                        )
+                except (KeyboardInterrupt, SystemExit):
+                    self.logger.info("*** Control loop stopping. ***")
+                    self._control_stop.set()
+                    break
+                except Exception as e:
+                    self.logger.exception("Control step error: %s", e)
+
+            # Tổng kết epoch — khớp main_thesis
+            self.logger.info(
+                "Epoch %d/%d steps=%d R=%.6f",
+                epoch, epochs, step, total_reward,
+            )
+            # Lưu model sau mỗi epoch — khớp main_thesis
+            try:
+                self._control_layer.agent.save_model()
             except Exception as e:
-                self.logger.exception("Control step error: %s", e)
-            time.sleep(0.5)
+                self.logger.warning("save_model failed: %s", e)
+
+        self.logger.info("*** Training hoàn thành %d epochs × %d steps = %d steps tổng. ***",
+                         epochs, max_steps, epochs * max_steps)
 
     def stop(self):
         self._control_stop.set()
