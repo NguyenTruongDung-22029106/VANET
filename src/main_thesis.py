@@ -206,7 +206,7 @@ def run_simulation_loop(net, config, env, agent, cars, uavs,
 
                 if step % 100 == 1 or step >= config.max_steps_per_epoch - 1:
                     decision = control_layer.get_decision(action_idx)
-                    _log("  step %d offload→%s bitrate=%s cache=%s R=%.6f" % (
+                    _log("  step %d offload → %s bitrate = %s cache = %s R = %.6f" % (
                         step, decision['offload_name'], decision['bitrate_label'],
                         decision['cache'], reward))
 

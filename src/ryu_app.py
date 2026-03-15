@@ -1,18 +1,26 @@
 #!/usr/bin/env python3
 """
-Ryu SDN application: SDN-VANET controller với D3QN (Offload + Caching).
+Ryu SDN application: SDN-VANET controller với D3QN (Deploy mode).
 
-Chạy Ryu: ryu-manager ryu_app.py
-Chạy mạng: sudo python3 main_thesis.py
+Workflow:
+  Bước 1 — Train (chạy riêng):
+    algo_mode = 'drl'
+    sudo python3 main_thesis.py   → lưu agents/models/d3qn.pth
 
-FIXES:
-  - Bug 4 FIX: _create_stub_config() thêm num_videos=100 và zipf_exponent=0.7
-    → nhất quán với config.py và environment.py
+  Bước 2 — Deploy (file này):
+    sudo python3 main_thesis.py &   # khởi động Mininet
+    ryu-manager ryu_app.py          # load .pth → điều khiển
+
+Thay đổi so với bản cũ:
+  - BỎ: _create_stub_nodes(), _create_stub_config()
+  - BỎ: epoch loop, save_model(), store_experience(), train()
+  - Dùng VanetEnvironment.from_config(config) — tạo env trực tiếp từ config
+  - _control_loop chỉ inference: get_state → select_action → env.step → log
+  - agent.set_eval_mode() → ε=0, greedy hoàn toàn
 """
 import os
 import sys
 import threading
-import time
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 if THIS_DIR not in sys.path:
@@ -29,144 +37,101 @@ from agents.d3qn_agent import D3QNAgent
 from control_layer import ControlLayer
 
 
-def _create_stub_config():
-    """
-    Config mặc định khi chạy Ryu — đồng bộ hoàn toàn với get_config().
-
-    Dùng get_config() trực tiếp thay vì định nghĩa lại từng tham số,
-    tránh hai file bị lệch nhau khi config.py thay đổi.
-    """
-    return get_config()
-
-
-def _create_stub_nodes(config):
-    """
-    Tạo stub nodes với vị trí tam giác đều — khớp với main_thesis.py.
-    UAV1, UAV2, UAV3 cách đều nhau trong vùng 400×400m.
-    """
-    import math
-    from types import SimpleNamespace
-    plot_max = getattr(config, 'plot_max', 400)
-    cx, cy   = plot_max / 2.0, plot_max / 2.0
-    r_tri    = plot_max / 4.0
-    cos30    = math.cos(math.pi / 6)
-    sin30    = math.sin(math.pi / 6)
-    uav_verts = [
-        (cx,                   cy + r_tri),
-        (cx - r_tri * cos30,   cy - r_tri * sin30),
-        (cx + r_tri * cos30,   cy - r_tri * sin30),
-    ]
-
-    cars = [
-        SimpleNamespace(name=f'car{i}', params={'position': (cx + (i - config.cars // 2) * 30, cy - 50)})
-        for i in range(1, config.cars + 1)
-    ]
-    rsus = [
-        SimpleNamespace(name=f'rsu{i}', params={'position': (50 + (i - 1) * 150, 50)})
-        for i in range(1, config.rsus + 1)
-    ]
-    uavs = [
-        SimpleNamespace(name=f'uav{i}', params={'position': uav_verts[(i - 1) % 3]})
-        for i in range(1, config.uavs + 1)
-    ]
-    stations = cars + uavs
-    return stations, rsus, uavs
-
-
 class SdnVanetRyuApp(app_manager.RyuApp):
-    """Ryu app: SDN controller cho VANET, chạy D3QN (offload + cache)."""
+    """
+    Ryu SDN controller cho VANET-UAV.
+    Deploy mode: load model đã train → inference only, không train lại.
+    """
 
     OFP_VERSIONS = [ofproto_v1_0.OFP_VERSION]
 
     def __init__(self, *args, **kwargs):
         super(SdnVanetRyuApp, self).__init__(*args, **kwargs)
         self._control_thread = None
-        self._control_stop = threading.Event()
-        self._control_layer = None
+        self._control_stop   = threading.Event()
+        self._control_layer  = None
 
     def start(self):
         super(SdnVanetRyuApp, self).start()
-        self.logger.info("*** SDN-VANET Ryu app started (D3QN). ***")
+        self.logger.info("*** SDN-VANET Ryu app started (D3QN deploy mode). ***")
 
-        config = _create_stub_config()
-        stations, rsus, uavs = _create_stub_nodes(config)
-        env = VanetEnvironment(config, stations, aps=rsus, uavs_list=uavs)
+        config = get_config()
+
+        # Tạo env trực tiếp từ config — không cần stub nodes ngoài
+        env = VanetEnvironment.from_config(config)
 
         agent = D3QNAgent(
-            state_size=env.state_size,
-            action_size=env.action_size,
-            num_offload_targets=env.num_offload_targets,
-            config=config,
+            state_size          = env.state_size,
+            action_size         = env.action_size,
+            num_offload_targets = env.num_offload_targets,
+            config              = config,
         )
+
+        # Load model đã train từ main_thesis.py
+        model_path = getattr(config, 'model_path', 'agents/models/d3qn.pth')
+        if not os.path.exists(model_path):
+            self.logger.warning(
+                "*** Model không tìm thấy tại '%s'. "
+                "Hãy train trước: algo_mode='drl' sudo python3 main_thesis.py ***",
+                model_path
+            )
         agent.load_model()
 
-        # FIX: dùng ControlLayer từ agents/control_layer.py
+        # Tắt hoàn toàn exploration — greedy inference
+        agent.set_eval_mode()
+        self.logger.info("*** Model loaded. Eval mode (ε=0). ***")
+
         self._control_layer = ControlLayer(env, agent)
         self._control_stop.clear()
-        self._control_thread = threading.Thread(target=self._control_loop, daemon=True)
+        self._control_thread = threading.Thread(
+            target=self._control_loop, daemon=True
+        )
         self._control_thread.start()
-        self.logger.info("*** Control Layer (D3QN) loop started. ***")
+        self.logger.info("*** Control loop started. ***")
 
     def _control_loop(self):
         """
-        Vòng lặp control plane — đồng bộ với run_simulation_loop() trong main_thesis.py.
+        Vòng lặp inference liên tục — KHÔNG train, KHÔNG lưu model.
 
-        Cấu trúc giống hệt main_thesis:
-          - Có epoch loop (epochs × max_steps_per_epoch)
-          - step reset về 0 đầu mỗi epoch
-          - In log mỗi 100 bước (khớp main_thesis)
-          - In tổng kết cuối mỗi epoch
-          - Lưu model sau mỗi epoch
+        Mỗi bước:
+          1. get_state()      — lấy state từ VanetEnvironment
+          2. select_action()  — greedy (ε=0)
+          3. env.step()       — cập nhật cache/CPU state, tính delay
+          4. log              — offload target, bitrate, cache, delay
         """
-        config   = self._control_layer.env.config
-        epochs   = int(getattr(config, 'epochs',               100))
-        max_steps = int(getattr(config, 'max_steps_per_epoch', 1000))
+        env   = self._control_layer.env
+        agent = self._control_layer.agent
+        step  = 0
 
-        for epoch in range(1, epochs + 1):
-            if self._control_stop.is_set():
-                break
+        env.reset()
+        self.logger.info("*** Inference loop running... ***")
 
-            self._control_layer.env.reset()
-            total_reward = 0.0
-            step         = 0
-
-            while step < max_steps and not self._control_stop.is_set():
-                try:
-                    step        += 1
-                    action_idx, reward = self._control_layer.step()
-                    total_reward += reward
-                    decision     = self._control_layer.get_decision(action_idx)
-
-                    # Khớp main_thesis: in mỗi 100 bước và bước cuối
-                    if step % 100 == 1 or step >= max_steps:
-                        self.logger.info(
-                            "step %d offload→%s bitrate=%s cache=%s R=%.6f",
-                            step,
-                            decision['offload_name'],
-                            decision['bitrate_label'],
-                            decision['cache'],
-                            reward,
-                        )
-                except (KeyboardInterrupt, SystemExit):
-                    self.logger.info("*** Control loop stopping. ***")
-                    self._control_stop.set()
-                    break
-                except Exception as e:
-                    self.logger.exception("Control step error: %s", e)
-
-            # Tổng kết epoch — khớp main_thesis
-            self.logger.info(
-                "Epoch %d/%d steps=%d R=%.6f",
-                epoch, epochs, step, total_reward,
-            )
-            # Lưu model sau mỗi epoch — khớp main_thesis
+        while not self._control_stop.is_set():
             try:
-                self._control_layer.agent.save_model()
-            except Exception as e:
-                self.logger.warning("save_model failed: %s", e)
+                step += 1
+                state      = env.get_state()
+                action_idx = agent.select_action(state)
+                _, reward, _, _ = env.step(action_idx)
 
-        self.logger.info("*** Training hoàn thành %d epochs × %d steps = %d steps tổng. ***",
-                         epochs, max_steps, epochs * max_steps)
+                if step % 100 == 1:
+                    decision = self._control_layer.get_decision(action_idx)
+                    self.logger.info(
+                        "step %d  offload→%s  bitrate=%s  cache=%d  delay=%.4fs",
+                        step,
+                        decision['offload_name'],
+                        decision['bitrate_label'],
+                        decision['cache'],
+                        -reward,
+                    )
+
+            except (KeyboardInterrupt, SystemExit):
+                self.logger.info("*** Control loop stopping. ***")
+                self._control_stop.set()
+                break
+            except Exception as e:
+                self.logger.exception("Control loop error at step %d: %s", step, e)
+
+        self.logger.info("*** Control loop stopped after %d steps. ***", step)
 
     def stop(self):
         self._control_stop.set()
@@ -174,6 +139,18 @@ class SdnVanetRyuApp(app_manager.RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def switch_features_handler(self, ev):
-        """Khi switch kết nối tới Ryu."""
+        """Khi OpenFlow switch kết nối tới Ryu."""
         datapath = ev.msg.datapath
-        self.logger.info("*** Switch connected: datapath_id=%s ***", hex(datapath.id))
+        self.logger.info(
+            "*** Switch connected: datapath_id=%s ***", hex(datapath.id)
+        )
+
+    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    def packet_in_handler(self, ev):
+        """Bắt packet từ switch — có thể mở rộng để cài flow rule theo quyết định D3QN."""
+        msg      = ev.msg
+        datapath = msg.datapath
+        self.logger.debug(
+            "PacketIn: datapath=%s in_port=%s",
+            hex(datapath.id), msg.match.get('in_port', '?')
+        )
