@@ -227,11 +227,231 @@ def run_simulation_loop(net, config, env, agent, cars, uavs,
 
 
 def run_simulation(config):
-    """Thiết lập và chạy mô phỏng."""
+    """Thiết lập và chạy mô phỏng Mininet-WiFi."""
     use_plot = getattr(config, 'plot', True)
 
-    # (phần setup Mininet-WiFi, nodes, links giữ nguyên như cũ)
-    # ...
+    num_roads = min(getattr(config, 'roads', 8), 8)
+    net = Mininet_wifi(
+        controller=RemoteController,
+        roads=num_roads,
+        link=wmediumd,
+        wmediumd_mode=interference,
+    )
+
+    info("*** Creating nodes\n")
+    cars = []
+    speed_ms  = getattr(config, 'vehicle_speed_kmh', 20) / 3.6
+    car_range = getattr(config, 'vehicle_range_m', 50)
+    for i in range(1, config.cars + 1):
+        min_ = max(1, int(speed_ms - 3))
+        max_ = int(speed_ms + 3)
+        cars.append(
+            net.addCar(f'car{i}', wlans=2,
+                       min_speed=min_, max_speed=max_, range=car_range)
+        )
+
+    plot_max_val = getattr(config, 'plot_max', 400)
+    channels = ['1', '6', '11']
+    rsus = [
+        net.addAccessPoint(
+            f'rsu{i}', ssid=f'RSU{10+i}', mode='g',
+            channel=channels[(i - 1) % 3], range=MBS_RANGE,
+            position=f'{100+((i-1)%3)*400},{100+((i-1)//3)*400},0'
+        )
+        for i in range(1, config.rsus + 1)
+    ]
+
+    cx, cy  = plot_max_val / 2.0, plot_max_val / 2.0
+    r_tri   = plot_max_val / 4.0
+    cos30   = math.cos(math.pi / 6)
+    sin30   = math.sin(math.pi / 6)
+    uav_triangle_verts = [
+        (cx,                   cy + r_tri,            UAV_ALTITUDE),
+        (cx - r_tri * cos30,   cy - r_tri * sin30,    UAV_ALTITUDE),
+        (cx + r_tri * cos30,   cy - r_tri * sin30,    UAV_ALTITUDE),
+    ]
+    uav_pos_list = [uav_triangle_verts[i % 3] for i in range(config.uavs)]
+    uavs = [
+        net.addAccessPoint(
+            f'uav{i}', ssid=f'UAV{i}', mode='g',
+            channel='5', range=UAV_RANGE,
+            position=f'{int(uav_pos_list[i-1][0])},{int(uav_pos_list[i-1][1])},{UAV_ALTITUDE}'
+        )
+        for i in range(1, config.uavs + 1)
+    ]
+
+    s1 = net.addSwitch('s1', cls=OVSKernelSwitch)
+    c1 = net.addController('c1', controller=RemoteController,
+                            ip='127.0.0.1', port=6653)
+    info("*** Using Ryu SDN controller (127.0.0.1:6653).\n")
+
+    net.setPropagationModel(model="logDistance", exp=4)
+    net.configureWifiNodes()
+
+    info("*** Creating links\n")
+    for rsu in rsus:
+        net.addLink(rsu, s1)
+    for uav in uavs:
+        net.addLink(uav, s1)
+
+    plot_max      = getattr(config, 'plot_max', 400)
+    mobility_time = getattr(config, 'mobility_time', 1)
+    if use_plot:
+        net.plotGraph(max_x=plot_max, max_y=plot_max)
+        _patch_vanet_clear_lists_only()
+    net.startMobility(time=mobility_time)
+    _patch_mobility_parameters()
+
+    info("*** Starting network build\n")
+    net.build()
+    c1.start()
+    for rsu in rsus:
+        rsu.start([c1])
+    for uav in uavs:
+        uav.start([c1])
+    s1.start([c1])
+
+    # Set vị trí UAV
+    for uav in uavs:
+        try:
+            pos = (getattr(uav, 'position', None)
+                   or (uav.params.get('position') if hasattr(uav, 'params') else None)
+                   or [0, 0, 0])
+            x, y = float(pos[0]), float(pos[1])
+            uav.position = [x, y, float(UAV_ALTITUDE)]
+            if hasattr(uav, 'pos'):
+                uav.pos = uav.position
+            if hasattr(uav, 'set_pos_wmediumd'):
+                uav.set_pos_wmediumd((x, y, UAV_ALTITUDE))
+        except Exception:
+            pass
+
+    # Set IP cho APs
+    aps_order = list(rsus) + list(uavs)
+    for ap_idx, ap in enumerate(aps_order, start=1):
+        try:
+            ap.setIP('192.168.%s.1/24' % ap_idx, intf='%s-wlan0' % ap.name)
+        except Exception:
+            try:
+                ap.setIP('192.168.%s.1/24' % ap_idx, intf='%s-wlan1' % ap.name)
+            except Exception:
+                pass
+        try:
+            ap.cmd('echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null')
+        except Exception:
+            pass
+
+    time.sleep(1.5)
+    update_car_ap_association(net)
+
+    try:
+        if net.cars and aps_order:
+            out = net.cars[0].cmd('ping -c 1 -W 2 192.168.1.1 2>&1')
+            if '1 received' in out or '1 packets received' in out:
+                info("*** Ping car1 -> 192.168.1.1 OK ***\n")
+            else:
+                info("*** Ping car1 -> 192.168.1.1 FAIL ***\n")
+    except Exception:
+        pass
+
+    info("*** Car–AP association done. ***\n")
+    start_assoc_daemon(net, interval=0.5)
+
+    # ── Chạy thuật toán ───────────────────────────────────────────────────
+    try:
+        algo_mode = getattr(config, 'algo_mode', 'drl')
+        log_dir   = os.path.abspath(getattr(config, 'log_dir', 'results'))
+        os.makedirs(log_dir, exist_ok=True)
+
+        # ── QEA ──────────────────────────────────────────────────────────
+        if algo_mode in ('qea', 'both'):
+            info("*** Running QEA baseline (offline optimization)…\n")
+            qea = QEAJointCAUA(cars=cars, uavs=uavs, rsus=rsus, config=config)
+            X_best, Y_best = qea.optimize()
+            info("*** QEA best total cost: %.4f\n" % qea.f_best)
+
+            # Ghi qea_result.csv để plot_comparison.py đọc
+            qea_csv = os.path.join(log_dir, 'qea_result.csv')
+            try:
+                with open(qea_csv, 'w', encoding='utf-8') as _f:
+                    _f.write("generation,f_best\n")
+                    for _g, _v in enumerate(qea.convergence, start=1):
+                        _f.write(f"{_g},{_v:.6f}\n")
+                info("*** QEA CSV saved: %s\n" % qea_csv)
+            except Exception as _e:
+                info("*** QEA CSV error: %s\n" % _e)
+
+        # ── DRL (train hoặc eval) ─────────────────────────────────────────
+        if algo_mode in ('drl', 'both', 'drl_eval'):
+            info("*** Running DRL (D3QN) loop…\n")
+            stations = list(cars) + list(uavs) + list(rsus)
+            env = VanetEnvironment(config, stations, aps=rsus, uavs_list=uavs)
+
+            agent = D3QNAgent(
+                state_size          = env.state_size,
+                action_size         = env.action_size,
+                num_offload_targets = env.num_offload_targets,
+                config              = config,
+            )
+
+            if algo_mode == 'drl_eval':
+                agent.load_model()
+                agent.set_eval_mode()
+
+            train_log = os.path.join(log_dir, 'drl_training.csv')
+            run_log   = os.path.join(log_dir, 'drl_run.log')
+            # Chỉ ghi eval CSV khi drl_eval mode
+            eval_log  = os.path.join(log_dir, 'drl_eval.csv') \
+                        if algo_mode == 'drl_eval' else None
+
+            run_simulation_loop(
+                net, config, env, agent, cars, uavs,
+                plot_queue    = None,
+                uav_mode      = getattr(config, 'uav_mode', 'hover'),
+                plot_max      = getattr(config, 'plot_max', 400),
+                log_path      = train_log,
+                run_log_path  = run_log,
+                eval_log_path = eval_log,
+            )
+
+            if algo_mode == 'drl_eval':
+                _demo_ffmpeg_streaming(net, cars, uavs, rsus, env, agent)
+
+    except Exception as e:
+        info("*** Error while running algorithms (QEA/DRL): %s\n" % e)
+
+    # ── CLI và cleanup ────────────────────────────────────────────────────
+    try:
+        CLI(net)
+        while True:
+            update_car_ap_association(net)
+            try:
+                a = int(input("nhap dau vao: "))
+            except (ValueError, EOFError, KeyboardInterrupt):
+                break
+            if a == 1:
+                CLI(net)
+            else:
+                break
+    except KeyboardInterrupt:
+        info("*** Ctrl+C\n")
+
+    info("*** Stopping network\n")
+    try:
+        stop_event.set()
+        if use_plot:
+            net.stop_graph_params()
+            time.sleep(0.5)
+            try:
+                plt.close('all')
+            except Exception:
+                pass
+        net.stop()
+    except KeyboardInterrupt:
+        info("*** Interrupted during cleanup.\n")
+    except Exception as e:
+        if 'main thread is not in main loop' not in str(e):
+            info("*** Error during stop: %s\n" % e)
 
     # ── Phần chạy thuật toán ─────────────────────────────────────────────────
     try:
