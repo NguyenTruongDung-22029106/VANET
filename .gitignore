@@ -1,0 +1,52 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs / outputs
+results/
+src/results/
+*.log
+*.csv
+*.tsv
+*.out
+
+# Model checkpoints
+*.pth
+*.pt
+
+# Core dumps
+core
+core.*
+*.core
+
+# Virtual envs / caches
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Cursor debug logs
+.cursor/*.log
+__pycache__/
+*.pyc
+*.pyo
+
+# Model checkpoints
+src/agents/models/*.pth
+
+# Generated config files
+*.apconf
+
+# Results (keep tracked manually)
+# src/results/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

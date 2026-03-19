@@ -1,24 +1,20 @@
 #!/usr/bin/env python3
 """
-environment.py — VanetEnvironment: Môi trường học tăng cường cho VANET-UAV-SDN.
+environment.py — VanetEnvironment: Môi trường học tăng cường theo mô hình Xie et al.
 
-State  : 37 chiều — vị trí xe/UAV/RSU, CPU load, cache mode, video popularity
-Action : 20 chiều — offload(5) × bitrate(2) × cache(2)
-Reward : -delay (giây), delay tính từ models.calculate_total_cost()
-
-FIXES TRONG FILE NÀY:
-  - Bug 1 Fix: requesting_car = random.choice(self.cars) thay vì cars[0]
-  - Bug 2 Fix: popularity = Zipf p_f động thay vì cứng 0.7
-  - Bug 2b Fix: lưu self.requesting_car sau mỗi step()
-  - Bug 5 Fix: get_action_components() thêm offload_name + bitrate_label
-  - from_config Fix: thêm classmethod from_config() — tạo dummy nodes từ config
-    → ryu_app.py không cần _create_stub_nodes nữa
+State  : động theo số UAV, gồm xe requesting + UAV features + MBS context + popularity
+Action : (#UAV × cache_decision) + 1 action MBS tier
+Reward : -log(1+delay), raw delay trong info['raw_delay']
 """
 import math
 import random
 import numpy as np
 from types import SimpleNamespace
-from models import calculate_total_cost
+from models import calculate_total_cost, calculate_mbs_only_delay
+from helpers import (
+    get_node_xy, dist_2d,
+)
+from constants import UAV_RANGE, MBS_RANGE
 
 
 # ============================================================
@@ -29,6 +25,20 @@ def _compute_zipf_probs(num_videos: int, gamma: float) -> np.ndarray:
     ranks = np.arange(1, num_videos + 1, dtype=np.float64)
     raw   = ranks ** (-gamma)
     return raw / raw.sum()
+
+def _compute_zipf_joint_probs(num_videos: int, num_bitrates: int, gamma: float) -> np.ndarray:
+    """Zipf trên toàn bộ cặp (f,z), shape (F, Z)."""
+    F = max(int(num_videos), 1)
+    Z = max(int(num_bitrates), 1)
+    ranks = np.arange(1, F * Z + 1, dtype=np.float64)
+    raw = ranks ** (-gamma)
+    return (raw / raw.sum()).reshape(F, Z)
+
+
+def _chunk_size_bits(z_idx: int, config) -> float:
+    """s_{f,z}: chunk size theo bitrate z (tuyến tính theo z+1)."""
+    s0_bits = float(getattr(config, 'chunk_size_MB', 8.0)) * 8e6
+    return s0_bits * (int(z_idx) + 1)
 
 
 # ============================================================
@@ -42,18 +52,16 @@ def _make_dummy_nodes(config):
     """
     plot_max = getattr(config, 'plot_max', 400)
     cx, cy   = plot_max / 2.0, plot_max / 2.0
-    r_tri    = plot_max / 4.0
-    cos30    = math.cos(math.pi / 6)
-    sin30    = math.sin(math.pi / 6)
-    uav_verts = [
-        (cx,                   cy + r_tri),
-        (cx - r_tri * cos30,   cy - r_tri * sin30),
-        (cx + r_tri * cos30,   cy - r_tri * sin30),
-    ]
 
     num_cars = getattr(config, 'cars', 10)
     num_uavs = getattr(config, 'uavs', 3)
     num_rsus = getattr(config, 'rsus', 1)
+
+    r_poly   = plot_max / 4.0
+    uav_verts = []
+    for i in range(num_uavs):
+        angle = 2 * math.pi * i / max(num_uavs, 1) + math.pi / 2
+        uav_verts.append((cx + r_poly * math.cos(angle), cy + r_poly * math.sin(angle)))
 
     cars = [
         SimpleNamespace(
@@ -72,12 +80,35 @@ def _make_dummy_nodes(config):
     uavs = [
         SimpleNamespace(
             name=f'uav{i}',
-            params={'position': uav_verts[(i - 1) % 3]}
+            params={'position': uav_verts[i - 1]}
         )
         for i in range(1, num_uavs + 1)
     ]
     stations = cars + uavs
     return stations, rsus, uavs
+
+
+def _nearest_in_range_rsu(car_node, rsus):
+    """Return nearest RSU/MBS within MBS_RANGE, else None."""
+    best_node = None
+    best_d = None
+    for rsu in rsus:
+        d = dist_2d(car_node, rsu)
+        if d <= float(MBS_RANGE) and (best_d is None or d < best_d):
+            best_d = d
+            best_node = rsu
+    return best_node
+
+
+def _count_cars_in_mbs_range(cars, mbs_node):
+    """Estimate runtime users served by an MBS/RSU by coverage count."""
+    if mbs_node is None:
+        return 0
+    c = 0
+    for car in cars:
+        if dist_2d(car, mbs_node) <= float(MBS_RANGE):
+            c += 1
+    return c
 
 
 # ============================================================
@@ -93,7 +124,7 @@ class VanetEnvironment:
         VanetEnvironment.from_config(config)                ← dùng trong ryu_app.py
     """
 
-    NUM_BITRATES   = 2
+    NUM_BITRATES   = 4
     NUM_CACHE_ACTS = 2
 
     def __init__(self, config, stations, aps=None, uavs_list=None):
@@ -110,45 +141,51 @@ class VanetEnvironment:
             and getattr(n, 'name', '') not in uav_names
         ]
 
-        self.OFFLOAD_LOCAL         = 0
-        self.OFFLOAD_UAV_START_IDX = 1
-        self.OFFLOAD_RSU_START_IDX = 1 + len(self.uavs)
-        self.num_offload_targets   = 1 + len(self.uavs) + len(self.rsus)
-        self.num_bitrates          = self.NUM_BITRATES
-        self.num_cache_actions     = self.NUM_CACHE_ACTS
+        # Hướng 1 (tier decision):
+        #   - UAV tier: chọn UAV l và cache/no-cache cho request hiện tại
+        #   - MBS/RSU tier: phục vụ trực tiếp, bỏ qua cache_dec
+        self.num_bitrates      = self.NUM_BITRATES
+        self.num_cache_actions = self.NUM_CACHE_ACTS
+        self.num_offload_targets = len(self.uavs)  # chỉ UAVs
+        self._uav_action_size = self.num_offload_targets * self.num_cache_actions
+        # +1 extra action for MBS/RSU tier
+        self.action_size = max(1, self._uav_action_size + 1)
 
-        self.action_size = (
-            self.num_offload_targets
-            * self.num_bitrates
-            * self.num_cache_actions
-        )
-
+        # State: car pos + UAV features + nearest-MBS context + popularity
         self.state_size = (
-            len(self.cars)  * 2 +
-            len(self.uavs)  * 2 +
-            len(self.rsus)  * 2 +
-            len(self.uavs) + len(self.rsus) +   # CPU load
-            len(self.uavs) + len(self.rsus) +   # cache status
-            1                                    # video popularity
+            2 +                      # requesting user position
+            len(self.uavs) * 2 +      # UAV positions
+            len(self.uavs) +          # distance user→each UAV
+            len(self.uavs) +          # cache fullness per UAV
+            1 +                       # distance user→nearest MBS/RSU
+            1 +                       # normalized load around nearest MBS/RSU
+            1                         # popularity of requested chunk
         )
 
-        self.cache_state   = {n.name: 0   for n in (self.uavs + self.rsus)}
-        self.cache_bitrate = {n.name: 0   for n in (self.uavs + self.rsus)}
-        self.cpu_load      = {n.name: 0.0 for n in (self.uavs + self.rsus)}
-        self._cpu_decay    = 0.05
-        self._cpu_per_req  = 0.1
+        # Paper caching: y_{l,f,z} per UAV, per chunk, per bitrate
+        self.cache_uav_MB = float(getattr(config, 'cache_uav_MB', 300))
+        self.C_cache_bits = self.cache_uav_MB * 8e6
+        self.Z = self.NUM_BITRATES
+        self.chunk_sizes = np.array(
+            [_chunk_size_bits(z, config) for z in range(self.Z)],
+            dtype=np.float64,
+        )
+        self.Y = np.zeros((len(self.uavs), int(getattr(config, 'num_videos', 100)), self.Z), dtype=np.int8)
 
         self.num_videos    = int(getattr(config, 'num_videos',    100))
         self.zipf_exponent = float(getattr(config, 'zipf_exponent', 0.7))
-        self._zipf_probs   = _compute_zipf_probs(self.num_videos, self.zipf_exponent)
+        self._zipf_probs_fz = _compute_zipf_joint_probs(
+            self.num_videos, self.Z, self.zipf_exponent
+        )
+        self._zipf_probs = self._zipf_probs_fz.sum(axis=1)
         self.f_req         = 0
+        self.z_req         = 0
 
         self.requesting_car = self.cars[0] if self.cars else None
 
-        # Fix 5: calibrate M theo actual users per UAV
-        if self.uavs:
-            actual_M = max(1, len(self.cars) // len(self.uavs))
-            self.config.M = actual_M
+        self._norm_scale = float(getattr(config, 'plot_max', 400))
+        self._last_actual_uav_idx = None
+        self._last_served_request = None
 
     # ------------------------------------------------------------------
     @classmethod
@@ -166,117 +203,264 @@ class VanetEnvironment:
     # ------------------------------------------------------------------
     @staticmethod
     def get_pos_from_node(node):
-        if hasattr(node, 'params') and 'position' in node.params:
-            p = node.params['position']
-            return float(p[0]), float(p[1])
-        return 0.0, 0.0
+        return get_node_xy(node)
+
+    def _cache_usage_bits(self, uav_idx: int) -> float:
+        return float(np.sum(self.Y[uav_idx] * self.chunk_sizes[np.newaxis, :]))
 
     def get_state(self):
         sv = []
-        for n in self.cars + self.uavs + self.rsus:
-            sv.extend(self.get_pos_from_node(n))
-        for n in self.uavs + self.rsus:
-            sv.append(float(self.cpu_load.get(n.name, 0.0)))
-        for n in self.uavs + self.rsus:
-            sv.append(float(self.cache_state.get(n.name, 0)))
-        p_f = float(self._zipf_probs[self.f_req])
-        sv.append(p_f)
+        ns = self._norm_scale
+        if self.requesting_car is not None:
+            car = self.requesting_car
+        elif self.cars:
+            car = self.cars[0]
+        else:
+            car = None
+
+        if car is None:
+            cx, cy = 0.0, 0.0
+        else:
+            cx, cy = self.get_pos_from_node(car)
+        sv.extend([cx / ns, cy / ns])
+        for n in self.uavs:
+            x, y = self.get_pos_from_node(n)
+            sv.extend([x / ns, y / ns])
+        for u in self.uavs:
+            ux, uy = self.get_pos_from_node(u)
+            d = math.sqrt((cx - ux)**2 + (cy - uy)**2 + self.config.H**2) / ns
+            sv.append(d)
+        # Cache fullness per UAV (0..1)
+        for l in range(len(self.uavs)):
+            usage_bits = self._cache_usage_bits(l)
+            sv.append(min(usage_bits / max(self.C_cache_bits, 1.0), 1.0))
+
+        # Nearest-MBS context so agent can learn balanced UAV/MBS tier decisions.
+        nearest_mbs = _nearest_in_range_rsu(car, self.rsus) if car is not None else None
+        if car is None or nearest_mbs is None:
+            sv.extend([1.0, 0.0])
+        else:
+            d_mbs = min(dist_2d(car, nearest_mbs) / ns, 1.0)
+            mbs_users = _count_cars_in_mbs_range(self.cars, nearest_mbs)
+            mbs_load = min(float(mbs_users) / max(float(getattr(self.config, 'M', 30)), 1.0), 1.0)
+            sv.extend([d_mbs, mbs_load])
+
+        p_fz = float(self._zipf_probs_fz[self.f_req, self.z_req])
+        sv.append(p_fz)
         return np.array(sv, dtype=np.float32)
 
     # ------------------------------------------------------------------
     def _decode_action(self, action_idx: int):
-        a         = int(action_idx)
-        offload   = a % self.num_offload_targets
-        remainder = a // self.num_offload_targets
-        z_req     = remainder % self.num_bitrates
-        cache_dec = remainder // self.num_bitrates
-        return offload, z_req, int(cache_dec)
+        a = int(action_idx)
+        L = max(int(self.num_offload_targets), 1)
+        mbs_action_idx = int(self._uav_action_size)
+        if a == mbs_action_idx:
+            return 'mbs', -1, 0
+        # UAV tier
+        uav_idx = a % L
+        cache_dec = a // L
+        return 'uav', int(uav_idx), int(cache_dec)
 
-    def encode_action(self, offload: int, z_req: int, cache: int) -> int:
-        return offload + self.num_offload_targets * (z_req + self.num_bitrates * cache)
+    def encode_action(self, uav_idx: int, cache: int) -> int:
+        """Encode a UAV-tier action (not used for MBS tier)."""
+        L = max(int(self.num_offload_targets), 1)
+        return int(uav_idx) + L * int(cache)
 
     # ------------------------------------------------------------------
-    def step(self, action_idx: int):
-        requesting_car      = random.choice(self.cars)
-        self.requesting_car = requesting_car
-
-        self.f_req = int(np.random.choice(self.num_videos, p=self._zipf_probs))
-
-        offload_choice, z_req, cache_dec = self._decode_action(action_idx)
-
-        if offload_choice == self.OFFLOAD_LOCAL:
-            target_node = requesting_car
-        elif self.OFFLOAD_UAV_START_IDX <= offload_choice < self.OFFLOAD_RSU_START_IDX:
-            target_node = self.uavs[offload_choice - self.OFFLOAD_UAV_START_IDX]
+    def _new_request(self):
+        """Chọn request theo joint popularity p_{f,z} — gọi TRƯỚC get_state()."""
+        # Practical sampling for mixed UAV/MBS deployment:
+        # choose cars covered by at least one serving tier (UAV or MBS).
+        if not self.cars:
+            self.requesting_car = None
         else:
-            target_node = self.rsus[offload_choice - self.OFFLOAD_RSU_START_IDX]
+            valid_cars = []
+            for car in self.cars:
+                covered_by_uav = any(dist_2d(car, uav) <= float(UAV_RANGE) for uav in self.uavs)
+                covered_by_mbs = _nearest_in_range_rsu(car, self.rsus) is not None
+                if covered_by_uav or covered_by_mbs:
+                    valid_cars.append(car)
+            # Nếu hiếm khi không có xe hợp lệ thì fallback về toàn bộ xe để không crash.
+            self.requesting_car = random.choice(valid_cars) if valid_cars else random.choice(self.cars)
+        joint_flat = self._zipf_probs_fz.reshape(-1)
+        req_idx = int(np.random.choice(joint_flat.size, p=joint_flat))
+        self.f_req = int(req_idx // self.Z)
+        self.z_req = int(req_idx % self.Z)
 
-        node_name         = getattr(target_node, 'name', '')
-        cache_mode_before = int(self.cache_state.get(node_name, 0))
-        z_cached_before   = int(self.cache_bitrate.get(node_name, 0))
+    def step(self, action_idx: int):
+        requesting_car = self.requesting_car
+        f = int(self.f_req)
+        z_req = int(self.z_req)
 
-        if target_node is not requesting_car and node_name in self.cache_state:
-            if cache_dec == 1:
-                self.cache_bitrate[node_name] = z_req
-                self.cache_state[node_name]   = 1 if z_req == 0 else 2
+        tier, uav_idx, cache_dec = self._decode_action(action_idx)
+
+        # ------------------------------
+        # MBS/RSU tier
+        # ------------------------------
+        if tier == 'mbs' or not self.uavs:
+            mbs_node = None
+            if requesting_car is not None:
+                mbs_node = _nearest_in_range_rsu(requesting_car, self.rsus)
+
+            if requesting_car is not None and mbs_node is not None:
+                # Practical extension using V2B delay path (Chen multi-path final tier).
+                users_bs = _count_cars_in_mbs_range(self.cars, mbs_node)
+                cost = calculate_mbs_only_delay(
+                    requesting_car,
+                    mbs_node,
+                    self.config,
+                    z_req=z_req,
+                    num_users_bs=users_bs,
+                )
+                out_of_range = False
+                offload_name = getattr(mbs_node, 'name', 'mbs')
             else:
-                self.cache_state[node_name]   = 0
-                self.cache_bitrate[node_name] = 0
+                # No reachable MBS/RSU: penalize invalid serving action.
+                cost = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+                out_of_range = True
+                offload_name = 'none'
 
-        for n in self.uavs + self.rsus:
-            self.cpu_load[n.name] = max(0.0, self.cpu_load[n.name] - self._cpu_decay)
-        if target_node is not requesting_car and node_name in self.cpu_load:
-            self.cpu_load[node_name] = min(1.0, self.cpu_load[node_name] + self._cpu_per_req)
+            reward = -math.log1p(cost)
+            served_decision = {
+                'tier': 'mbs',
+                'uav_idx': -1,
+                'offload_name': offload_name,
+                'cache': 0,
+                'f_req': f,
+                'z_req': z_req,
+                'popularity': float(self._zipf_probs_fz[f, z_req]),
+            }
+            self._last_actual_uav_idx = -1
+            self._last_served_request = dict(served_decision)
+            self._new_request()
+            return self.get_state(), reward, False, {
+                'raw_delay': cost,
+                'actual_uav_idx': -1,
+                'out_of_range': out_of_range,
+                'decision': served_decision,
+            }
 
-        cpu  = self.cpu_load.get(node_name, 0.0)
-        cost = calculate_total_cost(
-            requesting_car, target_node, self.config,
-            cache_mode = cache_mode_before,
-            all_uavs   = self.uavs,
-            z_req      = z_req,
-            z_cached   = z_cached_before if cache_mode_before == 2 else z_req,
-            num_uavs   = len(self.uavs),
-            cpu_load   = cpu,
-        )
-        return self.get_state(), -cost, False, {}
+        # ------------------------------
+        # UAV tier
+        # ------------------------------
+        uav_idx = int(max(0, min(int(uav_idx), len(self.uavs) - 1)))
+        target_node = self.uavs[uav_idx]
+
+        # Coverage-range check used for SDN flow gating + MBS fallback.
+        out_of_range = False
+        if requesting_car is not None:
+            if dist_2d(requesting_car, target_node) > UAV_RANGE:
+                out_of_range = True
+
+        # Determine cache mode per paper (Eq10-12)
+        if int(self.Y[uav_idx, f, z_req]) == 1:
+            cache_mode = 1
+            z_cached = z_req
+        else:
+            z_plus = None
+            for z2 in range(z_req + 1, self.Z):
+                if int(self.Y[uav_idx, f, z2]) == 1:
+                    z_plus = z2
+                    break
+            if z_plus is not None:
+                cache_mode = 2
+                z_cached = z_plus
+            else:
+                cache_mode = 0
+                z_cached = z_req
+
+        # Apply cache decision for this request (online).
+        # If UAV is out-of-coverage, it won't actually serve this request.
+        if cache_dec == 1 and not out_of_range:
+            self.Y[uav_idx, f, z_req] = 1
+            # Capacity enforcement: random eviction (Algorithm 2 spirit)
+            while self._cache_usage_bits(uav_idx) > self.C_cache_bits:
+                ones = np.argwhere(self.Y[uav_idx] == 1)
+                if ones.size == 0:
+                    break
+                j = random.randrange(len(ones))
+                ff, zz = int(ones[j, 0]), int(ones[j, 1])
+                self.Y[uav_idx, ff, zz] = 0
+
+        if out_of_range:
+            # Follow Xie 2022: user is not served by UAV if out-of-coverage;
+            # do not fallback to MBS. Penalize instead.
+            cost = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+        else:
+            cost = calculate_total_cost(
+                requesting_car, target_node, self.config,
+                cache_mode=cache_mode,
+                all_uavs=self.uavs,
+                z_req=z_req,
+                z_cached=z_cached,
+                num_uavs=len(self.uavs),
+                rsus=self.rsus,
+                num_users_per_uav=None,
+            )
+
+        reward = -math.log1p(cost)
+        served_decision = {
+            'tier': 'uav',
+            'uav_idx': int(uav_idx),
+            'offload_name': getattr(target_node, 'name', f'uav{uav_idx + 1}'),
+            'cache': int(cache_dec),
+            'f_req': f,
+            'z_req': z_req,
+            'popularity': float(self._zipf_probs_fz[f, z_req]),
+        }
+        self._last_actual_uav_idx = uav_idx
+        self._last_served_request = dict(served_decision)
+        self._new_request()
+        return self.get_state(), reward, False, {
+            'raw_delay': cost,
+            'actual_uav_idx': uav_idx,
+            'out_of_range': out_of_range,
+            'decision': served_decision,
+        }
 
     # ------------------------------------------------------------------
     def reset(self):
-        self.cache_state   = {n.name: 0   for n in (self.uavs + self.rsus)}
-        self.cache_bitrate = {n.name: 0   for n in (self.uavs + self.rsus)}
-        self.cpu_load      = {n.name: 0.0 for n in (self.uavs + self.rsus)}
+        self.Y[:] = 0
         self.f_req         = 0
+        self.z_req         = 0
         self.requesting_car = self.cars[0] if self.cars else None
+        self._last_actual_uav_idx = None
+        self._last_served_request = None
+        self._new_request()
         return self.get_state()
 
     # ------------------------------------------------------------------
     def get_action_components(self, action_idx: int):
-        offload, z_req, cache = self._decode_action(action_idx)
+        # Ưu tiên trả snapshot của request vừa phục vụ (đúng với state/action tại step trước)
+        served = getattr(self, '_last_served_request', None)
+        if served is not None:
+            return {
+                'tier': str(served.get('tier', 'uav')),
+                'uav_idx': int(served.get('uav_idx', -1)),
+                'offload_name': str(served.get('offload_name', 'none')),
+                'cache': int(served.get('cache', 0)),
+                'f_req': int(served.get('f_req', self.f_req)),
+                'z_req': int(served.get('z_req', self.z_req)),
+                'popularity': float(
+                    served.get('popularity', self._zipf_probs_fz[self.f_req, self.z_req])
+                ),
+            }
 
-        if offload == self.OFFLOAD_LOCAL:
-            offload_name = 'Local'
-        elif self.OFFLOAD_UAV_START_IDX <= offload < self.OFFLOAD_RSU_START_IDX:
-            uav_idx = offload - self.OFFLOAD_UAV_START_IDX
-            offload_name = getattr(
-                self.uavs[uav_idx] if uav_idx < len(self.uavs) else None,
-                'name', f'uav{uav_idx+1}'
-            )
+        tier, uav_idx, cache = self._decode_action(action_idx)
+        if tier == 'mbs':
+            offload_name = 'mbs'
         else:
-            rsu_idx = offload - self.OFFLOAD_RSU_START_IDX
-            offload_name = getattr(
-                self.rsus[rsu_idx] if rsu_idx < len(self.rsus) else None,
-                'name', f'rsu{rsu_idx+1}'
-            )
-
-        _labels      = ['low(480p)', 'high(1080p)']
-        bitrate_label = _labels[z_req] if z_req < len(_labels) else f'z{z_req}'
+            if 0 <= uav_idx < len(self.uavs):
+                offload_name = getattr(self.uavs[int(uav_idx)], 'name', f'uav{int(uav_idx)+1}')
+            else:
+                offload_name = 'none'
 
         return {
-            'offload_idx':   offload,
-            'offload_name':  offload_name,
-            'bitrate':       z_req,
-            'bitrate_label': bitrate_label,
-            'cache':         cache,
-            'f_req':         self.f_req,
-            'popularity':    float(self._zipf_probs[self.f_req]),
+            'tier': str(tier),
+            'uav_idx': int(uav_idx),
+            'offload_name': offload_name,
+            'cache': int(cache),
+            'f_req': int(self.f_req),
+            'z_req': int(self.z_req),
+            'popularity': float(self._zipf_probs_fz[self.f_req, self.z_req]),
         }

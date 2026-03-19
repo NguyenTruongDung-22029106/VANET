@@ -1,111 +1,74 @@
-# Tối ưu hóa Caching và Liên kết người dùng cho Video Streaming trong mạng SDN-VANET/UAV sử dụng D3QN
+# Tối ưu hóa Caching và User Association cho Video Streaming trong SDN-VANET/UAV
 
-**Đồ án tốt nghiệp: Joint Optimization of Caching and User Association for Video Streaming in SDN-VANET/UAV using D3QN.**
+**Graduation Thesis Project**  
+Joint Optimization of Caching and User Association for Video Streaming in SDN-VANET/UAV using DRL (D3QN), with QEA as an optional baseline.
 
-![SDN-VANET Architecture](https://img.shields.io/badge/Architecture-SDN%20%7C%20UAV%20%7C%20VANET-blue)
-![Algorithm](https://img.shields.io/badge/Algorithm-D3QN-green)
-![Simulation](https://img.shields.io/badge/Simulation-Mininet--WiFi-orange)
-
----
-
-## 1. Giới thiệu (Introduction)
-
-Đồ án giải quyết bài toán **Tối ưu hóa kết hợp (Joint Optimization)** giữa Edge Caching và User Association nhằm nâng cao chất lượng Video Streaming trong mạng VANET có UAV và điều khiển bởi SDN.
-
-### Vấn đề cốt lõi
-* **Thách thức:** Các phương pháp truyền thống (như QEA) giải bài toán joint caching + user association nhưng có thời gian hội tụ dài, khó đáp ứng tính thời gian thực trong mạng xe/UAV.
-* **Giải pháp:** Thuật toán **D3QN (Dueling Double DQN)** ra quyết định đồng thời về:
-    1. **Offload target:** Chọn nút xử lý — Local / UAV₁₋₃ / RSU.
-    2. **Bitrate:** Mức chất lượng video — 0 = 480p (thấp) / 1 = 1080p (cao).
-    3. **Caching:** Có lưu nội dung video tại node đó hay không.
-
-### Vai trò của UAV trong đồ án
-* **UAV không do AI điều khiển di chuyển (không tối ưu quỹ đạo).** Không gian hành động D3QN chỉ gồm Offloading + Bitrate + Caching.
-* Trong mô phỏng Mininet-WiFi, UAV hoạt động theo chế độ **Hovering** — đứng yên tại đỉnh tam giác đều (vị trí cố định), đóng vai trò Aerial Base Station.
+![Architecture](https://img.shields.io/badge/Architecture-SDN%20%7C%20UAV%20%7C%20VANET-blue)
+![RL](https://img.shields.io/badge/Algorithm-D3QN-green)
+![Simulator](https://img.shields.io/badge/Simulation-Mininet--WiFi-orange)
 
 ---
 
-## 2. Các tính năng chính (Key Features)
+## 1. Mục tiêu
 
-* **Kiến trúc SDN-VANET:** Controller + Switch + RSU (Access Point) + Cars + UAV (Access Point trên không).
-* **Topology 400×400m:** 10 xe, 3 UAV (tam giác đều, độ cao 100m), 1 RSU/MBS.
-* **Action space 3 chiều:** `offload × bitrate × cache = 5 × 2 × 2 = 20 actions`.
-* **Reward:** `R = -delay` (giây) — thống nhất với mô tả bài toán; năng lượng không được tối ưu.
-* **So sánh:** D3QN (online, adaptive) vs QEA baseline (offline, evolutionary) — cùng hàm `calculate_total_cost()`.
+Dự án mô phỏng hệ thống video streaming trong mạng xe có UAV/RSU, với hướng chính là DRL:
 
----
+- **D3QN online (Ryu SDN controller) — phương pháp chính:** quyết định động theo trạng thái mạng.
+- **QEA offline baseline (tùy chọn):** dùng để đối sánh.
 
-## 3. Mô hình hệ thống (System Model)
+Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ nội dung (delay)** theo mô hình Xie et al. (IEEE Access 2022).
 
-* **Data Layer (Xe):** Di chuyển ngẫu nhiên trong vùng 400×400m, gửi yêu cầu video mỗi bước.
-* **Edge Layer (UAV, RSU):** UAV/RSU là nút offload và cache; CPU load động ảnh hưởng delay thực sự (M/M/1 queuing penalty).
-* **Control Layer (SDN Controller):** Chạy agent D3QN — lớp `ControlLayer` trong `src/control_layer.py` giữ env + agent; mỗi bước gọi `control_layer.step()` → chọn action (offload + bitrate + cache), tính reward, train.
-
-### 3.1 Kiến trúc SDN–VANET–UAV (tham khảo)
-
-Tóm tắt từ 7 tài liệu tham khảo: **`References/SDN_VANET_UAV_Architecture_Summary.md`**.
-Bảng ánh xạ khái niệm tài liệu → mã nguồn: **`References/architecture_mapping.md`**.
-
-### 3.2 Hàm mục tiêu
-Tối thiểu hóa tổng độ trễ phân phối nội dung (Xie et al. IEEE Access 2022, Eq.10–13):
-
-$$D_{l,k} = D^1_{l,k} + D^2_{l,k} + D^3_{l,k}$$
-
-* $D^1$: Direct hit — cache đúng bitrate → chỉ truyền xuống.
-* $D^2$: Transcoding hit — cache bitrate cao hơn → transcode + truyền.
-* $D^3$: Cache miss → kéo từ backhaul MBS + truyền.
-
-Tất cả thành phần bị ảnh hưởng bởi **CPU load** (M/M/1 queuing). **Năng lượng KHÔNG được đưa vào hàm mục tiêu.** Agent tối ưu `R = -D_{l,k}`.
+Lõi mô hình được tinh chỉnh theo thực nghiệm Mininet-WiFi:
+- Downlink rate dùng tải runtime (`num_users_per_uav`) thay vì tham số cố định.
+- Delay có xét runtime `cpu_load` (queue + compute sharing) để phản ánh trạng thái mạng động.
+- Runtime load dùng hybrid metadata+fallback: xe nào có `associatedTo` thì theo metadata, xe nào thiếu metadata thì fallback coverage-distance cho chính xe đó.
+- Coverage semantics theo agent (chuẩn 2D horizontal): agent chọn UAV nào thì thử offload UAV đó; nếu ngoài vùng phủ thì `out_of_range=True`, không offload thực tế và dùng fixed penalty (mặc định `no_uav_penalty=1000`).
 
 ---
 
-## 4. Thuật toán D3QN (Dueling Double DQN)
+## 2. Kiến trúc triển khai hiện tại
 
-* **State (37 chiều):** Vị trí xe/UAV/RSU (2D), CPU load mỗi node, cache mode mỗi node, độ phổ biến video (Zipf).
-* **Action (rời rạc, 20 actions):** offload_target × bitrate × cache_decision.
-  * Encoding: `idx = offload + num_offload × (z + num_bitrates × cache)`
-* **Reward:** `R = -delay` (giây), delay tính bằng `calculate_total_cost()` từ `models.py`.
-* **Kiến trúc mạng:** DuelingDQN — shared feature layer → value stream V(s) + advantage stream A(s,a).
-* **Double DQN:** policy_net chọn action, target_net đánh giá Q-value → tránh overestimate.
-* **Training:** Experience replay (10K), batch 64, epsilon decay ×0.995, target sync mỗi 200 bước, Huber loss, gradient clip max_norm=5.0.
+- **Data plane (Mininet-WiFi):** `cars`, `uav*` (AP trên không), `rsu*` (AP mặt đất), switch `s1`.
+- **Control plane (Ryu):** `src/ryu_app.py` gọi REST tới môi trường trong `main_thesis.py`, sau đó cài flow OpenFlow.
+- **Environment RL:** `src/environment.py`.
+- **Cost model:** `src/models.py` (`calculate_total_cost`).
 
----
+Ghi chú kiến trúc: dự án triển khai theo hướng **DRL-first**; QEA được giữ như baseline để so sánh. Cả DRL và QEA eval cùng dùng cost model Mininet-aware; trong `qea` mode, eval dùng deterministic metadata sync theo `X_best` (không chạy association daemon nền) để fairness theo policy QEA.
 
-## 5. Cấu trúc project
+### State, Action, Reward
 
-```
-DATN/
-├── README.md
-├── Outline/                        # Đề cương, timeline
-├── References/
-│   ├── SDN_VANET_UAV_Architecture_Summary.md
-│   ├── architecture_mapping.md
-│   ├── system_model_formulas.tex
-│   └── *.pdf                       # 7 bài báo tham khảo
-└── src/
-    ├── main_thesis.py              # Entry point Mininet-WiFi
-    ├── ryu_app.py                  # Entry point Ryu SDN controller
-    ├── config.py                   # Tham số tĩnh (SimpleNamespace, không dùng argparse)
-    ├── environment.py              # VanetEnvironment: state 37D, action 20D, reward=-delay
-    ├── models.py                   # Delay model Eq(1–13): calculate_total_cost()
-    ├── control_layer.py            # ControlLayer: cầu nối env ↔ agent
-    ├── benchmark.py                # So sánh D3QN vs QEA offline (không cần Mininet)
-    └── agents/
-        ├── d3qn_agent.py           # D3QNAgent (Dueling Double DQN)
-        └── qea_joint_ca_ua.py      # QEAJointCAUA (baseline offline)
-```
+- **State:** vector có kích thước động theo số UAV trong topology.
+- **Action:** `uav_idx × cache_decision` **+ 1 action MBS-tier (penalty action)**.
+  - Tổng action = `(#UAV × 2) + 1`.
+  - Với mặc định hiện tại 5 UAV: `5 × 2 + 1 = 11` actions.
+- **Reward:** `R = -log(1 + delay)`.
+
+Ghi chú: bitrate vẫn có trong request/content model, nhưng không là một chiều action độc lập ở code hiện tại.
+Ghi chú coverage: hệ thống không tự chuyển sang UAV gần nhất khi agent chọn sai vùng phủ.
 
 ---
 
-## 6. Cài đặt và chạy mô phỏng
+## 3. Chế độ chạy
 
-### Yêu cầu
-* **OS:** Ubuntu 20.04 LTS (khuyến nghị).
-* **Python:** 3.8+.
-* **Mininet-WiFi:** [mininet-wifi](https://github.com/intrig-unicamp/mininet-wifi).
-* **PyTorch** (cho D3QN agent).
+`algo_mode` trong `src/config.py`:
 
-### Cài đặt Mininet-WiFi
+- `ryu_train`: mở REST environment để Ryu train D3QN (epsilon > 0) — default.
+- `ryu_env`: mở REST environment để Ryu eval D3QN (epsilon = 0).
+- `qea`: chạy baseline QEA trong `main_thesis.py`.
+
+---
+
+## 4. Cài đặt môi trường
+
+### 4.1 Yêu cầu
+
+- Ubuntu 20.04+ (khuyến nghị)
+- Python 3.8+
+- Mininet-WiFi
+- Ryu SDN framework
+- Python packages: `torch`, `numpy`, `matplotlib`, `pandas`
+
+### 4.2 Cài Mininet-WiFi
 
 ```bash
 git clone https://github.com/intrig-unicamp/mininet-wifi
@@ -113,111 +76,165 @@ cd mininet-wifi
 sudo util/install.sh -Wlnfv
 ```
 
-### Cài đặt dependencies Python
+### 4.3 Cài Python dependencies
 
 ```bash
-pip install torch numpy matplotlib
+pip install torch numpy matplotlib pandas ryu
 ```
 
-### Cấu hình tham số
+---
 
-Tất cả tham số chỉnh sửa trực tiếp trong **`src/config.py`** (không dùng argparse):
+## 5. Quick Start
+
+Làm việc trong thư mục `src` để path model/log đúng mặc định:
+
+```bash
+cd /home/mec/DATN/src
+```
+
+### 5.1 Chạy QEA baseline
+
+1. Sửa `src/config.py`:
 
 ```python
-# Ví dụ: đổi số epoch và chế độ thuật toán
-epochs = 100
-algo_mode = 'drl'   # 'drl' | 'qea' | 'both' | 'drl_eval'
-uav_mode  = 'hover'
-log_dir   = 'results'
+algo_mode = 'qea'
 ```
 
-### Chạy mô phỏng Mininet-WiFi
+2. Chạy:
 
 ```bash
-cd DATN/src
 sudo python3 main_thesis.py
 ```
 
-### Chạy Ryu SDN controller (thay thế)
+Output chính (mặc định ở `src/results/`):
+
+- `qea_result.csv` (QEA convergence)
+- `qea_eval.csv` (delay per-request)
+- `qea_eval_meta.csv` (uav_idx, f_req, z_req, out_of_range cho từng request)
+
+### 5.2 Train D3QN với Ryu
+
+1. Sửa `src/config.py`:
+
+```python
+algo_mode = 'ryu_train'
+```
+
+2. Mở 2 terminal:
+
+Terminal A (Mininet + REST env):
 
 ```bash
+cd /home/mec/DATN/src
+sudo python3 main_thesis.py
+```
+
+Terminal B (Ryu controller):
+
+```bash
+cd /home/mec/DATN/src
 ryu-manager ryu_app.py
 ```
 
-### Chạy benchmark offline (không cần Mininet)
+Nên chạy Terminal A trước, đợi log `REST env server listening...` rồi mới chạy Terminal B.
 
-```bash
-cd DATN/src
-python3 benchmark.py
-# Xuất ra results/benchmark_*.png và results/benchmark_summary.txt
+Output chính:
+
+- `src/results/ryu_deploy_training.csv`
+- `src/results/ryu_deploy_training.log`
+- checkpoint model: `src/agents/models/d3qn.pth`
+
+### 5.3 Eval D3QN (epsilon = 0)
+
+1. Sửa `src/config.py`:
+
+```python
+algo_mode = 'ryu_env'
 ```
 
-### Test ping (trong Mininet-WiFi CLI)
+2. Chạy lại đúng 2 terminal như bước train.
 
-```bash
-pingall                         # ping tất cả nodes
-car1 ping -c 2 <uav1_ip>        # xe 1 → UAV 1 (qua AP association)
-exit
+Ryu sẽ load model từ `model_path` và chạy ở chế độ eval.
+Kết quả eval được ghi vào:
+
+- `src/results/ryu_deploy_eval.csv`
+- `src/results/ryu_deploy_eval.log`
+
+---
+
+## 6. Cấu hình quan trọng (`src/config.py`)
+
+| Tham số | Mặc định | Ý nghĩa |
+|---|---:|---|
+| `epochs` | `50` | Số epoch mô phỏng |
+| `max_steps_per_epoch` | `1000` | Số step tối đa mỗi epoch |
+| `cars`, `uavs`, `rsus` | `20, 5, 1` | Quy mô topology |
+| `plot_max` | `400` | Kích thước vùng mô phỏng (m) |
+| `algo_mode` | `'ryu_train'` | Chế độ chạy (`qea`, `ryu_train`, `ryu_env`) |
+| `eval_steps` | `1000` | Số step chạy ở `ryu_env` (`<=0` để chạy không giới hạn) |
+| `no_uav_penalty` | `1000` | Delay penalty khi agent chọn UAV ngoài vùng phủ |
+| `rest_host`, `rest_port` | `127.0.0.1`, `8081` | REST env endpoint cho Ryu |
+| `cache_uav_MB` | `750` | Dung lượng cache mỗi UAV |
+| `model_path` | `'agents/models/d3qn.pth'` | Nơi lưu/load model D3QN |
+| `log_dir` | `'results'` | Thư mục output của `main_thesis.py` |
+
+---
+
+## 7. Cấu trúc mã nguồn
+
+```text
+DATN/
+├── README.md
+├── Outline/
+├── References/
+│   ├── SDN_VANET_UAV_Architecture_Summary.md
+│   ├── architecture_mapping.md
+│   ├── system_model_formulas.tex
+│   └── *.pdf
+└── src/
+    ├── main_thesis.py
+    ├── ryu_app.py
+    ├── config.py
+    ├── constants.py
+    ├── helpers.py
+    ├── environment.py
+    ├── models.py
+    ├── agents/
+    │   ├── d3qn_agent.py
+    │   ├── qea_joint_ca_ua.py
+    │   └── models/d3qn.pth
+    └── results/
+        └── plot_results.py
 ```
 
 ---
 
-## 7. Tham số cấu hình chính (config.py)
+## 8. Mapping nhanh tài liệu -> code
 
-| Tham số | Mặc định | Mô tả |
-|---------|----------|-------|
-| `epochs` | 100 | Số epoch huấn luyện D3QN |
-| `max_steps_per_epoch` | 1000 | Số bước tối đa mỗi epoch |
-| `cars` | 10 | Số xe |
-| `uavs` | 3 | Số UAV |
-| `rsus` | 1 | Số RSU (MBS) |
-| `plot_max` | 400 | Kích thước vùng mô phỏng (m) |
-| `uav_mode` | `'hover'` | Chế độ UAV: `'hover'` (đứng yên) |
-| `algo_mode` | `'drl'` | `'drl'` \| `'qea'` \| `'both'` \| `'drl_eval'` |
-| `log_dir` | `'results'` | Thư mục ghi log và kết quả |
-| `model_path` | `'agents/models/d3qn.pth'` | Đường dẫn lưu/load model |
-| `H` | 100.0 | Độ cao UAV (m) |
-| `B` | 160 MHz | Băng thông V2U |
-| `Bh` | 60 MHz | Băng thông backhaul V2B |
-| `cache_uav_MB` | 300 | Dung lượng cache mỗi UAV (MB) |
-
-> **Không còn tham số:** `w_delay`, `w_cr`, `no_log`, `--ryu` (đã xóa trong quá trình cleanup).
+- D3QN agent: `src/agents/d3qn_agent.py`
+- QEA baseline: `src/agents/qea_joint_ca_ua.py`
+- RL environment: `src/environment.py`
+- Delay/cost model: `src/models.py`
+- Mininet topology + REST env: `src/main_thesis.py`
+- Ryu controller logic: `src/ryu_app.py`
 
 ---
 
-## 8. Kiến trúc mạng và mapping tài liệu → code
+## 9. Lưu ý khi vẽ đồ thị
 
-| Khái niệm tài liệu | Code |
-|--------------------|------|
-| SDN Controller (logic) | `ControlLayer` + `D3QNAgent` |
-| Vehicles | `net.cars` (Mininet stations) |
-| UAV (Aerial BS / cache) | `net.aps` — `addAccessPoint` với tên `uav*` |
-| RSU / MBS | `net.aps` — `addAccessPoint` với tên `rsu*` |
-| V2I / V2U association | `update_car_ap_association()` |
-| Delay model Eq(1–13) | `models.calculate_total_cost()` |
-| QEA baseline | `agents/qea_joint_ca_ua.py` |
+Repo hiện dùng script `src/results/plot_results.py` để vẽ các hình tổng hợp.
+Script này đọc các file CSV theo tên cứng (có fallback cho tên cũ). Nếu bạn đổi pipeline log hoặc đổi tên file output, cần sửa lại path trong script.
 
 ---
 
-## 9. Metrics và log kết quả
+## 10. Tài liệu tham khảo chính
 
-* **benchmark.py** xuất 3 file ảnh vào `results/`:
-  * `benchmark_delay_comparison.png` — D3QN avg delay vs đường ngang QEA baseline.
-  * `benchmark_d3qn_detail.png` — reward, delay, loss, epsilon qua các epoch.
-  * `benchmark_qea_convergence.png` — f_best QEA qua từng thế hệ.
-  * `benchmark_summary.txt` — số liệu tóm tắt.
+- `References/system_model_formulas.tex`
+- `References/SDN_VANET_UAV_Architecture_Summary.md`
+- Xie et al., *Joint Caching and User Association Optimization for Adaptive Bitrate Video Streaming in UAV-Assisted Cellular Networks*, IEEE Access 2022. DOI: `10.1109/ACCESS.2022.3211940`
 
 ---
 
-## 10. Tài liệu tham khảo
+## 11. License / Mục đích sử dụng
 
-* Công thức mô hình: `References/system_model_formulas.tex`.
-* Kiến trúc: `References/SDN_VANET_UAV_Architecture_Summary.md`.
-* Paper chính: Xie et al., *Joint Caching and User Association Optimization for Adaptive Bitrate Video Streaming in UAV-Assisted Cellular Networks*, IEEE Access 2022. DOI: 10.1109/ACCESS.2022.3211940
-
----
-
-## 11. License & Đồ án
-
-Đồ án tốt nghiệp — Trường Đại học — Ngành Kỹ thuật Máy tính / Điện tử Viễn thông.
-Code mô phỏng dùng cho mục đích học tập và nghiên cứu.
+Mã nguồn phục vụ học tập và nghiên cứu trong đồ án tốt nghiệp.

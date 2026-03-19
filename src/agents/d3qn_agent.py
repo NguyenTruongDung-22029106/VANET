@@ -2,16 +2,17 @@
 """
 D3QN agent for SDN–VANET–UAV (control plane logic).
 
-Action space: offload target (local / UAV_1..UAV_n / RSU_1..RSU_m)
-              × bitrate (low/high) × cache (no/yes).
-State: from VanetEnvironment (positions, CPU load, cache status, video popularity).
+Action space: UAV index × cache decision (0/1).
+State: from VanetEnvironment (see environment.py).
 """
 import os
+os.environ['OMP_NUM_THREADS'] = '1'
 import random
 from collections import deque
 
 import numpy as np
 import torch
+torch.set_num_threads(1)
 import torch.nn as nn
 import torch.optim as optim
 
@@ -45,31 +46,36 @@ class DuelingDQN(nn.Module):
 
 
 class D3QNAgent:
-    """Agent: state -> action (offload_idx, cache_01); experience replay; epsilon-greedy."""
+    """D3QN agent for tier decision + caching.
+
+    Action layout (Hướng 1):
+      - UAV tier actions: a in [0 .. L*2-1] where a = uav_idx + L*cache_01
+      - MBS tier action : a = L*2
+    """
 
     def __init__(self, state_size, action_size, num_offload_targets, config):
         """
         Args:
             state_size          : kích thước vector state
-            action_size         : num_offload_targets × num_bitrates × num_cache_actions
-            num_offload_targets : số đích offload (local + UAV + RSU)
+            action_size         : num_offload_targets × 2 (cache no/yes)
+            num_offload_targets : số UAV (đích offload) trong environment
             config              : SimpleNamespace hoặc dict
         """
         self.state_size          = state_size
         self.action_size         = action_size
         self.num_offload_targets = num_offload_targets
-        self.num_bitrates        = 2   # khớp environment.NUM_BITRATES
+        self.num_cache_actions   = 2
 
-        self.memory        = deque(maxlen=10_000)
+        self.memory        = deque(maxlen=50_000)
         self.gamma         = 0.95
         self.epsilon       = 1.0
         self.epsilon_min   = 0.01
-        self.epsilon_decay = 0.99994
-        self.learning_rate = 0.001
-        self.batch_size    = 64
+        self.epsilon_decay = 0.9999
+        self.learning_rate = 5e-4
+        self.batch_size    = 256
 
-        self.policy_net = DuelingDQN(state_size, action_size).to(device)
-        self.target_net = DuelingDQN(state_size, action_size).to(device)
+        self.policy_net = DuelingDQN(state_size, action_size, hidden_size=256).to(device)
+        self.target_net = DuelingDQN(state_size, action_size, hidden_size=256).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
@@ -83,13 +89,13 @@ class D3QNAgent:
             self.model_path = getattr(config, "model_path", "agents/models/d3qn.pth")
 
         self.train_steps            = 0
-        self.target_update_interval = 200
+        self.target_update_interval = 1000
         self.losses                 = []
 
     def select_action(self, state):
         """
         Epsilon-greedy.
-        FIX 2: dùng was_training để không phá set_eval_mode().
+        Dùng was_training để không phá set_eval_mode().
           - Nếu đang eval (set_eval_mode đã gọi): luôn giữ eval sau inference.
           - Nếu đang train: tạm eval để inference rồi restore lại train.
         """
@@ -109,18 +115,20 @@ class D3QNAgent:
 
     def get_action_vector(self, action_idx):
         """
-        action_idx -> (offload_idx, z_req, cache_01)
+        Decode action_idx into a human-readable tuple.
 
-        Encoding khớp với environment._decode_action():
-          action_idx = offload + num_offload * (z + num_bitrates * cache)
+        Returns:
+          ('mbs', -1, 0) for MBS/RSU tier
+          ('uav', uav_idx, cache_01) for UAV tier
         """
-        num_bitrates = getattr(self, 'num_bitrates', 2)
-        a         = int(action_idx)
-        offload   = a % self.num_offload_targets
-        remainder = a // self.num_offload_targets
-        z_req     = remainder % num_bitrates
-        cache     = remainder // num_bitrates
-        return (offload, z_req, cache)
+        a = int(action_idx)
+        L = max(int(self.num_offload_targets), 1)
+        mbs_action_idx = int(L * self.num_cache_actions)
+        if a == mbs_action_idx:
+            return ('mbs', -1, 0)
+        uav_idx = a % L
+        cache_01 = a // L
+        return ('uav', int(uav_idx), int(cache_01))
 
     @staticmethod
     def _to_numpy_state(x):
@@ -182,7 +190,7 @@ class D3QNAgent:
         if not os.path.exists(self.model_path):
             return
         try:
-            # FIX 1: fallback cho PyTorch < 2.0 không có tham số weights_only
+            # Fallback cho PyTorch < 2.0 không có tham số weights_only
             try:
                 state_dict = torch.load(
                     self.model_path, map_location=device, weights_only=True
@@ -190,9 +198,10 @@ class D3QNAgent:
             except TypeError:
                 state_dict = torch.load(self.model_path, map_location=device)
 
-            self.policy_net.load_state_dict(state_dict)
-            self.target_net.load_state_dict(state_dict)
-            print(f"Model loaded from {self.model_path}")
+            # strict=False để tránh lỗi khi action_size thay đổi (do tier decision).
+            self.policy_net.load_state_dict(state_dict, strict=False)
+            self.target_net.load_state_dict(self.policy_net.state_dict(), strict=False)
+            print(f"Model loaded from {self.model_path} (strict=False)")
         except Exception as e:
             print(f"Error loading model: {e}")
 

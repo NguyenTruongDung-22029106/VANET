@@ -2,7 +2,7 @@
 """
 Delay model cho UAV-VANET ABR Video Streaming.
 
-Cài đặt đúng theo công thức trong paper:
+Mô hình được điều chỉnh theo thực nghiệm Mininet-WiFi, dựa trên:
   Xie et al. "Joint Caching and User Association Optimization for
   Adaptive Bitrate Video Streaming in UAV-Assisted Cellular Networks"
   IEEE Access 2022.
@@ -11,7 +11,7 @@ Công thức tham chiếu:
   Eq(1-2) : Path loss LoS / NLoS
   Eq(3)   : Xác suất LoS  P^LoS_{l,k}
   Eq(4)   : SINR_{l,k}
-  Eq(5)   : Downlink rate r_{l,k} = (B/M)·log2(1+SINR)
+  Eq(5)   : Downlink rate (runtime-adjusted) r_{l,k} = (B/M_eff)·log2(1+SINR)
   Eq(6-8) : Backhaul path loss + SINR
   Eq(9)   : Backhaul rate r_{BS,l} = (B_h/L)·log2(1+SINR_{BS,l})
   Eq(10)  : D^1 — direct hit delay (cache đúng bitrate)
@@ -19,7 +19,7 @@ Công thức tham chiếu:
   Eq(12)  : D^3 — cache miss delay (kéo từ backhaul)
   Eq(13)  : D_{l,k} = D^1 + D^2 + D^3
 
-Reward trong environment chỉ dùng delay (bỏ qua energy theo thiết kế dự án).
+Reward trong environment chỉ dùng delay (bỏ qua energy).
 
 Cache mode (đồng bộ environment.py):
   0 = miss         → dùng D^3
@@ -28,11 +28,14 @@ Cache mode (đồng bộ environment.py):
 """
 
 import math
+import warnings
 from types import SimpleNamespace
+
+from helpers import get_node_xy, dist_2d, dist_3d
 
 
 # ============================================================
-# Tham số mặc định (Table II Chen et al. + Table 2 Xie et al.)
+# Tham số mặc định (Table II Chen et al. + Mininet runtime adjustments)
 # ============================================================
 _DEFAULT = dict(
     # Radio access
@@ -66,6 +69,7 @@ _DEFAULT = dict(
     chunk_size_MB = 8.0,        # s_{f,z=0}: khớp config.py content_size_MB=8MB
     # z=0: bitrate thấp (e.g. 480p), z=1: bitrate cao (e.g. 1080p)
     # s_{f,z} = chunk_size_MB * (z+1) — tỉ lệ tuyến tính với bitrate
+
 )
 
 
@@ -78,31 +82,52 @@ def _cfg(config, key):
     return getattr(config, key, _DEFAULT[key])
 
 
-# ============================================================
-# Node position helpers
-# ============================================================
+# Internal aliases used throughout this module
+_get_xy = get_node_xy
+_dist_2d = dist_2d
+_dist_3d = dist_3d
 
-def _get_xy(node):
-    """Lấy (x, y) từ Mininet node hoặc SimpleNamespace."""
-    if hasattr(node, 'params') and 'position' in node.params:
-        p = node.params['position']
-        return float(p[0]), float(p[1])
-    pos = getattr(node, 'position', None) or getattr(node, 'pos', None)
-    if pos is not None:
-        return float(pos[0]), float(pos[1])
-    return 0.0, 0.0
+_WARNED_NO_MBS_NODE = False
+
+def _plos_alt(altitude: float, tx_node, user_node, config):
+    """
+    LoS probability computed with a provided altitude (không dùng config.H cố định).
+    Used for BS->user baseline where BS altitude differs from UAV altitude.
+    """
+    H = float(altitude)
+    kappa = _cfg(config, 'kappa')
+    zeta  = _cfg(config, 'zeta')
+
+    # d3d uses the provided altitude
+    d3 = max(dist_3d(tx_node, user_node, H), 1e-3)
+    theta_deg = math.degrees(math.asin(min(H / d3, 1.0)))
+    return 1.0 / (1.0 + kappa * math.exp(-zeta * (theta_deg - kappa)))
 
 
-def _dist_2d(n1, n2):
-    x1, y1 = _get_xy(n1)
-    x2, y2 = _get_xy(n2)
-    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+def _path_loss_dB_alt(tx_node, user_node, config, altitude: float):
+    """
+    Path loss (dB) similar to _path_loss_dB but parameterized by altitude.
+    """
+    fc    = _cfg(config, 'fc')
+    d0    = _cfg(config, 'd0')
+    nL    = _cfg(config, 'nLoS');   nNL = _cfg(config, 'nNLoS')
+    sL    = _cfg(config, 'sLoS');   sNL = _cfg(config, 'sNLoS')
 
+    d   = max(dist_3d(tx_node, user_node, float(altitude)), 1e-3)
+    c   = 3e8
+    fsp = 20 * math.log10(4 * math.pi * fc * d0 / c)   # free-space reference
 
-def _dist_3d(uav_node, user_node, H):
-    """d_{l,k} = sqrt(d_2d² + H²)  (UAV bay ở độ cao H)."""
-    d2 = _dist_2d(uav_node, user_node)
-    return math.sqrt(d2 ** 2 + H ** 2)
+    gL  = fsp + 10 * nL  * math.log10(d) + sL
+    gNL = fsp + 10 * nNL * math.log10(d) + sNL
+
+    p = _plos_alt(altitude, tx_node, user_node, config)
+    return p * gL + (1 - p) * gNL
+
+def _effective_users_per_uav(config, num_users_per_uav=None):
+    m_cfg = max(int(_cfg(config, 'M')), 1)
+    if num_users_per_uav is None:
+        return m_cfg
+    return max(int(num_users_per_uav), 1)
 
 
 # ============================================================
@@ -155,8 +180,8 @@ def _path_loss_dB(uav_node, user_node, config):
 
 def _sinr_uav(uav_node, user_node, all_uavs, config):
     """
-    SINR_{l,k} = P_UAV·|g_{l,k}|² / (Σ_{j≠l} P_UAV·|g_{j,k}|² + σ²)  Eq(4)
-    Nhiễu từ các UAV khác trong cùng băng tần.
+    SINR_{l,k} = P_UAV·|g_{l,k}|² / (Σ_{j≠l} P_UAV·|g_{j,k}|² + σ²)  Eq(4) Xie et al.
+    Tất cả UAV dùng chung băng tần B → có inter-UAV co-channel interference.
     """
     PUAV   = 10 ** ((_cfg(config, 'PUAV_dBm') - 30) / 10)   # W
     sigma2 = 10 ** ((_cfg(config, 'sigma2_dBm') - 30) / 10)
@@ -173,47 +198,97 @@ def _sinr_uav(uav_node, user_node, all_uavs, config):
     return signal / max(interf + sigma2, 1e-30)
 
 
-def _rate_uav_user(uav_node, user_node, all_uavs, config):
+def _rate_uav_user(uav_node, user_node, all_uavs, config, num_users_per_uav=None):
     """
-    r_{l,k} = (B/M)·log2(1 + SINR_{l,k})  Eq(5)  [bits/s]
+    r_{l,k} = (B/M_eff)·log2(1 + SINR_{l,k})  [bits/s]
+    M_eff ưu tiên theo runtime load, fallback về config.M.
     """
     B = _cfg(config, 'B')
-    M = max(_cfg(config, 'M'), 1)
+    M = _effective_users_per_uav(config, num_users_per_uav)
     sinr = _sinr_uav(uav_node, user_node, all_uavs, config)
     return (B / M) * math.log2(1 + max(sinr, 1e-10))
+
+
+def _rate_bs_user(bs_node, user_node, config, num_users_bs=None):
+    """
+    Macro BS (MBS) -> user downlink rate for out-of-coverage UAV fallback.
+
+    Assumptions (to align with your requested modeling):
+      - LoS/NLoS probabilistic pathloss (using same parameters as air-to-ground model)
+      - Downlink bandwidth is shared equally among the users served by BS.
+        Therefore B_{b,v} = Bh / M_eff
+      - If `sigma2_dBm` is interpreted as noise power over full `Bh`, then when the
+        bandwidth is reduced to Bh/M_eff, noise power scales proportionally
+        (sigma2 -> sigma2 / M_eff), which yields SINR scaling by M_eff.
+    """
+    Bh = _cfg(config, 'Bh')
+    M_eff = _effective_users_per_uav(config, num_users_bs)
+    M_eff = max(int(M_eff), 1)
+
+    # Equal bandwidth share per user
+    Bv = Bh / float(M_eff)
+
+    # BS tx power
+    PBS = 10 ** ((_cfg(config, 'PBS_dBm') - 30) / 10)
+    sigma2 = 10 ** ((_cfg(config, 'sigma2_dBm') - 30) / 10)
+
+    H_bs = float(getattr(config, 'H_bs', 1.0))
+    ploss_dB = _path_loss_dB_alt(bs_node, user_node, config, altitude=H_bs)
+    signal = PBS * 10 ** (-ploss_dB / 10)
+    # Noise scaling under bandwidth sharing:
+    # if sigma2 is noise power over Bh, then noise over Bv is sigma2 / M_eff.
+    sinr = (signal / max(sigma2, 1e-30)) * float(M_eff)
+    return Bv * math.log2(1 + max(sinr, 1e-10))
+
+
+def calculate_mbs_only_delay(user_node, bs_node, config, z_req: int = 0, num_users_bs=None) -> float:
+    """
+    Delay when the user is served directly by MBS/RSU (no UAV in coverage).
+    """
+    s = _chunk_size_bits(z_req, config)
+    r = max(_rate_bs_user(bs_node, user_node, config, num_users_bs=num_users_bs), 1.0)
+    return s / r
 
 
 # ============================================================
 # Backhaul rate  Eq(6-9)
 # ============================================================
 
-def _rate_backhaul(uav_node, config, num_uavs=1):
+def _rate_backhaul(uav_node, config, num_uavs=1, mbs_node=None):
     """
     r_{BS,l} = (B_h/L)·log2(1 + SINR_{BS,l})  Eq(9)
     Path loss backhaul dùng free-space + LoS/NLoS  Eq(6-8).
-    Vị trí MBS: (0, 0) nếu không truyền vào.
+    mbs_node: node RSU/MBS thật từ topology. Nếu None → fallback (0,0).
     """
     Bh     = _cfg(config, 'Bh')
     L      = max(num_uavs, 1)
     PBS    = 10 ** ((_cfg(config, 'PBS_dBm') - 30) / 10)
     sigma2 = 10 ** ((_cfg(config, 'sigma2_dBm') - 30) / 10)
     gamma  = _cfg(config, 'gamma_bs')
-    eta    = _cfg(config, 'eta_bs')
+    eta    = max(float(_cfg(config, 'eta_bs')), 1.0)
     H      = _cfg(config, 'H')
     kappa  = _cfg(config, 'kappa')
     zeta   = _cfg(config, 'zeta')
 
-    # MBS ở mặt đất (0,0)
-    mbs = SimpleNamespace(params={'position': (0, 0)})
-    d2  = max(_dist_2d(mbs, uav_node), 1e-3)
+    global _WARNED_NO_MBS_NODE
+    if mbs_node is None:
+        # Backward-safe fallback, but explicit warning to avoid silent model drift.
+        if not _WARNED_NO_MBS_NODE:
+            warnings.warn(
+                "No RSU/MBS node provided to backhaul model; falling back to origin (0,0). "
+                "This can bias D^3 delay. Pass rsus=[mbs_node] for accurate results.",
+                RuntimeWarning,
+            )
+            _WARNED_NO_MBS_NODE = True
+        mbs_node = SimpleNamespace(params={'position': (0, 0)})
+    d2  = max(_dist_2d(mbs_node, uav_node), 1e-3)
 
-    # LoS prob backhaul (Eq(3) áp dụng cho link BS→UAV)
     d3    = math.sqrt(d2 ** 2 + H ** 2)
     theta = math.degrees(math.asin(min(H / d3, 1.0)))
     p     = 1.0 / (1.0 + kappa * math.exp(-zeta * (theta - kappa)))
 
-    # Path loss backhaul Eq(6-8)
-    g = p * (d2 ** (-gamma)) + (1 - p) * eta * (d2 ** (-gamma))
+    # eta_bs là NLoS excess loss (>1), nên phải làm giảm gain ở nhánh NLoS.
+    g = p * (d2 ** (-gamma)) + (1 - p) * (d2 ** (-gamma)) / max(eta, 1e-9)
     sinr = PBS * g / max(sigma2, 1e-30)
     return (Bh / L) * math.log2(1 + max(sinr, 1e-10))
 
@@ -236,44 +311,29 @@ def _chunk_size_bits(z_idx, config):
 # 3 kịch bản delay  Eq(10-12)
 # ============================================================
 
-def _queuing_penalty(cpu_load: float, base_delay: float) -> float:
-    """
-    Mô hình queuing đơn giản: khi CPU load cao, delay tăng.
-    Dùng M/M/1 approximation: penalty = base_delay * cpu_load / (1 - cpu_load)
-    Clamp cpu_load vào [0, 0.95] để tránh singularity.
-
-    Fix 3: đưa cpu_load vào cost thực sự để agent có lý do tránh UAV quá tải.
-    """
-    rho = min(max(float(cpu_load), 0.0), 0.95)
-    if rho < 1e-6:
-        return 0.0
-    return base_delay * rho / (1.0 - rho)
-
-
-def _delay_direct_hit(uav_node, user_node, all_uavs, config, z_req=0, cpu_load=0.0):
+def _delay_direct_hit(uav_node, user_node, all_uavs, config, z_req=0,
+                      num_users_per_uav=None):
     """
     D^1_{l,k}: Cache có đúng bitrate yêu cầu → truyền thẳng.
-    D^1 = s_{f,z} / r_{l,k}  +  queuing_penalty(cpu_load)   Eq(10) + Fix3
+    D^1 = s_{f,z} / r_{l,k}  Eq(10)
     """
-    r_lk      = max(_rate_uav_user(uav_node, user_node, all_uavs, config), 1.0)
+    r_lk      = max(_rate_uav_user(uav_node, user_node, all_uavs, config, num_users_per_uav), 1.0)
     s         = _chunk_size_bits(z_req, config)
     base      = s / r_lk
-    return base + _queuing_penalty(cpu_load, base)
+    return base
 
 
 def _delay_transcoding(uav_node, user_node, all_uavs, config,
-                       z_req=0, z_cached=1, cpu_load=0.0):
+                       z_req=0, z_cached=1, num_users_per_uav=None):
     """
     D^2_{l,k}: Cache có bitrate cao hơn (z_cached > z_req) → transcode rồi gửi.
     D^2 = s_{f,z}/r_{l,k} + w0·(s_{f,z+}-s_{f,z})/c_{l,k}  Eq(11)
-    c_{l,k} giảm theo cpu_load (CPU đang bận): c_eff = c_lk * (1 - cpu_load)
     """
-    r_lk   = max(_rate_uav_user(uav_node, user_node, all_uavs, config), 1.0)
+    r_lk   = max(_rate_uav_user(uav_node, user_node, all_uavs, config, num_users_per_uav), 1.0)
     C_comp = max(_cfg(config, 'C_comp'), 1.0)
-    M      = max(_cfg(config, 'M'), 1)
+    M_eff  = _effective_users_per_uav(config, num_users_per_uav)
     w0     = _cfg(config, 'w0')
-    # CPU còn trống = C_comp/M * (1 - cpu_load), min 1% để tránh /0
-    c_lk_eff = max(C_comp / M * (1.0 - min(float(cpu_load), 0.99)), 1.0)
+    c_lk_eff = max(C_comp / M_eff, 1.0)
 
     s_req    = _chunk_size_bits(z_req,    config)
     s_cached = _chunk_size_bits(z_cached, config)
@@ -284,57 +344,17 @@ def _delay_transcoding(uav_node, user_node, all_uavs, config,
 
 
 def _delay_cache_miss(uav_node, user_node, all_uavs, config,
-                      z_req=0, num_uavs=1, cpu_load=0.0):
+                      z_req=0, num_uavs=1, mbs_node=None,
+                      num_users_per_uav=None):
     """
     D^3_{l,k}: Cache miss → kéo từ backhaul rồi gửi cho user.
-    D^3 = s_{f,z}/r_{l,k} + s_{f,z}/r_{BS,l}  +  queuing_penalty   Eq(12) + Fix3
+    D^3 = s_{f,z}/r_{l,k} + s_{f,z}/r_{BS,l}  Eq(12)
     """
-    r_lk   = max(_rate_uav_user(uav_node, user_node, all_uavs, config), 1.0)
-    r_bs_l = max(_rate_backhaul(uav_node, config, num_uavs), 1.0)
+    r_lk   = max(_rate_uav_user(uav_node, user_node, all_uavs, config, num_users_per_uav), 1.0)
+    r_bs_l = max(_rate_backhaul(uav_node, config, num_uavs, mbs_node=mbs_node), 1.0)
     s      = _chunk_size_bits(z_req, config)
     base   = s / r_lk + s / r_bs_l
-    return base + _queuing_penalty(cpu_load, base)
-
-
-# ============================================================
-# Local processing delay (khi offload về xe chính)
-# ============================================================
-
-def _delay_local(config, z_req=0):
-    """
-    Local: xe tự xử lý, KHÔNG qua UAV MEC.
-
-    Gồm 2 thành phần vật lý:
-
-    1. Fetch delay: xe kéo nội dung trực tiếp từ MBS qua V2I (không UAV relay).
-       - Xe ở mặt đất, urban environment → SINR_v2i thấp (~-1 dB, SINR_lin=0.8)
-       - Bh chia đều cho N_cars xe cùng kết nối (không có UAV buffer)
-       → r_v2i = (Bh / N_cars) × log2(1 + SINR_v2i)
-
-    2. Compute delay: CPU xe yếu hơn UAV MEC ~30 lần.
-       - UAV: C_comp = 3.4 GHz (từ config)
-       - Xe:  C_car  = C_comp / 30 ≈ 113 MHz (embedded ECU)
-       → compute = w0 × s / C_car
-
-    Fix 5: Trước đây chỉ có TX delay qua V2V (13.84 Mbps, 4.63s),
-    dẫn đến Local luôn thắng UAV. Sau fix: Local ≈ 13s > UAV cache hit ≈ 1s.
-    """
-    s = _chunk_size_bits(z_req, config)
-
-    # --- Fetch qua V2I (ground-level, không UAV) ---
-    Bh       = _cfg(config, 'Bh')        # 60 MHz (dùng chung backhaul)
-    N_cars   = 10                          # max xe chia sẻ V2I link
-    SINR_v2i = 0.8                         # ~-1 dB (urban V2I ground level)
-    r_v2i    = (Bh / N_cars) * math.log2(1 + SINR_v2i)
-    fetch_delay = s / max(r_v2i, 1.0)
-
-    # --- Compute trên CPU xe ---
-    C_comp   = _cfg(config, 'C_comp')     # UAV: 3.4 GHz
-    C_car    = C_comp / 30.0              # Xe: ~113 MHz
-    w0       = _cfg(config, 'w0')
-    compute_delay = w0 * s / max(C_car, 1.0)
-
-    return fetch_delay + compute_delay
+    return base
 
 
 # ============================================================
@@ -350,50 +370,45 @@ def calculate_total_cost(
     z_req: int = 0,
     z_cached: int = 1,
     num_uavs: int = 1,
-    cpu_load: float = 0.0,
+    rsus=None,
+    num_users_per_uav=None,
 ) -> float:
     """
     Tính tổng delay phục vụ 1 request video.
 
     Tham số:
-        source_node  : xe yêu cầu (Mininet station hoặc SimpleNamespace)
-        target_node  : node phục vụ (UAV, RSU, hoặc chính source nếu Local)
-        config       : config object (từ get_config())
-        cache_mode   : 0=miss, 1=direct_hit, 2=transcoding
-        all_uavs     : list tất cả UAV (để tính nhiễu SINR); None → [target_node]
-        z_req        : bitrate yêu cầu (0=thấp, 1=cao, ...)
-        z_cached     : bitrate đang cache (chỉ dùng khi cache_mode=2)
-        num_uavs     : số UAV (để tính backhaul rate chia đều)
-        cpu_load     : CPU utilization của target node [0,1] — Fix3: ảnh hưởng delay
-
-    Trả về:
-        delay (seconds) — reward = -delay trong environment.py
+        source_node       : xe yêu cầu (Mininet station hoặc SimpleNamespace)
+        target_node       : node phục vụ (UAV, RSU, hoặc chính source nếu Local)
+        config            : config object (từ get_config())
+        cache_mode        : 0=miss, 1=direct_hit, 2=transcoding
+        all_uavs          : list tất cả UAV; None → [target_node]
+        z_req             : bitrate yêu cầu (0=thấp, 1=cao, ...)
+        z_cached          : bitrate đang cache (chỉ dùng khi cache_mode=2)
+        num_uavs          : số UAV (để tính backhaul rate chia đều)
+        rsus              : list RSU/MBS node thật (dùng vị trí cho backhaul)
+        num_users_per_uav : số user runtime trên UAV phục vụ
     """
-    # Local offload: xe tự xử lý (cpu_load không áp dụng)
-    if target_node is source_node or \
-       getattr(target_node, 'name', '') == getattr(source_node, 'name', ''):
-        return _delay_local(config, z_req)
-
-    # UAV/RSU offload
     _all_uavs = all_uavs if all_uavs is not None else [target_node]
+    mbs_node  = rsus[0] if rsus else None
 
     if cache_mode == 1:
-        # Eq(10) + queuing penalty
         return _delay_direct_hit(
             target_node, source_node, _all_uavs, config,
-            z_req=z_req, cpu_load=cpu_load,
+            z_req=z_req,
+            num_users_per_uav=num_users_per_uav,
         )
 
     elif cache_mode == 2:
-        # Eq(11) + CPU contention
         return _delay_transcoding(
             target_node, source_node, _all_uavs, config,
-            z_req=z_req, z_cached=z_cached, cpu_load=cpu_load,
+            z_req=z_req, z_cached=z_cached,
+            num_users_per_uav=num_users_per_uav,
         )
 
     else:
-        # Eq(12) + queuing penalty
         return _delay_cache_miss(
             target_node, source_node, _all_uavs, config,
-            z_req=z_req, num_uavs=num_uavs, cpu_load=cpu_load,
+            z_req=z_req, num_uavs=num_uavs,
+            mbs_node=mbs_node,
+            num_users_per_uav=num_users_per_uav,
         )

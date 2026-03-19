@@ -20,8 +20,8 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 | **Control Layer (SDN Controller)** | **`src/control_layer.py`: `class ControlLayer(env, agent)`** — điều phối offloading và caching mỗi bước (`run_simulation_loop` gọi `control_layer.step()`). |
 | SDN Controller (logic) | `ControlLayer` giữ env + agent; mỗi step: state → action → env.step(action) → store_experience → train; `get_decision(action_idx)` giải mã offload/bitrate/cache để log. |
 | DRL-SDNC (state → action → rule) | `src/agents/d3qn_agent.py`: `D3QNAgent.select_action(state)` → action_idx |
-| State gathering (vị trí, queue, channel) | `src/environment.py`: `VanetEnvironment.get_state()` — positions (cars/UAVs/RSUs), CPU load, cache status, video popularity (37 chiều) |
-| Policy / Rule installation | Action = (offload_target × bitrate × cache_decision); thực thi qua `env.step(action_idx)` |
+| State gathering (vị trí, cache, channel) | `src/environment.py`: `VanetEnvironment.get_state()` — positions (cars/UAVs), khoảng cách xe→UAV, mức đầy cache, video popularity (15 chiều) |
+| Policy / Rule installation | Action = (uav_idx × cache_decision); thực thi qua `env.step(action_idx)` |
 | R_total = r_d + r_e + ω·r_cr | Trong paper DRL-SDNC. Trong code: `reward = -cost`, cost = delay (giây) từ `calculate_total_cost()`; energy và social_welfare **đã bỏ khỏi hàm mục tiêu**. |
 
 ---
@@ -61,17 +61,16 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 
 ---
 
-## Action space (Fix 2 — 3 chiều)
+## Action space (paper-mode — 2 chiều)
 
 | Chiều | Giá trị | Mô tả |
 |-------|---------|-------|
-| offload_target | 0 = Local, 1..L = UAV_l, L+1 = RSU | Nơi xử lý request |
-| bitrate z | 0 = 480p (low), 1 = 1080p (high) | Mức chất lượng video |
-| cache_decision | 0 = no_cache, 1 = cache | Có lưu đệm tại node không |
+| uav_idx | 0..L-1 = UAV_l | Nơi xử lý request |
+| cache_decision | 0 = no_cache, 1 = cache | Có lưu đệm video đang request tại UAV không |
 
-`action_idx = offload + num_offload × (z + num_bitrates × cache)`
+`action_idx = uav_idx + num_uavs × cache_decision`
 
-Topology mặc định: 3 UAV + 1 RSU → `action_size = 5 × 2 × 2 = 20`
+Topology mặc định: 3 UAV → `action_size = 3 × 2 = 6`
 
 ---
 

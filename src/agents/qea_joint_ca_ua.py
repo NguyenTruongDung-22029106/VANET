@@ -29,7 +29,9 @@ from typing import List, Tuple
 import numpy as np
 
 # Fix 4: dùng chung cost model với D3QN — so sánh công bằng
-from models import calculate_total_cost as _models_cost
+from models import calculate_total_cost as _models_cost, calculate_mbs_only_delay as _mbs_delay
+from helpers import dist_2d
+from constants import UAV_RANGE
 
 
 # ============================================================
@@ -46,11 +48,23 @@ _DEFAULT = dict(
 
 def _cfg(config, key):
     """Lấy giá trị từ config (SimpleNamespace/dict) hoặc fallback về default."""
+    if key == 'zipf_alpha':
+        aliases = ('zipf_alpha', 'zipf_exponent')
+    else:
+        aliases = (key,)
+
     if config is None:
         return _DEFAULT[key]
     if isinstance(config, dict):
-        return config.get(key, _DEFAULT[key])
-    return getattr(config, key, _DEFAULT[key])
+        for k in aliases:
+            if k in config:
+                return config[k]
+        return _DEFAULT[key]
+
+    for k in aliases:
+        if hasattr(config, k):
+            return getattr(config, k)
+    return _DEFAULT[key]
 
 
 # ============================================================
@@ -109,17 +123,23 @@ class QEAJointCAUA:
         rsus:     List,          # giữ để tương thích API; paper chỉ xét UAV
         config         = None,
         F:        int  = 10,
-        Z:        int  = 2,
+        Z:        int  = 4,
         pop_size: int  = 20,
         t_max:    int  = 100,
         seed:     int  = 0,
     ):
         self.cars   = list(cars)
         self.uavs   = list(uavs)
+        self.rsus   = list(rsus)
         self.config = config
 
         self.K = len(self.cars)
-        self.L = len(self.uavs)    # L UAVs trong paper
+        self.uav_count = len(self.uavs)
+        # Hướng 1: thêm 1 hàng “MBS/RSU tier” như một server bổ sung.
+        # Khi chọn row này, objective dùng mbs-only delay và bỏ qua cache UAV.
+        self.has_mbs = bool(self.rsus)
+        self.mbs_row_idx = self.uav_count if self.has_mbs else None
+        self.L = self.uav_count + (1 if self.has_mbs else 0)
         self.F = int(F)
         self.Z = int(Z)
 
@@ -197,6 +217,9 @@ class QEAJointCAUA:
 
         # Lines 17-22: đảm bảo mỗi UAV l không quá M users
         for l in range(self.L):
+            # MBS tier không bị giới hạn theo 15c
+            if self.has_mbs and l == self.mbs_row_idx:
+                continue
             while int(X[l, :].sum()) > M:
                 ones = np.where(X[l, :] == 1)[0]
                 drop = int(self.rng.choice(ones))
@@ -205,7 +228,10 @@ class QEAJointCAUA:
         # Lines 23-28: gán lại user bị bỏ rơi sau bước trên
         for k in range(self.K):
             if int(X[:, k].sum()) == 0:
-                candidates = [l for l in range(self.L) if int(X[l, :].sum()) < M]
+                candidates = [
+                    l for l in range(self.L)
+                    if (self.has_mbs and l == self.mbs_row_idx) or int(X[l, :].sum()) < M
+                ]
                 if not candidates:
                     candidates = list(range(self.L))
                 l = int(self.rng.choice(candidates))
@@ -258,46 +284,110 @@ class QEAJointCAUA:
           y_{l,f,z} = 1 tại z_req=1 → mode=2 (transcoding, có bản cao hơn)
           không có y nào = 1         → mode=0 (cache miss)
         """
+        # Eq(14) + Eq(10-13) trong paper:
+        #   D_tot = Σ_l Σ_k x_{l,k} · D_{l,k}
+        #   D_{l,k} = D^1_{l,k} + D^2_{l,k} + D^3_{l,k}
+        # với D^1, D^2, D^3 tính theo caching state Y_i[l,f,z].
         total = 0.0
+        if self.F <= 0 or self.Z <= 0:
+            return total
+
+        p_fz = self.p_fz  # shape (F, Z)
+        p_z  = p_fz.sum(axis=0)  # shape (Z,) — used for MBS tier (delay independent of f)
+        m_cfg = max(int(getattr(self.config, 'M', 30)), 1)
         for l in range(self.L):
+            # MBS tier row: ignore UAV cache and use MBS-only delay
+            if self.has_mbs and l == self.mbs_row_idx:
+                users_on_mbs = max(int(np.sum(X_i[l, :])), 1)
+                for k in range(self.K):
+                    if X_i[l, k] == 0:
+                        continue
+                    car = self.cars[k]
+                    for z_req in range(self.Z):
+                        prob = float(p_z[z_req])
+                        if prob <= 0.0:
+                            continue
+                        # Follow Xie 2022: MBS tier is not part of the model.
+                        penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+                        total += prob * penalty
+                continue
+
             uav = self.uavs[l]
+            Y_l = Y_i[l]  # (F, Z)
+            users_on_l = max(int(np.sum(X_i[l, :])), 1)
+            # share resource split is handled inside calculate_total_cost; cpu_l kept for compatibility
+            cpu_l = min(float(users_on_l) / float(m_cfg), 0.95)
+
             for k in range(self.K):
                 if X_i[l, k] == 0:
                     continue
                 car = self.cars[k]
 
-                # Tìm cache_mode tốt nhất theo Y_i[l]
-                # Ưu tiên: direct hit (z=0) > transcoding (z=1) > miss
-                cache_mode = 0
-                z_req      = 0
-                z_cached   = 1
+                # If the chosen UAV cannot cover this user in Mininet,
+                # serve via RSU/MBS baseline (delay no longer depends on UAV caching).
+                if dist_2d(car, uav) > float(UAV_RANGE):
+                    # Follow Xie 2022: if user out-of-coverage for chosen UAV,
+                    # do not fallback to MBS; penalize assignment.
+                    penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+                    for f in range(self.F):
+                        for z_req in range(self.Z):
+                            p = float(p_fz[f, z_req])
+                            if p <= 0.0:
+                                continue
+                            total += p * penalty
+                    continue
 
-                if self.Z > 0 and self.F > 0:
-                    # Kiểm tra có y_{l,f,0}=1 không → direct hit
-                    if Y_i[l, :, 0].any():
-                        cache_mode = 1
-                        z_req      = 0
-                    # Kiểm tra có y_{l,f,1}=1 không → transcoding
-                    elif self.Z > 1 and Y_i[l, :, 1].any():
-                        cache_mode = 2
-                        z_req      = 0
-                        z_cached   = 1
+                # Precompute miss + direct delays theo z (không phụ thuộc f)
+                d_direct_by_z = {}
+                d_miss_by_z   = {}
+                for z_req in range(self.Z):
+                    d_direct_by_z[z_req] = _models_cost(
+                        source_node=car, target_node=uav, config=self.config,
+                        cache_mode=1, all_uavs=self.uavs,
+                        z_req=z_req, z_cached=z_req,
+                        num_uavs=self.uav_count, rsus=self.rsus,
+                        num_users_per_uav=users_on_l,
+                    )
+                    d_miss_by_z[z_req] = _models_cost(
+                        source_node=car, target_node=uav, config=self.config,
+                        cache_mode=0, all_uavs=self.uavs,
+                        z_req=z_req, z_cached=z_req,
+                        num_uavs=self.uav_count, rsus=self.rsus,
+                        num_users_per_uav=users_on_l,
+                    )
 
-                # Dùng popularity trung bình để scale
-                p_avg = float(self.p_fz.mean())
+                # Loop đúng theo Eq(10-12): từng (f,z)
+                for f in range(self.F):
+                    for z_req in range(self.Z):
+                        p = float(p_fz[f, z_req])
+                        if p <= 0.0:
+                            continue
 
-                d_lk = _models_cost(
-                    source_node = car,
-                    target_node = uav,
-                    config      = self.config,
-                    cache_mode  = cache_mode,
-                    all_uavs    = self.uavs,
-                    z_req       = z_req,
-                    z_cached    = z_cached,
-                    num_uavs    = self.L,
-                    cpu_load    = 0.0,   # QEA offline: không có runtime cpu_load
-                )
-                total += p_avg * d_lk
+                        if int(Y_l[f, z_req]) == 1:
+                            # Direct hit: y_{l,f,z}=1
+                            total += p * d_direct_by_z[z_req]
+                            continue
+
+                        # hl,f,z = min( Σ_{z'>z} y_{l,f,z'}, 1 )
+                        z_plus = None
+                        for z2 in range(z_req + 1, self.Z):
+                            if int(Y_l[f, z2]) == 1:
+                                z_plus = z2
+                                break
+
+                        if z_plus is not None:
+                            # Transcoding hit: y_{l,f,z}=0 và h_{l,f,z}=1 với z^+ = min cached > z
+                            d_trans = _models_cost(
+                                source_node=car, target_node=uav, config=self.config,
+                                cache_mode=2, all_uavs=self.uavs,
+                                z_req=z_req, z_cached=z_plus,
+                                num_uavs=self.uav_count, rsus=self.rsus,
+                                num_users_per_uav=users_on_l,
+                            )
+                            total += p * d_trans
+                        else:
+                            # Cache miss: không cache requested và không có higher bitrate
+                            total += p * d_miss_by_z[z_req]
 
         return total
 
@@ -399,12 +489,18 @@ class QEAJointCAUA:
     # ------------------------------------------------------------------
     def build_offload_policy(self) -> List[int]:
         """
-        List off_idx (VanetEnvironment convention) cho mọi user k.
-        VanetEnvironment: 0=Local, 1..L_uav=UAVs → +1 offset.
+        List uav_idx cho mọi user k (0..L-1), khớp convention hiện tại.
         """
         if self.X_best is None:
             raise RuntimeError("Chưa gọi optimize().")
-        return [int(np.argmax(self.X_best[:, k])) + 1 for k in range(self.K)]
+        policy: List[int] = []
+        for k in range(self.K):
+            row = int(np.argmax(self.X_best[:, k]))
+            if self.has_mbs and row == self.mbs_row_idx:
+                policy.append(-1)  # MBS tier
+            else:
+                policy.append(row)
+        return policy
 
     def get_offload_for_car(self, car_idx: int) -> int:
         if self.X_best is None:
@@ -412,4 +508,7 @@ class QEAJointCAUA:
         k = int(car_idx)
         if not (0 <= k < self.K):
             raise IndexError("car_idx out of range")
-        return int(np.argmax(self.X_best[:, k])) + 1
+        row = int(np.argmax(self.X_best[:, k]))
+        if self.has_mbs and row == self.mbs_row_idx:
+            return -1
+        return row
