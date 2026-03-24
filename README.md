@@ -18,14 +18,6 @@ Dự án mô phỏng hệ thống video streaming trong mạng xe có UAV/RSU, v
 
 Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ nội dung (delay)** theo mô hình Xie et al. (IEEE Access 2022).
 
-Lõi mô hình được tinh chỉnh theo thực nghiệm Mininet-WiFi:
-- Downlink rate dùng tải runtime (`num_users_per_uav`) thay vì tham số cố định.
-- Delay có xét runtime `cpu_load` (queue + compute sharing) để phản ánh trạng thái mạng động.
-- Runtime load dùng hybrid metadata+fallback: xe nào có `associatedTo` thì theo metadata, xe nào thiếu metadata thì fallback coverage-distance cho chính xe đó.
-- Coverage semantics theo agent (chuẩn 2D horizontal): agent chọn UAV nào thì thử offload UAV đó; nếu ngoài vùng phủ thì `out_of_range=True`, không offload thực tế và dùng fixed penalty (mặc định `no_uav_penalty=1000`).
-- MBS/RSU là tier phục vụ thật mặc định: agent tự chọn giữa UAV và MBS theo trạng thái hiện tại.
-- Request sampling ưu tiên xe đang nằm trong vùng có thể phục vụ (UAV hoặc MBS) để học nhanh và ổn định hơn.
-
 ---
 
 ## 2. Kiến trúc triển khai hiện tại
@@ -35,23 +27,32 @@ Lõi mô hình được tinh chỉnh theo thực nghiệm Mininet-WiFi:
 - **Environment RL:** `src/environment.py`.
 - **Cost model:** `src/models.py` (`calculate_total_cost`).
 
-Ghi chú kiến trúc: dự án triển khai theo hướng **DRL-first**; QEA được giữ như baseline để so sánh. Cả DRL và QEA eval cùng dùng cost model Mininet-aware; trong `qea` mode, eval dùng deterministic metadata sync theo `X_best` (không chạy association daemon nền) để fairness theo policy QEA.
-
 ### State, Action, Reward
 
 - **State:** vector có kích thước động theo số UAV trong topology.
-- **Action:** `uav_idx × cache_decision` **+ 1 action MBS-tier**.
-  - Tổng action = `(#UAV × 2) + 1`.
-  - Với mặc định hiện tại 5 UAV: `5 × 2 + 1 = 11` actions.
+  - `2 + L×2 + L + L + 1 + 1 + 1` chiều (với L = số UAV)
+  - Mặc định L=5: **state_size = 25**
+
+- **Action:** 3 chiều — `uav_idx × z_cached × cache_decision` **+ 1 action MBS-tier**.
+  - Encoding: `a = uav_idx + L × (z_cached + Z × cache_dec)`
+  - MBS tier: `a = L × Z × 2`
+  - Tổng action = `(#UAV × #bitrate × 2) + 1`
+  - Với mặc định hiện tại 5 UAV, 4 bitrate: **`5 × 4 × 2 + 1 = 41` actions**
+
 - **Reward:** `R = -log(1 + delay)`.
 
-Ghi chú: bitrate vẫn có trong request/content model, nhưng không là một chiều action độc lập ở code hiện tại.
-Ghi chú coverage: hệ thống không tự chuyển sang UAV gần nhất khi agent chọn sai vùng phủ.
+Ghi chú coverage: hệ thống không tự chuyển sang UAV gần nhất khi agent chọn sai vùng phủ.  
 Ghi chú MBS mapping runtime: REST bridge map xuống AP RSU gần nhất trong vùng phủ.
 
 ---
 
-## 3. Chế độ chạy
+## 3. Vị trí RSU và UAV
+
+RSU và UAV **không có vị trí hardcode**. Khi `net.plotGraph()` mở lên, bạn kéo thả node trực tiếp trên GUI để đặt vị trí mong muốn. Mininet-WiFi tự cập nhật `params['position']` theo vị trí đặt, và tất cả hàm tính delay đều đọc từ đó ở runtime.
+
+---
+
+## 4. Chế độ chạy
 
 `algo_mode` trong `src/config.py`:
 
@@ -61,9 +62,9 @@ Ghi chú MBS mapping runtime: REST bridge map xuống AP RSU gần nhất trong 
 
 ---
 
-## 4. Cài đặt môi trường
+## 5. Cài đặt môi trường
 
-### 4.1 Yêu cầu
+### 5.1 Yêu cầu
 
 - Ubuntu 20.04+ (khuyến nghị)
 - Python 3.8+
@@ -71,7 +72,7 @@ Ghi chú MBS mapping runtime: REST bridge map xuống AP RSU gần nhất trong 
 - Ryu SDN framework
 - Python packages: `torch`, `numpy`, `matplotlib`, `pandas`
 
-### 4.2 Cài Mininet-WiFi
+### 5.2 Cài Mininet-WiFi
 
 ```bash
 git clone https://github.com/intrig-unicamp/mininet-wifi
@@ -79,7 +80,7 @@ cd mininet-wifi
 sudo util/install.sh -Wlnfv
 ```
 
-### 4.3 Cài Python dependencies
+### 5.3 Cài Python dependencies
 
 ```bash
 pip install torch numpy matplotlib pandas ryu
@@ -87,7 +88,7 @@ pip install torch numpy matplotlib pandas ryu
 
 ---
 
-## 5. Quick Start
+## 6. Quick Start
 
 Làm việc trong thư mục `src` để path model/log đúng mặc định:
 
@@ -95,7 +96,7 @@ Làm việc trong thư mục `src` để path model/log đúng mặc định:
 cd /home/mec/DATN/src
 ```
 
-### 5.1 Chạy QEA baseline
+### 6.1 Chạy QEA baseline
 
 1. Sửa `src/config.py`:
 
@@ -115,7 +116,7 @@ Output chính (mặc định ở `src/results/`):
 - `qea_eval.csv` (delay per-request)
 - `qea_eval_meta.csv` (uav_idx, f_req, z_req, out_of_range cho từng request)
 
-### 5.2 Train D3QN với Ryu
+### 6.2 Train D3QN với Ryu
 
 1. Sửa `src/config.py`:
 
@@ -139,15 +140,13 @@ cd /home/mec/DATN/src
 ryu-manager ryu_app.py
 ```
 
-Nên chạy Terminal A trước, đợi log `REST env server listening...` rồi mới chạy Terminal B.
-
 Output chính:
 
 - `src/results/ryu_deploy_training.csv`
 - `src/results/ryu_deploy_training.log`
 - checkpoint model: `src/agents/models/d3qn.pth`
 
-### 5.3 Eval D3QN (epsilon = 0)
+### 6.3 Eval D3QN (epsilon = 0)
 
 1. Sửa `src/config.py`:
 
@@ -157,22 +156,32 @@ algo_mode = 'ryu_env'
 
 2. Chạy lại đúng 2 terminal như bước train.
 
-Ryu sẽ load model từ `model_path` và chạy ở chế độ eval.
-Nếu không tìm thấy model hoặc load thất bại, `ryu_env` sẽ dừng sớm để tránh eval bằng random weights.
-Kết quả eval được ghi vào:
+Output:
 
 - `src/results/ryu_deploy_eval.csv`
 - `src/results/ryu_deploy_eval.log`
 
+### 6.4 Benchmark D3QN vs QEA (không cần Mininet)
+
+```bash
+cd /home/mec/DATN/src
+python3 ../benchmark.py
+```
+
+Output:
+
+- `src/results/benchmark_summary.csv`
+- `src/results/benchmark_d3qn_vs_qea.png`
+
 ---
 
-## 6. Cấu hình quan trọng (`src/config.py`)
+## 7. Cấu hình quan trọng (`src/config.py`)
 
 | Tham số | Mặc định | Ý nghĩa |
 |---|---:|---|
 | `epochs` | `50` | Số epoch mô phỏng |
 | `max_steps_per_epoch` | `1000` | Số step tối đa mỗi epoch |
-| `cars`, `uavs`, `rsus` | `20, 5, 1` | Quy mô topology |
+| `cars`, `uavs`, `rsus` | `10, 5, 1` | Quy mô topology |
 | `plot_max` | `400` | Kích thước vùng mô phỏng (m) |
 | `algo_mode` | `'ryu_train'` | Chế độ chạy (`qea`, `ryu_train`, `ryu_env`) |
 | `eval_steps` | `1000` | Số step chạy ở `ryu_env` (`<=0` để chạy không giới hạn) |
@@ -185,11 +194,12 @@ Kết quả eval được ghi vào:
 
 ---
 
-## 7. Cấu trúc mã nguồn
+## 8. Cấu trúc mã nguồn
 
 ```text
 DATN/
 ├── README.md
+├── benchmark.py
 ├── Outline/
 ├── References/
 │   ├── SDN_VANET_UAV_Architecture_Summary.md
@@ -214,7 +224,7 @@ DATN/
 
 ---
 
-## 8. Mapping nhanh tài liệu -> code
+## 9. Mapping nhanh tài liệu -> code
 
 - D3QN agent: `src/agents/d3qn_agent.py`
 - QEA baseline: `src/agents/qea_joint_ca_ua.py`
@@ -222,13 +232,7 @@ DATN/
 - Delay/cost model: `src/models.py`
 - Mininet topology + REST env: `src/main_thesis.py`
 - Ryu controller logic: `src/ryu_app.py`
-
----
-
-## 9. Lưu ý khi vẽ đồ thị
-
-Repo hiện dùng script `src/results/plot_results.py` để vẽ các hình tổng hợp.
-Script này đọc các file CSV theo tên cứng (có fallback cho tên cũ). Nếu bạn đổi pipeline log hoặc đổi tên file output, cần sửa lại path trong script.
+- Benchmark D3QN vs QEA: `benchmark.py`
 
 ---
 

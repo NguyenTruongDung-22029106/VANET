@@ -515,8 +515,7 @@ def run_simulation(config):
     rsus = [
         net.addAccessPoint(
             f'rsu{i}', ssid=f'RSU{10+i}', mode='g',
-            channel=channels[(i - 1) % 3], range=MBS_RANGE,
-            position=f'{100+((i-1)%3)*400},{100+((i-1)//3)*400},0'
+            channel=channels[(i - 1) % 3], range=MBS_RANGE
         )
         for i in range(1, config.rsus + 1)
     ]
@@ -530,12 +529,7 @@ def run_simulation(config):
     uavs = [
         net.addAccessPoint(
             f'uav{i}', ssid=f'UAV{i}', mode='g',
-            channel='5', range=UAV_RANGE,
-            position='%d,%d,%d' % (
-                int(uav_pos_list[i-1][0]),
-                int(uav_pos_list[i-1][1]),
-                UAV_ALTITUDE
-            )
+            channel='5', range=UAV_RANGE
         )
         for i in range(1, config.uavs + 1)
     ]

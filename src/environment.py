@@ -3,7 +3,9 @@
 environment.py — VanetEnvironment: Môi trường học tăng cường theo mô hình Xie et al.
 
 State  : động theo số UAV, gồm xe requesting + UAV features + MBS context + popularity
-Action : (#UAV × cache_decision) + 1 action MBS tier
+Action : (#UAV × #bitrate × cache_decision) + 1 action MBS tier
+         Encoding: a = uav_idx + L*(z_cached + Z*cache_dec)
+         MBS tier: a = L*Z*2
 Reward : -log(1+delay), raw delay trong info['raw_delay']
 """
 import math
@@ -141,6 +143,13 @@ class VanetEnvironment:
     """
     Môi trường VANET-UAV-SDN cho D3QN.
 
+    Action encoding (3-chiều):
+        a = uav_idx + L * (z_cached + Z * cache_dec)
+        MBS tier: a = L * Z * 2
+
+    Ví dụ với L=5 UAV, Z=4 bitrates:
+        action_size = 5*4*2 + 1 = 41
+
     Khởi tạo:
         VanetEnvironment(config, stations, aps, uavs_list)  ← dùng trong main_thesis.py
         VanetEnvironment.from_config(config)                ← dùng trong ryu_app.py
@@ -163,14 +172,11 @@ class VanetEnvironment:
             and getattr(n, 'name', '') not in uav_names
         ]
 
-        # Hướng 1 (tier decision):
-        #   - UAV tier: chọn UAV l và cache/no-cache cho request hiện tại
-        #   - MBS/RSU tier: phục vụ trực tiếp, bỏ qua cache_dec
-        self.num_bitrates      = self.NUM_BITRATES
-        self.num_cache_actions = self.NUM_CACHE_ACTS
-        self.num_offload_targets = len(self.uavs)  # chỉ UAVs
+        self.num_bitrates        = self.NUM_BITRATES
+        self.num_cache_actions   = self.NUM_CACHE_ACTS
+        self.num_offload_targets = len(self.uavs)
+        # action_size = L * Z * 2 + 1 (MBS tier)
         self._uav_action_size = self.num_offload_targets * self.num_bitrates * self.num_cache_actions
-        # +1 extra action for MBS/RSU tier
         self.action_size = max(1, self._uav_action_size + 1)
 
         # State: car pos + UAV features + nearest-MBS context + popularity
@@ -214,10 +220,7 @@ class VanetEnvironment:
     def from_config(cls, config):
         """
         Tạo VanetEnvironment trực tiếp từ config — không cần truyền nodes ngoài.
-        Dùng cho ryu_app.py: không cần _create_stub_nodes nữa.
-
-        Ví dụ:
-            env = VanetEnvironment.from_config(get_config())
+        Dùng cho ryu_app.py.
         """
         stations, rsus, uavs = _make_dummy_nodes(config)
         return cls(config, stations, aps=rsus, uavs_list=uavs)
@@ -252,12 +255,10 @@ class VanetEnvironment:
             ux, uy = self.get_pos_from_node(u)
             d = math.sqrt((cx - ux)**2 + (cy - uy)**2 + self.config.H**2) / ns
             sv.append(d)
-        # Cache fullness per UAV (0..1)
         for l in range(len(self.uavs)):
             usage_bits = self._cache_usage_bits(l)
             sv.append(min(usage_bits / max(self.C_cache_bits, 1.0), 1.0))
 
-        # Nearest-MBS context so agent can learn balanced UAV/MBS tier decisions.
         nearest_mbs = _nearest_in_range_rsu(car, self.rsus) if car is not None else None
         if car is None or nearest_mbs is None:
             sv.extend([1.0, 0.0])
@@ -274,17 +275,16 @@ class VanetEnvironment:
     # ------------------------------------------------------------------
     def _decode_action(self, action_idx: int):
         """
-        Decode action index into:
-          ('mbs', -1, -1, 0)
-          ('uav', uav_idx, z_cached, cache_dec)
+        Decode action index thành (tier, uav_idx, z_cached, cache_dec).
 
-        Encoding (UAV tier):
-          a = uav_idx + L * (z_cached + Z * cache_dec)
-        where:
-          L = num_offload_targets, Z = num_bitrates, cache_dec in {0,1}
-
+        Encoding UAV tier:
+            a = uav_idx + L * (z_cached + Z * cache_dec)
         MBS tier:
-          a == mbs_action_idx (= L*Z*num_cache_actions)
+            a == L * Z * 2
+
+        Returns:
+            ('mbs', -1, -1, 0)
+            ('uav', uav_idx, z_cached, cache_dec)
         """
         a = int(action_idx)
         L = max(int(self.num_offload_targets), 1)
@@ -294,17 +294,29 @@ class VanetEnvironment:
         if a == mbs_action_idx:
             return 'mbs', -1, -1, 0
 
-        # UAV tier
-        uav_idx = a % L
-        t = a // L
-        z_cached = int(t % Z)
+        uav_idx   = a % L
+        t         = a // L
+        z_cached  = int(t % Z)
         cache_dec = int(t // Z)
         return 'uav', int(uav_idx), int(z_cached), int(cache_dec)
 
-    def encode_action(self, uav_idx: int, cache: int) -> int:
-        """Encode a UAV-tier action (not used for MBS tier)."""
+    def encode_action(self, uav_idx: int, z_cached: int, cache: int) -> int:
+        """
+        Encode UAV-tier action (3-chiều) thành action index.
+        FIX: thêm chiều z_cached so với phiên bản cũ 2-chiều.
+
+        Args:
+            uav_idx  : chỉ số UAV [0..L-1]
+            z_cached : mức bitrate cần cache [0..Z-1]
+            cache    : 0=no_cache, 1=cache
+
+        Returns:
+            action index tương ứng với encoding:
+            a = uav_idx + L * (z_cached + Z * cache)
+        """
         L = max(int(self.num_offload_targets), 1)
-        return int(uav_idx) + L * int(cache)
+        Z = max(int(self.num_bitrates), 1)
+        return int(uav_idx) + L * (int(z_cached) + Z * int(cache))
 
     # ------------------------------------------------------------------
     def _new_request(self):
@@ -312,8 +324,6 @@ class VanetEnvironment:
         if not self.cars:
             self.requesting_car = None
         else:
-            # Sample requests from currently serviceable cars to keep
-            # learning signal stable (avoid excessive unavoidable penalties).
             valid_cars = []
             for car in self.cars:
                 covered_by_uav = any(dist_2d(car, uav) <= float(UAV_RANGE) for uav in self.uavs)
@@ -342,106 +352,69 @@ class VanetEnvironment:
                 mbs_node = _nearest_in_range_rsu(requesting_car, self.rsus)
 
             if requesting_car is not None and mbs_node is not None:
-                # Practical extension using V2B delay path (Chen multi-path final tier).
                 users_bs = _count_cars_in_mbs_range(self.cars, mbs_node)
                 cost = calculate_mbs_only_delay(
-                    requesting_car,
-                    mbs_node,
-                    self.config,
-                    z_req=z_req,
-                    num_users_bs=users_bs,
+                    requesting_car, mbs_node, self.config,
+                    z_req=z_req, num_users_bs=users_bs,
                 )
                 out_of_range = False
                 offload_name = getattr(mbs_node, 'name', 'mbs')
             else:
-                # Use nearest RSU for a real-like degraded delay when out of range.
                 nearest_mbs = _nearest_rsu(requesting_car, self.rsus) if requesting_car is not None else None
                 if requesting_car is not None and nearest_mbs is not None:
                     users_bs = _count_cars_in_mbs_range(self.cars, nearest_mbs)
                     cost = calculate_mbs_only_delay(
-                        requesting_car,
-                        nearest_mbs,
-                        self.config,
-                        z_req=z_req,
-                        num_users_bs=users_bs,
+                        requesting_car, nearest_mbs, self.config,
+                        z_req=z_req, num_users_bs=users_bs,
                     )
                     out_of_range = True
                     offload_name = getattr(nearest_mbs, 'name', 'mbs')
                 else:
                     served_decision = {
-                        'tier': 'none',
-                        'uav_idx': -1,
-                        'offload_name': 'none',
-                        'cache': 0,
-                        'f_req': f,
-                        'z_req': z_req,
+                        'tier': 'none', 'uav_idx': -1, 'offload_name': 'none',
+                        'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': -1,
                         'popularity': float(self._zipf_probs_fz[f, z_req]),
                     }
                     self._last_actual_uav_idx = -1
                     self._last_served_request = dict(served_decision)
                     self._new_request()
                     return self.get_state(), _disconnect_reward(self.config), False, {
-                        'raw_delay': -1.0,
-                        'actual_uav_idx': -1,
-                        'out_of_range': True,
-                        'disconnected': True,
+                        'raw_delay': -1.0, 'actual_uav_idx': -1,
+                        'out_of_range': True, 'disconnected': True,
                         'decision': served_decision,
                     }
 
             reward = -math.log1p(cost)
             served_decision = {
-                'tier': 'mbs',
-                'uav_idx': -1,
-                'offload_name': offload_name,
-                'cache': 0,
-                'f_req': f,
-                'z_req': z_req,
+                'tier': 'mbs', 'uav_idx': -1, 'offload_name': offload_name,
+                'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': -1,
                 'popularity': float(self._zipf_probs_fz[f, z_req]),
             }
             self._last_actual_uav_idx = -1
             self._last_served_request = dict(served_decision)
             self._new_request()
             return self.get_state(), reward, False, {
-                'raw_delay': cost,
-                'actual_uav_idx': -1,
-                'out_of_range': out_of_range,
-                'decision': served_decision,
+                'raw_delay': cost, 'actual_uav_idx': -1,
+                'out_of_range': out_of_range, 'decision': served_decision,
             }
 
         # ------------------------------
         # UAV tier
         # ------------------------------
-        uav_idx = int(max(0, min(int(uav_idx), len(self.uavs) - 1)))
+        uav_idx     = int(max(0, min(int(uav_idx), len(self.uavs) - 1)))
         target_node = self.uavs[uav_idx]
 
-        # Coverage-range check used for SDN flow gating + MBS fallback.
         out_of_range = False
         if requesting_car is not None:
             if dist_2d(requesting_car, target_node) > UAV_RANGE:
                 out_of_range = True
 
-        # Determine cache mode per paper (Eq10-12)
-        if int(self.Y[uav_idx, f, z_req]) == 1:
-            cache_mode = 1
-            z_cached = z_req
-        else:
-            z_plus = None
-            for z2 in range(z_req + 1, self.Z):
-                if int(self.Y[uav_idx, f, z2]) == 1:
-                    z_plus = z2
-                    break
-            if z_plus is not None:
-                cache_mode = 2
-                z_cached = z_plus
-            else:
-                cache_mode = 0
-                z_cached = z_req
+        # ── Cache placement (FIX: clamp z_cached_action vào [0, Z-1]) ──────────
+        z_cached_action = int(max(0, min(int(z_cached_action), self.Z - 1)))
 
-        # Apply cache decision for this request (online).
-        # If UAV is out-of-coverage, it won't actually serve this request.
         if cache_dec == 1 and not out_of_range:
             self.Y[uav_idx, f, z_cached_action] = 1
-            # Capacity enforcement: random eviction (Algorithm 2 spirit)
+            # Capacity enforcement: random eviction
             while self._cache_usage_bits(uav_idx) > self.C_cache_bits:
                 ones = np.argwhere(self.Y[uav_idx] == 1)
                 if ones.size == 0:
@@ -450,13 +423,12 @@ class VanetEnvironment:
                 ff, zz = int(ones[j, 0]), int(ones[j, 1])
                 self.Y[uav_idx, ff, zz] = 0
 
-        # IMPORTANT:
-        # Cache_decision should affect the delay of the *current* request in the
-        # same time slot (D1/D2/D3 scenarios). Therefore we recompute cache_mode
-        # using the possibly-updated cache state self.Y.
+        # ── Xác định cache_mode sau khi đã cập nhật Y ───────────────────────
+        # FIX: tách rõ cache_mode (phục vụ hiện tại) và z_cached_action (agent ghi vào bộ nhớ)
+        # cache_mode phụ thuộc HOÀN TOÀN vào trạng thái Y sau khi placement xong.
         if int(self.Y[uav_idx, f, z_req]) == 1:
-            cache_mode = 1
-            z_cached = z_req
+            cache_mode = 1          # Scenario 1: direct hit (Eq.10)
+            z_cached   = z_req
         else:
             z_plus = None
             for z2 in range(z_req + 1, self.Z):
@@ -464,33 +436,25 @@ class VanetEnvironment:
                     z_plus = z2
                     break
             if z_plus is not None:
-                cache_mode = 2
-                z_cached = z_plus
+                cache_mode = 2      # Scenario 2: transcoding hit (Eq.11)
+                z_cached   = z_plus
             else:
-                cache_mode = 0
-                z_cached = z_req
+                cache_mode = 0      # Scenario 3: cache miss (Eq.12)
+                z_cached   = z_req
 
+        # ── Out-of-range handling ────────────────────────────────────────────
         if out_of_range:
-            # Practical serving rule: if selected UAV is out-of-range but MBS is
-            # reachable, fallback to MBS instead of hard penalty.
             mbs_node = _nearest_in_range_rsu(requesting_car, self.rsus) if requesting_car is not None else None
             if mbs_node is not None:
                 users_bs = _count_cars_in_mbs_range(self.cars, mbs_node)
                 cost = calculate_mbs_only_delay(
-                    requesting_car,
-                    mbs_node,
-                    self.config,
-                    z_req=z_req,
-                    num_users_bs=users_bs,
+                    requesting_car, mbs_node, self.config,
+                    z_req=z_req, num_users_bs=users_bs,
                 )
-                out_of_range = False
                 served_decision = {
-                    'tier': 'mbs',
-                    'uav_idx': -1,
+                    'tier': 'mbs', 'uav_idx': -1,
                     'offload_name': getattr(mbs_node, 'name', 'mbs'),
-                    'cache': 0,
-                    'f_req': f,
-                    'z_req': z_req,
+                    'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': -1,
                     'popularity': float(self._zipf_probs_fz[f, z_req]),
                 }
                 self._last_actual_uav_idx = -1
@@ -498,39 +462,28 @@ class VanetEnvironment:
                 reward = -math.log1p(cost)
                 self._new_request()
                 return self.get_state(), reward, False, {
-                    'raw_delay': cost,
-                    'actual_uav_idx': -1,
-                    'out_of_range': False,
-                    'decision': served_decision,
+                    'raw_delay': cost, 'actual_uav_idx': -1,
+                    'out_of_range': False, 'decision': served_decision,
                 }
             nearest_mbs = _nearest_rsu(requesting_car, self.rsus) if requesting_car is not None else None
             if nearest_mbs is not None:
                 users_bs = _count_cars_in_mbs_range(self.cars, nearest_mbs)
                 cost = calculate_mbs_only_delay(
-                    requesting_car,
-                    nearest_mbs,
-                    self.config,
-                    z_req=z_req,
-                    num_users_bs=users_bs,
+                    requesting_car, nearest_mbs, self.config,
+                    z_req=z_req, num_users_bs=users_bs,
                 )
             else:
                 served_decision = {
-                    'tier': 'none',
-                    'uav_idx': -1,
-                    'offload_name': 'none',
-                    'cache': 0,
-                    'f_req': f,
-                    'z_req': z_req,
+                    'tier': 'none', 'uav_idx': -1, 'offload_name': 'none',
+                    'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': -1,
                     'popularity': float(self._zipf_probs_fz[f, z_req]),
                 }
                 self._last_actual_uav_idx = -1
                 self._last_served_request = dict(served_decision)
                 self._new_request()
                 return self.get_state(), _disconnect_reward(self.config), False, {
-                    'raw_delay': -1.0,
-                    'actual_uav_idx': -1,
-                    'out_of_range': True,
-                    'disconnected': True,
+                    'raw_delay': -1.0, 'actual_uav_idx': -1,
+                    'out_of_range': True, 'disconnected': True,
                     'decision': served_decision,
                 }
         else:
@@ -569,8 +522,8 @@ class VanetEnvironment:
     # ------------------------------------------------------------------
     def reset(self):
         self.Y[:] = 0
-        self.f_req         = 0
-        self.z_req         = 0
+        self.f_req          = 0
+        self.z_req          = 0
         self.requesting_car = self.cars[0] if self.cars else None
         self._last_actual_uav_idx = None
         self._last_served_request = None
@@ -579,18 +532,17 @@ class VanetEnvironment:
 
     # ------------------------------------------------------------------
     def get_action_components(self, action_idx: int):
-        # Ưu tiên trả snapshot của request vừa phục vụ (đúng với state/action tại step trước)
         served = getattr(self, '_last_served_request', None)
         if served is not None:
             return {
-                'tier': str(served.get('tier', 'uav')),
-                'uav_idx': int(served.get('uav_idx', -1)),
+                'tier':         str(served.get('tier', 'uav')),
+                'uav_idx':      int(served.get('uav_idx', -1)),
                 'offload_name': str(served.get('offload_name', 'none')),
-                'cache': int(served.get('cache', 0)),
-                'f_req': int(served.get('f_req', self.f_req)),
-                'z_req': int(served.get('z_req', self.z_req)),
-                'z_cached': int(served.get('z_cached', -1)),
-                'popularity': float(
+                'cache':        int(served.get('cache', 0)),
+                'f_req':        int(served.get('f_req', self.f_req)),
+                'z_req':        int(served.get('z_req', self.z_req)),
+                'z_cached':     int(served.get('z_cached', -1)),
+                'popularity':   float(
                     served.get('popularity', self._zipf_probs_fz[self.f_req, self.z_req])
                 ),
             }
@@ -605,12 +557,12 @@ class VanetEnvironment:
                 offload_name = 'none'
 
         return {
-            'tier': str(tier),
-            'uav_idx': int(uav_idx),
+            'tier':         str(tier),
+            'uav_idx':      int(uav_idx),
             'offload_name': offload_name,
-            'cache': int(cache),
-            'z_cached': int(z_cached),
-            'f_req': int(self.f_req),
-            'z_req': int(self.z_req),
-            'popularity': float(self._zipf_probs_fz[self.f_req, self.z_req]),
+            'cache':        int(cache),
+            'z_cached':     int(z_cached),
+            'f_req':        int(self.f_req),
+            'z_req':        int(self.z_req),
+            'popularity':   float(self._zipf_probs_fz[self.f_req, self.z_req]),
         }

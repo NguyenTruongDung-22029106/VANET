@@ -2,14 +2,19 @@
 
 Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với file/class/hàm trong project DATN.
 
-> **Lưu ý phiên bản:** Bảng này phản ánh code **sau khi cleanup** (tháng 3/2026).
+> **Lưu ý phiên bản:** Bảng này phản ánh code **sau khi cleanup + fix** (tháng 3/2026).
 > Các thay đổi chính so với phiên bản cũ:
 > - Agent đổi từ `pc_id3qn_agent.py / PC_ID3QN_Agent` → `d3qn_agent.py / D3QNAgent`
 > - UAV dùng `addAccessPoint` (không phải `addAircraft`)
 > - Mesh link (wlan1) đã xóa — không còn trong `main_thesis.py`
 > - `models.py` hợp nhất tất cả hàm delay vào 1 API duy nhất: `calculate_total_cost()`
-> - Reward đổi từ `social_welfare − cost` → `reward = -cost` (delay, giây)
+> - Reward đổi từ `social_welfare − cost` → `reward = -log(1+delay)`
 > - `w_delay`, `w_cr` đã xóa khỏi `config.py`
+> - **Action space mở rộng từ 2D → 3D** (thêm chiều bitrate `z_cached`)
+> - `encode_action()` cập nhật nhận đủ 3 tham số `(uav_idx, z_cached, cache)`
+> - `get_action_vector()` trong `D3QNAgent` cập nhật decode đúng 3 chiều
+> - RSU và UAV **không còn hardcode vị trí** — đặt thủ công qua `plotGraph()` GUI
+> - `benchmark.py` được implement để so sánh D3QN vs QEA không cần Mininet
 
 ---
 
@@ -17,12 +22,12 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 
 | Khái niệm (tài liệu) | Mã nguồn |
 |----------------------|----------|
-| **Control Layer (SDN Controller)** | **`src/control_layer.py`: `class ControlLayer(env, agent)`** — điều phối offloading và caching mỗi bước (`run_simulation_loop` gọi `control_layer.step()`). |
-| SDN Controller (logic) | `ControlLayer` giữ env + agent; mỗi step: state → action → env.step(action) → store_experience → train; `get_decision(action_idx)` giải mã offload/bitrate/cache để log. |
+| **Control Layer (SDN Controller)** | **`src/control_layer.py`: `class ControlLayer(env, agent)`** — điều phối offloading và caching mỗi bước. |
+| SDN Controller (logic) | `ControlLayer` giữ env + agent; mỗi step: state → action → env.step(action) → store_experience → train. |
 | DRL-SDNC (state → action → rule) | `src/agents/d3qn_agent.py`: `D3QNAgent.select_action(state)` → action_idx |
-| State gathering (vị trí, cache, channel) | `src/environment.py`: `VanetEnvironment.get_state()` — positions (cars/UAVs), khoảng cách xe→UAV, mức đầy cache, video popularity (15 chiều) |
-| Policy / Rule installation | Action = (uav_idx × cache_decision); thực thi qua `env.step(action_idx)` |
-| R_total = r_d + r_e + ω·r_cr | Trong paper DRL-SDNC. Trong code: `reward = -cost`, cost = delay (giây) từ `calculate_total_cost()`; energy và social_welfare **đã bỏ khỏi hàm mục tiêu**. |
+| State gathering (vị trí, cache, channel) | `src/environment.py`: `VanetEnvironment.get_state()` — positions (cars/UAVs), khoảng cách xe→UAV, mức đầy cache, video popularity |
+| Policy / Rule installation | Action = (uav_idx × z_cached × cache_decision) + MBS tier; thực thi qua `env.step(action_idx)` |
+| Reward | `reward = -log(1 + delay)`, delay (giây) từ `calculate_total_cost()` |
 
 ---
 
@@ -34,9 +39,10 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 | UAV (cloudlet / relay / aerial BS) | `net.aps` (addAccessPoint với `'uav'` trong tên), `env.uavs` |
 | RSU / MEC server / GRSU | `net.aps` (addAccessPoint với `'rsu'` trong tên), `env.rsus` |
 | Switch | `s1` (OVSKernelSwitch) |
-| Controller (Mininet) | `c1` (RemoteController) — chỉ điều khiển switch/AP, không SDN logic |
-| V2I (car–RSU/UAV) | `update_car_ap_association()` trong `main_thesis.py`; car wlan0 → AP gần nhất |
-| V2V / V2U (mesh) | **Đã xóa** — mesh import và mesh link không còn trong code; liên kết qua AP thay thế |
+| Controller (Mininet) | `c1` (RemoteController) |
+| V2I (car–RSU/UAV) | `update_car_ap_association()` trong `main_thesis.py` |
+| V2V / V2U (mesh) | **Đã xóa** — liên kết qua AP thay thế |
+| Vị trí RSU/UAV | **Không hardcode** — đặt thủ công qua `plotGraph()` GUI khi chạy |
 
 ---
 
@@ -52,25 +58,51 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 | Eq(11): D^2 transcoding delay | `models._delay_transcoding()` (internal) |
 | Eq(12): D^3 cache miss delay | `models._delay_cache_miss()` (internal) |
 | Eq(13): D_{l,k} tổng delay | **`models.calculate_total_cost(source, target, config, cache_mode, ...)`** — API duy nhất ra ngoài |
-| p_f (Zipf popularity) | Nằm trong `qea_joint_ca_ua.py: _zipf_popularity(F, Z, alpha)` |
+| p_f (Zipf popularity) | `environment._compute_zipf_joint_probs()`, `qea_joint_ca_ua._zipf_popularity()` |
 | Cost (delay-only) | `calculate_total_cost()` → delay (giây); dùng trong cả D3QN lẫn QEA |
 
 > **Lưu ý:** Các hàm `calculate_uplink_rate`, `calculate_downlink_rate`, `zipf_popularity`,
-> `caching_value`, `calculate_social_welfare` **không còn tồn tại** trong `models.py` sau cleanup.
+> `caching_value`, `calculate_social_welfare` **không còn tồn tại** trong `models.py`.
 > Toàn bộ đã được hợp nhất vào `calculate_total_cost()` theo Eq(1–13) của Xie et al. 2022.
 
 ---
 
-## Action space (paper-mode — 2 chiều)
+## Action space (3 chiều — hiện tại)
 
 | Chiều | Giá trị | Mô tả |
 |-------|---------|-------|
-| uav_idx | 0..L-1 = UAV_l | Nơi xử lý request |
-| cache_decision | 0 = no_cache, 1 = cache | Có lưu đệm video đang request tại UAV không |
+| `uav_idx` | `0..L-1` | UAV được chọn để phục vụ |
+| `z_cached` | `0..Z-1` | Mức bitrate cần cache tại UAV |
+| `cache_decision` | `0, 1` | Có lưu đệm nội dung hay không |
 
-`action_idx = uav_idx + num_uavs × cache_decision`
+**Encoding:** `action_idx = uav_idx + L × (z_cached + Z × cache_dec)`  
+**MBS tier:** `action_idx = L × Z × 2`  
+**Tổng action_size:** `L × Z × 2 + 1`
 
-Topology mặc định: 3 UAV → `action_size = 3 × 2 = 6`
+**Mặc định hiện tại** (L=5 UAV, Z=4 bitrates): `action_size = 5 × 4 × 2 + 1 = 41`
+
+```python
+# Encode (environment.py)
+def encode_action(self, uav_idx, z_cached, cache):
+    return uav_idx + L * (z_cached + Z * cache)
+
+# Decode (environment.py + d3qn_agent.py — ĐỒNG BỘ)
+uav_idx  = a % L
+t        = a // L
+z_cached = t % Z
+cache    = t // Z
+```
+
+---
+
+## Benchmark
+
+| Chức năng | Mã nguồn |
+|-----------|----------|
+| So sánh D3QN vs QEA | `benchmark.py` — chạy không cần Mininet-WiFi |
+| Output đồ thị | `src/results/benchmark_d3qn_vs_qea.png` |
+| Output CSV | `src/results/benchmark_summary.csv` |
+| Chạy | `cd src && python3 ../benchmark.py` |
 
 ---
 
@@ -78,9 +110,7 @@ Topology mặc định: 3 UAV → `action_size = 3 × 2 = 6`
 
 | Tài liệu | Code / Ghi chú |
 |----------|----------------|
-| ASC (Average System Cost) | `calculate_total_cost()` → delay; `reward = -delay` |
-| UVCO (UAV-assisted Vehicular computation Cost Optimization) | Offload options: local=0, UAV_1..3=1..3, RSU=4 |
-| CRE (Computational Resource Efficiency) | Trong paper: throughput, latency, energy. **Trong luận văn: chỉ latency (delay).** |
+| ASC (Average System Cost) | `calculate_total_cost()` → delay; `reward = -log(1+delay)` |
 | PC-ID3QN (paper Chen et al.) | Cảm hứng thiết kế; cài đặt dưới tên `D3QNAgent` (Double + Dueling DQN) |
 | QEA baseline | `qea_joint_ca_ua.py: QEAJointCAUA` — cùng `calculate_total_cost()` → so sánh công bằng |
 | SD-MEC (Software-Defined MEC) | UAV/RSU trong data plane; logic MEC = VanetEnvironment + D3QNAgent |
@@ -89,4 +119,4 @@ Topology mặc định: 3 UAV → `action_size = 3 × 2 = 6`
 
 ---
 
-*Cập nhật: tháng 3/2026 — theo code sau cleanup và SDN_VANET_UAV_Architecture_Summary.md.*
+*Cập nhật: tháng 3/2026 — sau cleanup, fix action space 3D, implement benchmark.py, xóa hardcode vị trí RSU/UAV.*
