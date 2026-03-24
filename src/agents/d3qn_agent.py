@@ -188,7 +188,7 @@ class D3QNAgent:
 
     def load_model(self):
         if not os.path.exists(self.model_path):
-            return
+            return False
         try:
             # Fallback cho PyTorch < 2.0 không có tham số weights_only
             try:
@@ -202,8 +202,10 @@ class D3QNAgent:
             self.policy_net.load_state_dict(state_dict, strict=False)
             self.target_net.load_state_dict(self.policy_net.state_dict(), strict=False)
             print(f"Model loaded from {self.model_path} (strict=False)")
+            return True
         except Exception as e:
             print(f"Error loading model: {e}")
+            return False
 
     def set_eval_mode(self):
         """

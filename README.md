@@ -23,6 +23,8 @@ Lõi mô hình được tinh chỉnh theo thực nghiệm Mininet-WiFi:
 - Delay có xét runtime `cpu_load` (queue + compute sharing) để phản ánh trạng thái mạng động.
 - Runtime load dùng hybrid metadata+fallback: xe nào có `associatedTo` thì theo metadata, xe nào thiếu metadata thì fallback coverage-distance cho chính xe đó.
 - Coverage semantics theo agent (chuẩn 2D horizontal): agent chọn UAV nào thì thử offload UAV đó; nếu ngoài vùng phủ thì `out_of_range=True`, không offload thực tế và dùng fixed penalty (mặc định `no_uav_penalty=1000`).
+- MBS/RSU là tier phục vụ thật mặc định: agent tự chọn giữa UAV và MBS theo trạng thái hiện tại.
+- Request sampling ưu tiên xe đang nằm trong vùng có thể phục vụ (UAV hoặc MBS) để học nhanh và ổn định hơn.
 
 ---
 
@@ -38,13 +40,14 @@ Ghi chú kiến trúc: dự án triển khai theo hướng **DRL-first**; QEA đ
 ### State, Action, Reward
 
 - **State:** vector có kích thước động theo số UAV trong topology.
-- **Action:** `uav_idx × cache_decision` **+ 1 action MBS-tier (penalty action)**.
+- **Action:** `uav_idx × cache_decision` **+ 1 action MBS-tier**.
   - Tổng action = `(#UAV × 2) + 1`.
   - Với mặc định hiện tại 5 UAV: `5 × 2 + 1 = 11` actions.
 - **Reward:** `R = -log(1 + delay)`.
 
 Ghi chú: bitrate vẫn có trong request/content model, nhưng không là một chiều action độc lập ở code hiện tại.
 Ghi chú coverage: hệ thống không tự chuyển sang UAV gần nhất khi agent chọn sai vùng phủ.
+Ghi chú MBS mapping runtime: REST bridge map xuống AP RSU gần nhất trong vùng phủ.
 
 ---
 
@@ -155,6 +158,7 @@ algo_mode = 'ryu_env'
 2. Chạy lại đúng 2 terminal như bước train.
 
 Ryu sẽ load model từ `model_path` và chạy ở chế độ eval.
+Nếu không tìm thấy model hoặc load thất bại, `ryu_env` sẽ dừng sớm để tránh eval bằng random weights.
 Kết quả eval được ghi vào:
 
 - `src/results/ryu_deploy_eval.csv`
@@ -173,6 +177,7 @@ Kết quả eval được ghi vào:
 | `algo_mode` | `'ryu_train'` | Chế độ chạy (`qea`, `ryu_train`, `ryu_env`) |
 | `eval_steps` | `1000` | Số step chạy ở `ryu_env` (`<=0` để chạy không giới hạn) |
 | `no_uav_penalty` | `1000` | Delay penalty khi agent chọn UAV ngoài vùng phủ |
+| `M_bs` | `60` | Số user tối đa phía MBS/RSU dùng để chuẩn hóa tải MBS |
 | `rest_host`, `rest_port` | `127.0.0.1`, `8081` | REST env endpoint cho Ryu |
 | `cache_uav_MB` | `750` | Dung lượng cache mỗi UAV |
 | `model_path` | `'agents/models/d3qn.pth'` | Nơi lưu/load model D3QN |

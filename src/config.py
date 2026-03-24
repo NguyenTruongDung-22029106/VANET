@@ -18,7 +18,7 @@ def get_config():
         roads=8,
         mobility_time=1,
         plot_max=400,           # Simulation site size 400m×400m
-        cars=20,               # K: Number of vehicles (Table 2: 100)
+        cars=10,               # K: Number of vehicles (Table 2: 100)
         uavs=5,                 # L: Number of UAVs (Table 2: 5)
         rsus=1,                 # 1 MBS (Mobile Base Station)
 
@@ -33,6 +33,7 @@ def get_config():
         B           = 20e6,     # V2U bandwidth (Hz) — 20 MHz
         Bh          = 10e6,     # V2B backhaul bandwidth (Hz) — 10 MHz
         M           = 30,       # Max users per UAV
+        M_bs        = 60,       # Max users served by MBS/RSU tier (for load sharing)
         PUAV_dBm    = 20,       # UAV tx power (dBm)
         PBS_dBm     = 30,       # MBS tx power (dBm)
         sigma2_dBm  = -95,      # Noise power (dBm)

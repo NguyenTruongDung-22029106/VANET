@@ -307,9 +307,19 @@ class QEAJointCAUA:
                         prob = float(p_z[z_req])
                         if prob <= 0.0:
                             continue
-                        # Follow Xie 2022: MBS tier is not part of the model.
-                        penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
-                        total += prob * penalty
+                        if self.rsus:
+                            nearest_mbs = min(self.rsus, key=lambda r: dist_2d(car, r))
+                            d_mbs = _mbs_delay(
+                                car,
+                                nearest_mbs,
+                                self.config,
+                                z_req=z_req,
+                                num_users_bs=users_on_mbs,
+                            )
+                            total += prob * float(d_mbs)
+                        else:
+                            penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+                            total += prob * penalty
                 continue
 
             uav = self.uavs[l]
@@ -326,15 +336,24 @@ class QEAJointCAUA:
                 # If the chosen UAV cannot cover this user in Mininet,
                 # serve via RSU/MBS baseline (delay no longer depends on UAV caching).
                 if dist_2d(car, uav) > float(UAV_RANGE):
-                    # Follow Xie 2022: if user out-of-coverage for chosen UAV,
-                    # do not fallback to MBS; penalize assignment.
-                    penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+                    nearest_mbs = min(self.rsus, key=lambda r: dist_2d(car, r)) if self.rsus else None
                     for f in range(self.F):
                         for z_req in range(self.Z):
                             p = float(p_fz[f, z_req])
                             if p <= 0.0:
                                 continue
-                            total += p * penalty
+                            if nearest_mbs is not None:
+                                d_mbs = _mbs_delay(
+                                    car,
+                                    nearest_mbs,
+                                    self.config,
+                                    z_req=z_req,
+                                    num_users_bs=1,
+                                )
+                                total += p * float(d_mbs)
+                            else:
+                                penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
+                                total += p * penalty
                     continue
 
                 # Precompute miss + direct delays theo z (không phụ thuộc f)

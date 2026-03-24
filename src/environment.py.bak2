@@ -169,7 +169,7 @@ class VanetEnvironment:
         self.num_bitrates      = self.NUM_BITRATES
         self.num_cache_actions = self.NUM_CACHE_ACTS
         self.num_offload_targets = len(self.uavs)  # chỉ UAVs
-        self._uav_action_size = self.num_offload_targets * self.num_bitrates * self.num_cache_actions
+        self._uav_action_size = self.num_offload_targets * self.num_cache_actions
         # +1 extra action for MBS/RSU tier
         self.action_size = max(1, self._uav_action_size + 1)
 
@@ -273,33 +273,15 @@ class VanetEnvironment:
 
     # ------------------------------------------------------------------
     def _decode_action(self, action_idx: int):
-        """
-        Decode action index into:
-          ('mbs', -1, -1, 0)
-          ('uav', uav_idx, z_cached, cache_dec)
-
-        Encoding (UAV tier):
-          a = uav_idx + L * (z_cached + Z * cache_dec)
-        where:
-          L = num_offload_targets, Z = num_bitrates, cache_dec in {0,1}
-
-        MBS tier:
-          a == mbs_action_idx (= L*Z*num_cache_actions)
-        """
         a = int(action_idx)
         L = max(int(self.num_offload_targets), 1)
-        Z = max(int(self.num_bitrates), 1)
         mbs_action_idx = int(self._uav_action_size)
-
         if a == mbs_action_idx:
-            return 'mbs', -1, -1, 0
-
+            return 'mbs', -1, 0
         # UAV tier
         uav_idx = a % L
-        t = a // L
-        z_cached = int(t % Z)
-        cache_dec = int(t // Z)
-        return 'uav', int(uav_idx), int(z_cached), int(cache_dec)
+        cache_dec = a // L
+        return 'uav', int(uav_idx), int(cache_dec)
 
     def encode_action(self, uav_idx: int, cache: int) -> int:
         """Encode a UAV-tier action (not used for MBS tier)."""
@@ -331,7 +313,7 @@ class VanetEnvironment:
         f = int(self.f_req)
         z_req = int(self.z_req)
 
-        tier, uav_idx, z_cached_action, cache_dec = self._decode_action(action_idx)
+        tier, uav_idx, cache_dec = self._decode_action(action_idx)
 
         # ------------------------------
         # MBS/RSU tier
@@ -440,7 +422,7 @@ class VanetEnvironment:
         # Apply cache decision for this request (online).
         # If UAV is out-of-coverage, it won't actually serve this request.
         if cache_dec == 1 and not out_of_range:
-            self.Y[uav_idx, f, z_cached_action] = 1
+            self.Y[uav_idx, f, z_req] = 1
             # Capacity enforcement: random eviction (Algorithm 2 spirit)
             while self._cache_usage_bits(uav_idx) > self.C_cache_bits:
                 ones = np.argwhere(self.Y[uav_idx] == 1)
@@ -553,7 +535,6 @@ class VanetEnvironment:
             'cache': int(cache_dec),
             'f_req': f,
             'z_req': z_req,
-            'z_cached': int(z_cached_action),
             'popularity': float(self._zipf_probs_fz[f, z_req]),
         }
         self._last_actual_uav_idx = uav_idx
@@ -589,13 +570,12 @@ class VanetEnvironment:
                 'cache': int(served.get('cache', 0)),
                 'f_req': int(served.get('f_req', self.f_req)),
                 'z_req': int(served.get('z_req', self.z_req)),
-                'z_cached': int(served.get('z_cached', -1)),
                 'popularity': float(
                     served.get('popularity', self._zipf_probs_fz[self.f_req, self.z_req])
                 ),
             }
 
-        tier, uav_idx, z_cached, cache = self._decode_action(action_idx)
+        tier, uav_idx, cache = self._decode_action(action_idx)
         if tier == 'mbs':
             offload_name = 'mbs'
         else:
@@ -609,7 +589,6 @@ class VanetEnvironment:
             'uav_idx': int(uav_idx),
             'offload_name': offload_name,
             'cache': int(cache),
-            'z_cached': int(z_cached),
             'f_req': int(self.f_req),
             'z_req': int(self.z_req),
             'popularity': float(self._zipf_probs_fz[self.f_req, self.z_req]),

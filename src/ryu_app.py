@@ -155,16 +155,16 @@ class SdnVanetRyuApp(app_manager.RyuApp):
     def _init_csv(self):
         os.makedirs(self._log_dir, exist_ok=True)
         with open(self._csv_path, 'w') as f:
-            f.write('timestamp,step,car,offload_target,bitrate,cache,delay\n')
+            f.write('timestamp,step,car,offload_target,bitrate,z_cached,cache,delay\n')
         with open(self._log_path, 'w') as f:
             ts = datetime.now().isoformat()
             f.write(f'[{ts}] RUN_START csv={os.path.basename(self._csv_path)}\n')
 
-    def _write_csv(self, step, car, target, bitrate, cache, delay):
+    def _write_csv(self, step, car, target, bitrate, z_cached, cache, delay):
         try:
             with open(self._csv_path, 'a') as f:
                 ts = datetime.now().isoformat()
-                f.write(f'{ts},{step},{car},{target},{bitrate},{cache},{delay:.6f}\n')
+                f.write(f'{ts},{step},{car},{target},{bitrate},{z_cached},{cache},{delay:.6f}\n')
         except Exception:
             pass
 
@@ -195,7 +195,12 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         port = int(getattr(self._config, 'rest_port', 8081))
         self._rest_base = f"http://{host}:{port}"
 
-        meta = self._rest_get("/meta")
+        meta = self._rest_get_with_retry("/meta", retries=20, sleep_s=0.5)
+        if meta is None:
+            msg = f"REST env not ready at {self._rest_base}/meta. Stop controller startup."
+            self.logger.error(msg)
+            self._write_log(msg)
+            return
         state_size = int(meta.get("state_size", 15))
         action_size = int(meta.get("action_size", 6))
         num_targets = int(meta.get("num_offload_targets", 3))
@@ -240,7 +245,11 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 self.logger.error(msg)
                 self._write_log(msg)
                 return
-            agent.load_model()
+            if not agent.load_model():
+                msg = f"Failed to load model from '{model_path}'. Stop ryu_env to avoid invalid evaluation."
+                self.logger.error(msg)
+                self._write_log(msg)
+                return
             agent.set_eval_mode()
             self.logger.info("*** Ryu mode: EVAL (epsilon=0). ***")
 
@@ -265,12 +274,34 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         with urllib.request.urlopen(url, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
 
+    def _rest_get_with_retry(self, path, retries=10, sleep_s=0.5, timeout=5.0):
+        last_err = None
+        for _ in range(max(int(retries), 1)):
+            try:
+                return self._rest_get(path, timeout=timeout)
+            except Exception as e:
+                last_err = e
+                time.sleep(float(sleep_s))
+        self.logger.error("REST GET %s failed after retries: %s", path, last_err)
+        return None
+
     def _rest_post(self, path, payload, timeout=30.0):
         url = self._rest_base + path
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
+
+    def _rest_post_with_retry(self, path, payload, retries=10, sleep_s=0.5, timeout=5.0):
+        last_err = None
+        for _ in range(max(int(retries), 1)):
+            try:
+                return self._rest_post(path, payload, timeout=timeout)
+            except Exception as e:
+                last_err = e
+                time.sleep(float(sleep_s))
+        self.logger.error("REST POST %s failed after retries: %s", path, last_err)
+        return None
 
     # ══════════════════════════════════════════════════════════════════════
     # Flow rule helpers
@@ -479,12 +510,11 @@ class SdnVanetRyuApp(app_manager.RyuApp):
             if max_steps <= 0:
                 max_steps = None
 
-        try:
-            reset = self._rest_post("/reset", {})
-            state = np.array(reset.get("state", []), dtype=np.float32)
-        except Exception as e:
-            self._write_log(f"REST reset failed: {e}")
+        reset = self._rest_post_with_retry("/reset", {}, retries=20, sleep_s=0.5)
+        if reset is None:
+            self._write_log("REST reset failed after retries")
             return
+        state = np.array(reset.get("state", []), dtype=np.float32)
 
         self._write_log('REST control loop started')
         if max_steps is None:
@@ -537,13 +567,18 @@ class SdnVanetRyuApp(app_manager.RyuApp):
 
                 self._write_csv(
                     step, car_name, ap_name,
-                    decision.get("z_req", ""), decision.get("cache", ""), delay,
+                    decision.get("z_req", ""),
+                    decision.get("z_cached", ""),
+                    decision.get("cache", ""),
+                    delay,
                 )
 
                 if step % 100 == 1:
+                    tier = decision.get("tier", "")
+                    out_of_range = bool(info.get("out_of_range", False))
                     self.logger.info(
-                        "step %d  %s->%s  cache=%s  delay=%.4fs",
-                        step, car_name, ap_name, decision.get("cache", ""), delay,
+                        "step %d  %s->%s  tier=%s  cache=%s  z_cached=%s  out_of_range=%s  delay=%.4fs",
+                        step, car_name, ap_name, tier, decision.get("cache", ""), decision.get("z_cached", ""), out_of_range, delay,
                     )
                     with self._offload_lock:
                         tbl = dict(self._offload_table)

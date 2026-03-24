@@ -279,6 +279,7 @@ def update_car_ap_association(net):
                 if _is_shell_alive(car):
                     try:
                         car.cmd('iw dev %s-wlan0 connect %s 2>/dev/null' % (car.name, chosen_ssid))
+                        car.cmd('pkill -9 -f "dhclient %s-wlan0" 2>/dev/null' % car.name)
                         car.cmd('dhclient %s-wlan0 2>/dev/null &' % car.name)
                         car.cmd('ip route add 10.10.0.0/16 via 10.10.0.%s 2>/dev/null'
                                 % (net.cars.index(car) + 1))
@@ -423,7 +424,7 @@ def run_rest_env_server(net, config, env, cars, uavs, host="127.0.0.1", port=808
                                 if ("rsu" not in name_l) and ("mbs" not in name_l):
                                     continue
                                 d_ap = _car_ap_distance(_cur_car_node, ap)
-                                if d_ap <= MBS_RANGE and (best_d is None or d_ap < best_d):
+                                if best_d is None or d_ap < best_d:
                                     best_d = d_ap
                                     best_name = getattr(ap, "name", "")
                             return best_name
@@ -718,7 +719,17 @@ def run_simulation(config):
                     _out_count = 0
                     for _ep in range(1, config.epochs + 1):
                         for _st in range(1, config.max_steps_per_epoch + 1):
-                            _car = _rnd.choice(cars)
+                            _sync_qea_eval_metadata()
+
+                            _valid_cars = []
+                            for _car_k in cars:
+                                _covered_uav = any(_car_ap_distance(_car_k, _u) <= float(UAV_RANGE) for _u in uavs)
+                                _covered_mbs = any(_car_ap_distance(_car_k, _r) <= float(MBS_RANGE) for _r in rsus)
+                                if _covered_uav or _covered_mbs:
+                                    _valid_cars.append(_car_k)
+                            _car_pool = _valid_cars if _valid_cars else cars
+
+                            _car = _rnd.choice(_car_pool)
                             _car_idx = cars.index(_car)
                             _req_idx = int(_np.random.choice(_joint_flat.size, p=_joint_flat))
                             _f_req = int(_req_idx // qea.Z)
@@ -734,8 +745,28 @@ def run_simulation(config):
                             _users_rt = 0
 
                             if is_mbs:
-                                # MBS tier: cache mode không áp dụng; chỉ cần mbs-only delay.
-                                _delay = float(getattr(config, 'no_uav_penalty', 1000.0))
+                                # MBS tier: cache mode không áp dụng; ưu tiên delay thật.
+                                _mbs_node = None
+                                _best_d = None
+                                for _rsu in rsus:
+                                    _d_mbs = _car_ap_distance(_car, _rsu)
+                                    if _best_d is None or _d_mbs < _best_d:
+                                        _best_d = _d_mbs
+                                        _mbs_node = _rsu
+                                if _mbs_node is not None:
+                                    _users_bs = sum(
+                                        1 for _ck in cars
+                                        if _car_ap_distance(_ck, _mbs_node) <= float(MBS_RANGE)
+                                    )
+                                    _delay = _mbs_delay(
+                                        _car, _mbs_node, config,
+                                        z_req=_z_req,
+                                        num_users_bs=_users_bs,
+                                    )
+                                else:
+                                    _out_of_range = True
+                                    _delay = float(getattr(config, 'no_uav_penalty', 1000.0))
+                                    _out_count += 1
                             else:
                                 _target = uavs[_uav_l]
                                 _out_of_range = (_car_ap_distance(_car, _target) > UAV_RANGE)
@@ -758,7 +789,25 @@ def run_simulation(config):
                                         _cm, _zr, _zc = 0, _z_req, _z_req
 
                                 if _out_of_range:
-                                    _delay = float(getattr(config, 'no_uav_penalty', 1000.0))
+                                    _mbs_node = None
+                                    _best_d = None
+                                    for _rsu in rsus:
+                                        _d_mbs = _car_ap_distance(_car, _rsu)
+                                        if _best_d is None or _d_mbs < _best_d:
+                                            _best_d = _d_mbs
+                                            _mbs_node = _rsu
+                                    if _mbs_node is not None:
+                                        _users_bs = sum(
+                                            1 for _ck in cars
+                                            if _car_ap_distance(_ck, _mbs_node) <= float(MBS_RANGE)
+                                        )
+                                        _delay = _mbs_delay(
+                                            _car, _mbs_node, config,
+                                            z_req=_z_req,
+                                            num_users_bs=_users_bs,
+                                        )
+                                    else:
+                                        _delay = float(getattr(config, 'no_uav_penalty', 1000.0))
                                 else:
                                     _delay = _calc_cost(
                                         _car, _target, config,
