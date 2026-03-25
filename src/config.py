@@ -21,9 +21,15 @@ def get_config():
         cars=10,               # K: Number of vehicles (Table 2: 100)
         uavs=5,                 # L: Number of UAVs (Table 2: 5)
         rsus=1,                 # 1 MBS (Mobile Base Station)
+        uav_range=150.0,        # metres
+        mbs_range=250.0,        # metres
+        uav_speed=20.0,         # m/s
+        uav_radius=200.0,       # metres
 
         # TABLE II: content & cache
         cache_uav_MB=750,       # C_u (MB) - 6 Gbits = 750 MBytes
+        num_bitrates=4,         # Z: Number of bitrates
+        num_cache_acts=2,       # Cache mode decision (0/1)
 
         # Content popularity (Zipf) — Chen et al. Eq(1), Xie et al. Section III-B
         num_videos     = 100,   # F: tổng số video trong thư viện (Table 2 Xie: F=100)
@@ -57,6 +63,7 @@ def get_config():
         algo_mode='ryu_train',   # DRL-first default; 'ryu_env' (Eval) | 'ryu_train' (Train) | 'qea' (baseline)
         eval_steps=1000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
         no_uav_penalty=1000.0,   # fixed delay penalty khi agent chọn UAV ngoài vùng phủ
+        fallback_penalty=0.5,    # reward penalty khi agent chọn UAV ngoài vùng phủ và được fallback qua MBS
 
         # REST env server (for Ryu training/deploy)
         rest_host='127.0.0.1',

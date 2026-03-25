@@ -103,10 +103,3 @@ def estimate_runtime_users_for_uav(cars, uavs, uav_idx, uav_range):
         if dist_2d(car, target) <= float(uav_range):
             c += 1
     return c
-
-
-def estimate_runtime_cpu_load(users_on_uav, max_users_per_uav, cap=0.95):
-    """[DEPRECATED] Kept for backward-compat; delay model Xie không dùng CPU load."""
-    m_cfg = max(int(max_users_per_uav), 1)
-    cap_f = min(max(float(cap), 0.1), 0.99)
-    return min(max(float(users_on_uav) / float(m_cfg), 0.0), cap_f)

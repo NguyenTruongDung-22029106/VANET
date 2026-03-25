@@ -114,6 +114,17 @@ def _nearest_rsu(car_node, rsus):
     return best_node
 
 
+def _count_cars_in_uav_range(cars, uav_node):
+    """Estimate runtime users served by a UAV by coverage count."""
+    if uav_node is None:
+        return 0
+    c = 0
+    for car in cars:
+        if dist_2d(car, uav_node) <= float(UAV_RANGE):
+            c += 1
+    return c
+
+
 def _count_cars_in_mbs_range(cars, mbs_node):
     """Estimate runtime users served by an MBS/RSU by coverage count."""
     if mbs_node is None:
@@ -154,10 +165,6 @@ class VanetEnvironment:
         VanetEnvironment(config, stations, aps, uavs_list)  ← dùng trong main_thesis.py
         VanetEnvironment.from_config(config)                ← dùng trong ryu_app.py
     """
-
-    NUM_BITRATES   = 4
-    NUM_CACHE_ACTS = 2
-
     def __init__(self, config, stations, aps=None, uavs_list=None):
         self.config = config
 
@@ -172,8 +179,8 @@ class VanetEnvironment:
             and getattr(n, 'name', '') not in uav_names
         ]
 
-        self.num_bitrates        = self.NUM_BITRATES
-        self.num_cache_actions   = self.NUM_CACHE_ACTS
+        self.num_bitrates        = int(getattr(config, 'num_bitrates', 4))
+        self.num_cache_actions   = int(getattr(config, 'num_cache_acts', 2))
         self.num_offload_targets = len(self.uavs)
         # action_size = L * Z * 2 + 1 (MBS tier)
         self._uav_action_size = self.num_offload_targets * self.num_bitrates * self.num_cache_actions
@@ -193,7 +200,7 @@ class VanetEnvironment:
         # Paper caching: y_{l,f,z} per UAV, per chunk, per bitrate
         self.cache_uav_MB = float(getattr(config, 'cache_uav_MB', 300))
         self.C_cache_bits = self.cache_uav_MB * 8e6
-        self.Z = self.NUM_BITRATES
+        self.Z = self.num_bitrates
         self.chunk_sizes = np.array(
             [_chunk_size_bits(z, config) for z in range(self.Z)],
             dtype=np.float64,
@@ -443,7 +450,9 @@ class VanetEnvironment:
                 z_cached   = z_req
 
         # ── Out-of-range handling ────────────────────────────────────────────
+        fallback = False
         if out_of_range:
+            fallback = True
             mbs_node = _nearest_in_range_rsu(requesting_car, self.rsus) if requesting_car is not None else None
             if mbs_node is not None:
                 users_bs = _count_cars_in_mbs_range(self.cars, mbs_node)
@@ -459,12 +468,13 @@ class VanetEnvironment:
                 }
                 self._last_actual_uav_idx = -1
                 self._last_served_request = dict(served_decision)
-                reward = -math.log1p(cost)
+                reward = -math.log1p(cost) - float(getattr(self.config, 'fallback_penalty', 0.5))
                 self._new_request()
                 return self.get_state(), reward, False, {
                     'raw_delay': cost, 'actual_uav_idx': -1,
-                    'out_of_range': False, 'decision': served_decision,
+                    'out_of_range': True, 'fallback': True, 'decision': served_decision,
                 }
+            
             nearest_mbs = _nearest_rsu(requesting_car, self.rsus) if requesting_car is not None else None
             if nearest_mbs is not None:
                 users_bs = _count_cars_in_mbs_range(self.cars, nearest_mbs)
@@ -472,21 +482,26 @@ class VanetEnvironment:
                     requesting_car, nearest_mbs, self.config,
                     z_req=z_req, num_users_bs=users_bs,
                 )
+                reward = -math.log1p(cost) - float(getattr(self.config, 'fallback_penalty', 0.5))
             else:
-                served_decision = {
-                    'tier': 'none', 'uav_idx': -1, 'offload_name': 'none',
-                    'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': -1,
-                    'popularity': float(self._zipf_probs_fz[f, z_req]),
-                }
-                self._last_actual_uav_idx = -1
-                self._last_served_request = dict(served_decision)
-                self._new_request()
-                return self.get_state(), _disconnect_reward(self.config), False, {
-                    'raw_delay': -1.0, 'actual_uav_idx': -1,
-                    'out_of_range': True, 'disconnected': True,
-                    'decision': served_decision,
-                }
+                cost = -1.0
+                reward = _disconnect_reward(self.config)
+
+            served_decision = {
+                'tier': 'none', 'uav_idx': -1, 'offload_name': 'none',
+                'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': -1,
+                'popularity': float(self._zipf_probs_fz[f, z_req]),
+            }
+            self._last_actual_uav_idx = -1
+            self._last_served_request = dict(served_decision)
+            self._new_request()
+            return self.get_state(), reward, False, {
+                'raw_delay': cost, 'actual_uav_idx': -1,
+                'out_of_range': True, 'fallback': True, 
+                'disconnected': (cost < 0), 'decision': served_decision,
+            }
         else:
+            num_users_on_uav = _count_cars_in_uav_range(self.cars, target_node)
             cost = calculate_total_cost(
                 requesting_car, target_node, self.config,
                 cache_mode=cache_mode,
@@ -495,7 +510,7 @@ class VanetEnvironment:
                 z_cached=z_cached,
                 num_uavs=len(self.uavs),
                 rsus=self.rsus,
-                num_users_per_uav=None,
+                num_users_per_uav=num_users_on_uav,
             )
 
         reward = -math.log1p(cost)
@@ -516,6 +531,8 @@ class VanetEnvironment:
             'raw_delay': cost,
             'actual_uav_idx': uav_idx,
             'out_of_range': out_of_range,
+            'fallback': fallback,
+            'disconnected': False,
             'decision': served_decision,
         }
 

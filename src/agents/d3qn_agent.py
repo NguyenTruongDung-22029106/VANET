@@ -67,7 +67,7 @@ class D3QNAgent:
         action_size,
         num_offload_targets,
         config,
-        num_bitrates: int = 4,      # Z — phải khớp VanetEnvironment.NUM_BITRATES
+        num_bitrates: int = None,
     ):
         """
         Args:
@@ -75,13 +75,18 @@ class D3QNAgent:
             action_size         : L*Z*2 + 1 (tổng số actions)
             num_offload_targets : số UAV (đích offload) trong environment  = L
             config              : SimpleNamespace hoặc dict
-            num_bitrates        : số mức bitrate = Z (mặc định 4)
+            num_bitrates        : số mức bitrate = Z (mặc định lấy từ config, fallback 4)
         """
         self.state_size          = state_size
         self.action_size         = action_size
         self.num_offload_targets = num_offload_targets
         self.num_cache_actions   = 2
-        self.num_bitrates        = int(num_bitrates)   # ← FIX: lưu Z để decode đúng
+        backup_z = 4
+        if isinstance(config, dict):
+            backup_z = config.get('num_bitrates', 4)
+        else:
+            backup_z = getattr(config, 'num_bitrates', 4)
+        self.num_bitrates = int(num_bitrates if num_bitrates is not None else backup_z)
 
         self.memory        = deque(maxlen=50_000)
         self.gamma         = 0.95

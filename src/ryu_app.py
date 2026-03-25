@@ -155,16 +155,16 @@ class SdnVanetRyuApp(app_manager.RyuApp):
     def _init_csv(self):
         os.makedirs(self._log_dir, exist_ok=True)
         with open(self._csv_path, 'w') as f:
-            f.write('timestamp,step,car,offload_target,bitrate,z_cached,cache,delay\n')
+            f.write('timestamp,step,car,offload_target,tier,out_of_range,fallback,disconnected,bitrate,z_cached,cache,delay\\n')
         with open(self._log_path, 'w') as f:
             ts = datetime.now().isoformat()
             f.write(f'[{ts}] RUN_START csv={os.path.basename(self._csv_path)}\n')
 
-    def _write_csv(self, step, car, target, bitrate, z_cached, cache, delay):
+    def _write_csv(self, step, car, target, tier, out_of_range, fallback, disconnected, bitrate, z_cached, cache, delay):
         try:
             with open(self._csv_path, 'a') as f:
                 ts = datetime.now().isoformat()
-                f.write(f'{ts},{step},{car},{target},{bitrate},{z_cached},{cache},{delay:.6f}\n')
+                f.write(f'{ts},{step},{car},{target},{tier},{out_of_range},{fallback},{disconnected},{bitrate},{z_cached},{cache},{delay:.6f}\n')
         except Exception:
             pass
 
@@ -535,6 +535,10 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 car_name = resp.get("requesting_car", "") or "car1"
                 ap_name = resp.get("ap_name", "") or ""
                 decision = resp.get("decision", {}) or {}
+                tier = decision.get("tier", "")
+                out_of_range = bool(info.get("out_of_range", False))
+                fallback = bool(info.get("fallback", False))
+                disconnected = bool(info.get("disconnected", False))
 
                 if training:
                     _tpool.execute(agent.store_experience, state, action_idx, reward, next_state, False)
@@ -567,6 +571,7 @@ class SdnVanetRyuApp(app_manager.RyuApp):
 
                 self._write_csv(
                     step, car_name, ap_name,
+                    tier, out_of_range, fallback, disconnected,
                     decision.get("z_req", ""),
                     decision.get("z_cached", ""),
                     decision.get("cache", ""),
