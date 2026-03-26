@@ -61,9 +61,8 @@ def get_config():
         # Run mode
         plot=True,
         algo_mode='ryu_train',   # DRL-first default; 'ryu_env' (Eval) | 'ryu_train' (Train) | 'qea' (baseline)
-        eval_steps=1000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
+        eval_steps=5000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
         no_uav_penalty=1000.0,   # fixed delay penalty khi agent chọn UAV ngoài vùng phủ
-        fallback_penalty=0.5,    # reward penalty khi agent chọn UAV ngoài vùng phủ và được fallback qua MBS
 
         # REST env server (for Ryu training/deploy)
         rest_host='127.0.0.1',

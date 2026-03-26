@@ -30,19 +30,20 @@ Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ
 ### State, Action, Reward
 
 - **State:** vector có kích thước động theo số UAV trong topology.
-  - `2 + L×2 + L + L + 1 + 1 + 1` chiều (với L = số UAV)
-  - Mặc định L=5: **state_size = 25**
+  - `2 + L×2 + L + L + 1 + 1 + 1 + Z` chiều (với L = số UAV, Z = số bitrate)
+  - `z_req` được One-hot encode (Z chiều) để Agent nhận diện rõ mức bitrate yêu cầu
+  - Mặc định L=5, Z=4: **state_size = 28**
 
-- **Action:** 3 chiều — `uav_idx × z_cached × cache_decision` **+ 1 action MBS-tier**.
+- **Action:** 3 chiều — `uav_idx × z_cached × cache_decision` (chỉ UAV, theo Paper Xie et al.).
   - Encoding: `a = uav_idx + L × (z_cached + Z × cache_dec)`
-  - MBS tier: `a = L × Z × 2`
-  - Tổng action = `(#UAV × #bitrate × 2) + 1`
-  - Với mặc định hiện tại 5 UAV, 4 bitrate: **`5 × 4 × 2 + 1 = 41` actions**
+  - Tổng action = `#UAV × #bitrate × 2`
+  - Với mặc định hiện tại 5 UAV, 4 bitrate: **`5 × 4 × 2 = 40` actions**
 
-- **Reward:** `R = -log(1 + delay)`.
+- **Reward:** `R = -log(1 + delay)` + Reward Shaping (`-10` nếu cache sai bitrate).
 
-Ghi chú coverage: hệ thống không tự chuyển sang UAV gần nhất khi agent chọn sai vùng phủ.  
-Ghi chú MBS mapping runtime: REST bridge map xuống AP RSU gần nhất trong vùng phủ.
+- **Cache Miss:** Khi UAV không có video, dùng đường MBS→UAV (backhaul) → Car (Eq.12 Paper).
+
+Ghi chú coverage: hệ thống không tự chuyển sang UAV gần nhất khi agent chọn sai vùng phủ.
 
 ---
 

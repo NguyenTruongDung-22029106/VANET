@@ -8,11 +8,13 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 > - UAV dùng `addAccessPoint` (không phải `addAircraft`)
 > - Mesh link (wlan1) đã xóa — không còn trong `main_thesis.py`
 > - `models.py` hợp nhất tất cả hàm delay vào 1 API duy nhất: `calculate_total_cost()`
-> - Reward đổi từ `social_welfare − cost` → `reward = -log(1+delay)`
+> - Reward đổi từ `social_welfare − cost` → `reward = -log(1+delay)` + Reward Shaping (`-10` nếu cache sai bitrate)
 > - `w_delay`, `w_cr` đã xóa khỏi `config.py`
 > - **Action space mở rộng từ 2D → 3D** (thêm chiều bitrate `z_cached`)
+> - **MBS đã bị loại khỏi Action Space** — chỉ còn UAV (theo đúng Paper Xie et al.)
+> - **State thêm One-hot encoding** cho `z_req` (để Agent nhận diện bitrate yêu cầu)
 > - `encode_action()` cập nhật nhận đủ 3 tham số `(uav_idx, z_cached, cache)`
-> - `get_action_vector()` trong `D3QNAgent` cập nhật decode đúng 3 chiều
+> - `get_action_vector()` trong `D3QNAgent` cập nhật decode đúng 3 chiều (UAV-only)
 > - RSU và UAV **không còn hardcode vị trí** — đặt thủ công qua `plotGraph()` GUI
 > - `benchmark.py` được implement để so sánh D3QN vs QEA không cần Mininet
 
@@ -25,8 +27,8 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 | **Control Layer (SDN Controller)** | **`src/control_layer.py`: `class ControlLayer(env, agent)`** — điều phối offloading và caching mỗi bước. |
 | SDN Controller (logic) | `ControlLayer` giữ env + agent; mỗi step: state → action → env.step(action) → store_experience → train. |
 | DRL-SDNC (state → action → rule) | `src/agents/d3qn_agent.py`: `D3QNAgent.select_action(state)` → action_idx |
-| State gathering (vị trí, cache, channel) | `src/environment.py`: `VanetEnvironment.get_state()` — positions (cars/UAVs), khoảng cách xe→UAV, mức đầy cache, video popularity |
-| Policy / Rule installation | Action = (uav_idx × z_cached × cache_decision) + MBS tier; thực thi qua `env.step(action_idx)` |
+| State gathering (vị trí, cache, channel) | `src/environment.py`: `VanetEnvironment.get_state()` — positions (cars/UAVs), khoảng cách xe→UAV, mức đầy cache, video popularity, `z_req` (One-hot) |
+| Policy / Rule installation | Action = (uav_idx × z_cached × cache_decision) — chỉ UAV, không MBS; thực thi qua `env.step(action_idx)` |
 | Reward | `reward = -log(1 + delay)`, delay (giây) từ `calculate_total_cost()` |
 
 ---
@@ -67,7 +69,7 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 
 ---
 
-## Action space (3 chiều — hiện tại)
+## Action space (3 chiều — UAV-only, theo Paper Xie et al.)
 
 | Chiều | Giá trị | Mô tả |
 |-------|---------|-------|
@@ -76,10 +78,12 @@ Bảng đối chiếu khái niệm trong các bài báo SDN–VANET–UAV với 
 | `cache_decision` | `0, 1` | Có lưu đệm nội dung hay không |
 
 **Encoding:** `action_idx = uav_idx + L × (z_cached + Z × cache_dec)`  
-**MBS tier:** `action_idx = L × Z × 2`  
-**Tổng action_size:** `L × Z × 2 + 1`
+**Tổng action_size:** `L × Z × 2`
 
-**Mặc định hiện tại** (L=5 UAV, Z=4 bitrates): `action_size = 5 × 4 × 2 + 1 = 41`
+**Mặc định hiện tại** (L=5 UAV, Z=4 bitrates): `action_size = 5 × 4 × 2 = 40`
+
+> **Ghi chú:** MBS không có trong Action Space. MBS chỉ tham gia với vai trò Backhaul
+> (MBS→UAV) khi Cache Miss (Eq.12). Điều này đúng với Paper Xie et al. 2022.
 
 ```python
 # Encode (environment.py)
@@ -119,4 +123,4 @@ cache    = t // Z
 
 ---
 
-*Cập nhật: tháng 3/2026 — sau cleanup, fix action space 3D, implement benchmark.py, xóa hardcode vị trí RSU/UAV.*
+*Cập nhật: tháng 3/2026 — sau cleanup, fix action space 3D (UAV-only), implement One-hot z_req, Reward Shaping, loại MBS khỏi actions, implement benchmark.py, xóa hardcode vị trí RSU/UAV.*

@@ -48,17 +48,16 @@ class DuelingDQN(nn.Module):
 
 
 class D3QNAgent:
-    """D3QN agent for tier decision + bitrate selection + caching.
+    """D3QN agent for UAV selection + bitrate caching.
 
-    Action layout (3-chiều, khớp VanetEnvironment):
-      - UAV tier actions: a = uav_idx + L*(z_cached + Z*cache_dec)
+    Action layout (3-chiều, khớp VanetEnvironment, theo Paper Xie et al.):
+      a = uav_idx + L*(z_cached + Z*cache_dec)
           uav_idx  in [0..L-1]
           z_cached in [0..Z-1]  ← bitrate cần cache
           cache_dec in {0, 1}
-      - MBS tier action : a = L*Z*2  (= _uav_action_size)
 
-    Tổng: action_size = L*Z*2 + 1
-    Với mặc định L=5, Z=4: action_size = 41
+    Tổng: action_size = L*Z*2
+    Với mặc định L=5, Z=4: action_size = 40
     """
 
     def __init__(
@@ -72,7 +71,7 @@ class D3QNAgent:
         """
         Args:
             state_size          : kích thước vector state
-            action_size         : L*Z*2 + 1 (tổng số actions)
+            action_size         : L*Z*2 (tổng số actions, chỉ UAV)
             num_offload_targets : số UAV (đích offload) trong environment  = L
             config              : SimpleNamespace hoặc dict
             num_bitrates        : số mức bitrate = Z (mặc định lấy từ config, fallback 4)
@@ -117,10 +116,6 @@ class D3QNAgent:
     # Helpers
     # ------------------------------------------------------------------
 
-    def _mbs_action_idx(self) -> int:
-        """Index của MBS-tier action: L * Z * 2."""
-        return int(self.num_offload_targets) * int(self.num_bitrates) * self.num_cache_actions
-
     def select_action(self, state):
         """
         Epsilon-greedy.
@@ -142,30 +137,17 @@ class D3QNAgent:
 
     def get_action_vector(self, action_idx):
         """
-        Decode action_idx thành tuple mô tả quyết định — 3-chiều.
-
-        Returns:
-          ('mbs', -1, -1, 0)               — MBS/RSU tier
-          ('uav', uav_idx, z_cached, cache) — UAV tier
-        where:
-          uav_idx  : UAV được chọn       [0..L-1]
-          z_cached : bitrate cần cache   [0..Z-1]
-          cache    : 0=no_cache, 1=cache
+        Decode action_idx thành tuple (uav_idx, z_cached, cache) — UAV-only.
         """
-        a = int(action_idx)
+        a = int(action_idx) % max(self.action_size, 1)
         L = max(int(self.num_offload_targets), 1)
-        Z = max(int(self.num_bitrates), 1)                 # ← FIX: dùng Z thay vì bỏ qua
-        mbs_idx = self._mbs_action_idx()
+        Z = max(int(self.num_bitrates), 1)
 
-        if a == mbs_idx:
-            return ('mbs', -1, -1, 0)
-
-        # ← FIX: decode đúng encoding 3 chiều của VanetEnvironment
         uav_idx  = a % L
         t        = a // L
         z_cached = int(t % Z)
         cache    = int(t // Z)
-        return ('uav', int(uav_idx), int(z_cached), int(cache))
+        return (int(uav_idx), int(z_cached), int(cache))
 
     @staticmethod
     def _to_numpy_state(x):
