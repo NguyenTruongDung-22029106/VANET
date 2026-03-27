@@ -155,16 +155,28 @@ class SdnVanetRyuApp(app_manager.RyuApp):
     def _init_csv(self):
         os.makedirs(self._log_dir, exist_ok=True)
         with open(self._csv_path, 'w') as f:
-            f.write('timestamp,step,car,offload_target,tier,out_of_range,fallback,disconnected,bitrate,z_cached,cache,delay\\n')
+            f.write(
+                'timestamp,step,car,offload_target,tier,out_of_range,fallback,disconnected,'
+                'bitrate,z_cached,cache,delay,distance_2d,overshoot,oor_penalty,base_reward,reward_final\n'
+            )
         with open(self._log_path, 'w') as f:
             ts = datetime.now().isoformat()
             f.write(f'[{ts}] RUN_START csv={os.path.basename(self._csv_path)}\n')
 
-    def _write_csv(self, step, car, target, tier, out_of_range, fallback, disconnected, bitrate, z_cached, cache, delay):
+    def _write_csv(
+        self, step, car, target, tier, out_of_range, fallback, disconnected,
+        bitrate, z_cached, cache, delay, distance_2d, overshoot, oor_penalty,
+        base_reward, reward_final,
+    ):
         try:
             with open(self._csv_path, 'a') as f:
                 ts = datetime.now().isoformat()
-                f.write(f'{ts},{step},{car},{target},{tier},{out_of_range},{fallback},{disconnected},{bitrate},{z_cached},{cache},{delay:.6f}\n')
+                f.write(
+                    f'{ts},{step},{car},{target},{tier},{out_of_range},{fallback},{disconnected},'
+                    f'{bitrate},{z_cached},{cache},{delay:.6f},{float(distance_2d):.6f},'
+                    f'{float(overshoot):.6f},{float(oor_penalty):.6f},'
+                    f'{float(base_reward):.6f},{float(reward_final):.6f}\n'
+                )
         except Exception:
             pass
 
@@ -526,7 +538,18 @@ class SdnVanetRyuApp(app_manager.RyuApp):
             try:
                 step += 1
                 action_idx = int(_tpool.execute(agent.select_action, state))
-                resp = self._rest_post("/step", {"action_idx": action_idx})
+                resp = self._rest_post_with_retry(
+                    "/step",
+                    {"action_idx": action_idx},
+                    retries=3,
+                    sleep_s=0.1,
+                    timeout=5.0,
+                )
+                if not isinstance(resp, dict):
+                    self._write_log(f"REST /step failed at step={step}; skipping this step")
+                    self.logger.warning("REST /step failed at step=%d; skip step", step)
+                    time.sleep(0.10)
+                    continue
 
                 next_state = np.array(resp.get("next_state", []), dtype=np.float32)
                 reward = float(resp.get("reward", 0.0))
@@ -539,6 +562,16 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 out_of_range = bool(info.get("out_of_range", False))
                 fallback = bool(info.get("fallback", False))
                 disconnected = bool(info.get("disconnected", False))
+                def _to_float(v, default=0.0):
+                    try:
+                        return float(v)
+                    except (TypeError, ValueError):
+                        return float(default)
+                distance_2d = _to_float(info.get("distance_2d", 0.0), 0.0)
+                overshoot = _to_float(info.get("overshoot", 0.0), 0.0)
+                oor_penalty = _to_float(info.get("oor_penalty", 0.0), 0.0)
+                base_reward = _to_float(info.get("base_reward", reward), reward)
+                reward_final = _to_float(info.get("reward_final", reward), reward)
 
                 if training:
                     _tpool.execute(agent.store_experience, state, action_idx, reward, next_state, False)
@@ -576,14 +609,18 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                     decision.get("z_cached", ""),
                     decision.get("cache", ""),
                     delay,
+                    distance_2d,
+                    overshoot,
+                    oor_penalty,
+                    base_reward,
+                    reward_final,
                 )
 
                 if step % 100 == 1:
                     tier = decision.get("tier", "")
-                    out_of_range = bool(info.get("out_of_range", False))
                     self.logger.info(
-                        "step %d  %s->%s  tier=%s  cache=%s  z_cached=%s  out_of_range=%s  delay=%.4fs",
-                        step, car_name, ap_name, tier, decision.get("cache", ""), decision.get("z_cached", ""), out_of_range, delay,
+                        "step %d  %s -> %s  cache = %s  z_cached = %s  delay = %.4fs",
+                        step, car_name, ap_name, decision.get("cache", ""), decision.get("z_cached", ""), delay,
                     )
                     with self._offload_lock:
                         tbl = dict(self._offload_table)

@@ -407,35 +407,17 @@ def run_rest_env_server(net, config, env, cars, uavs, host="127.0.0.1", port=808
                         tier = str(decision.get("tier", "uav"))
                         uav_idx = int(decision.get("uav_idx", 0))
 
-                        # Find requesting car node for distance computations
-                        _cur_car_node = None
-                        for _c in cars:
-                            if getattr(_c, 'name', '') == cur_car:
-                                _cur_car_node = _c
-                                break
-
-                        def _nearest_mbs_ap():
-                            if _cur_car_node is None:
-                                return ""
-                            best_d = None
-                            best_name = ""
-                            for ap in getattr(net, "aps", []):
-                                name_l = getattr(ap, "name", "").lower()
-                                if ("rsu" not in name_l) and ("mbs" not in name_l):
-                                    continue
-                                d_ap = _car_ap_distance(_cur_car_node, ap)
-                                if best_d is None or d_ap < best_d:
-                                    best_d = d_ap
-                                    best_name = getattr(ap, "name", "")
-                            return best_name
-
                         ap_name = ""
-                        if tier == "mbs":
-                            ap_name = _nearest_mbs_ap()
-                        elif tier == "uav" and 0 <= uav_idx < len(uavs):
-                            in_range = not bool(step_info.get("out_of_range", False))
-                            if in_range:
+                        paper_uav_only_mode = bool(getattr(config, 'paper_uav_only_mode', True))
+                        if tier == "uav" and 0 <= uav_idx < len(uavs):
+                            if paper_uav_only_mode:
+                                # Paper UAV-only path: luôn map về UAV agent đã chọn.
+                                # MBS chỉ tham gia backhaul trong delay model.
                                 ap_name = uavs[uav_idx].name
+                            else:
+                                in_range = not bool(step_info.get("out_of_range", False))
+                                if in_range:
+                                    ap_name = uavs[uav_idx].name
 
                         with _assoc_lock:
                             forced = getattr(net, "_car_forced_ap", None)
@@ -563,16 +545,22 @@ def run_simulation(config):
         uav.start([c1])
     s1.start([c1])
 
-    # Set vị trí UAV
-    for uav in uavs:
+    # Set vị trí UAV theo layout đã tính sẵn để đồng bộ model/plot/runtime.
+    for idx, uav in enumerate(uavs):
         try:
-            x, y = get_node_xy(uav)
+            if idx < len(uav_pos_list):
+                x, y, z = uav_pos_list[idx]
+            else:
+                x, y = get_node_xy(uav)
+                z = float(UAV_ALTITUDE)
             # Mininet-WiFi requires tuples for internal position logic
-            uav.position = (x, y, float(UAV_ALTITUDE))
+            uav.position = (float(x), float(y), float(z))
             if hasattr(uav, 'pos'):
                 uav.pos = uav.position
+            if isinstance(getattr(uav, 'params', None), dict):
+                uav.params['position'] = uav.position
             if hasattr(uav, 'set_pos_wmediumd'):
-                uav.set_pos_wmediumd((x, y, UAV_ALTITUDE))
+                uav.set_pos_wmediumd((float(x), float(y), float(z)))
         except Exception:
             pass
 
@@ -783,36 +771,18 @@ def run_simulation(config):
                                         _cm, _zr, _zc = 0, _z_req, _z_req
 
                                 if _out_of_range:
-                                    _mbs_node = None
-                                    _best_d = None
-                                    for _rsu in rsus:
-                                        _d_mbs = _car_ap_distance(_car, _rsu)
-                                        if _best_d is None or _d_mbs < _best_d:
-                                            _best_d = _d_mbs
-                                            _mbs_node = _rsu
-                                    if _mbs_node is not None:
-                                        _users_bs = sum(
-                                            1 for _ck in cars
-                                            if _car_ap_distance(_ck, _mbs_node) <= float(MBS_RANGE)
-                                        )
-                                        _delay = _mbs_delay(
-                                            _car, _mbs_node, config,
-                                            z_req=_z_req,
-                                            num_users_bs=_users_bs,
-                                        )
-                                    else:
-                                        _delay = float(getattr(config, 'no_uav_penalty', 1000.0))
-                                else:
-                                    _delay = _calc_cost(
-                                        _car, _target, config,
-                                        cache_mode=_cm, all_uavs=uavs,
-                                        z_req=_zr, z_cached=_zc,
-                                        num_uavs=len(uavs),
-                                        rsus=rsus,
-                                        num_users_per_uav=_users_rt,
-                                    )
-                                if _out_of_range:
                                     _out_count += 1
+
+                                # --- PHYSICS-BASED DELAY (SAME AS D3QN) ---
+                                _delay = _calc_cost(
+                                    _car, _target, config,
+                                    cache_mode=_cm, all_uavs=uavs,
+                                    z_req=_zr, z_cached=_zc,
+                                    num_uavs=len(uavs),
+                                    rsus=rsus,
+                                    num_users_per_uav=_users_rt,
+                                )
+                                # -----------------------------------------
                             _ef.write(f"{_ep},{_st},{_delay:.6f}\n")
                             _mf.write(
                                 f"{_ep},{_st},{_uav_l},{_f_req},{_z_req},{int(_out_of_range)},{_delay:.6f}\n"

@@ -107,6 +107,7 @@ def _plos_alt(altitude: float, tx_node, user_node, config):
 def _path_loss_dB_alt(tx_node, user_node, config, altitude: float):
     """
     Path loss (dB) similar to _path_loss_dB but parameterized by altitude.
+    Uses log10(d / d0) so model remains correct when d0 != 1.
     """
     fc    = _cfg(config, 'fc')
     d0    = _cfg(config, 'd0')
@@ -116,9 +117,10 @@ def _path_loss_dB_alt(tx_node, user_node, config, altitude: float):
     d   = max(dist_3d(tx_node, user_node, float(altitude)), 1e-3)
     c   = 3e8
     fsp = 20 * math.log10(4 * math.pi * fc * d0 / c)   # free-space reference
-
-    gL  = fsp + 10 * nL  * math.log10(d) + sL
-    gNL = fsp + 10 * nNL * math.log10(d) + sNL
+    d0_eff = max(float(d0), 1e-9)
+    d_ratio = max(d / d0_eff, 1e-9)
+    gL  = fsp + 10 * nL  * math.log10(d_ratio) + sL
+    gNL = fsp + 10 * nNL * math.log10(d_ratio) + sNL
 
     p = _plos_alt(altitude, tx_node, user_node, config)
     return p * gL + (1 - p) * gNL
@@ -155,8 +157,8 @@ def _plos(uav_node, user_node, config):
 def _path_loss_dB(uav_node, user_node, config):
     """
     g_{l,k} = P^LoS·g^LoS + (1-P^LoS)·g^NLoS  (dB)
-    g^LoS  = 20log(4πf_c·d_0/c) + 10·n_LoS·log(d) + s_LoS   Eq(1)
-    g^NLoS = 20log(4πf_c·d_0/c) + 10·n_NLoS·log(d) + s_NLoS  Eq(2)
+    g^LoS  = 20log(4πf_c·d_0/c) + 10·n_LoS·log(d/d0) + s_LoS   Eq(1)
+    g^NLoS = 20log(4πf_c·d_0/c) + 10·n_NLoS·log(d/d0) + s_NLoS  Eq(2)
     """
     H     = _cfg(config, 'H')
     fc    = _cfg(config, 'fc')
@@ -167,8 +169,10 @@ def _path_loss_dB(uav_node, user_node, config):
     d   = max(_dist_3d(uav_node, user_node, H), 1e-3)
     c   = 3e8
     fsp = 20 * math.log10(4 * math.pi * fc * d0 / c)   # free-space reference
-    gL  = fsp + 10 * nL  * math.log10(d) + sL
-    gNL = fsp + 10 * nNL * math.log10(d) + sNL
+    d0_eff = max(float(d0), 1e-9)
+    d_ratio = max(d / d0_eff, 1e-9)
+    gL  = fsp + 10 * nL  * math.log10(d_ratio) + sL
+    gNL = fsp + 10 * nNL * math.log10(d_ratio) + sNL
 
     p = _plos(uav_node, user_node, config)
     return p * gL + (1 - p) * gNL

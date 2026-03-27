@@ -135,9 +135,12 @@ class QEAJointCAUA:
 
         self.K = len(self.cars)
         self.uav_count = len(self.uavs)
-        # Hướng 1: thêm 1 hàng “MBS/RSU tier” như một server bổ sung.
-        # Khi chọn row này, objective dùng mbs-only delay và bỏ qua cache UAV.
-        self.has_mbs = bool(self.rsus)
+        # Direct-MBS baseline chỉ bật khi cần so sánh legacy.
+        self.enable_direct_mbs_baseline = bool(
+            getattr(config, 'enable_direct_mbs_baseline', False)
+        )
+        # Mặc định paper-consistent: chỉ UAV association.
+        self.has_mbs = bool(self.rsus) and self.enable_direct_mbs_baseline
         self.mbs_row_idx = self.uav_count if self.has_mbs else None
         self.L = self.uav_count + (1 if self.has_mbs else 0)
         self.F = int(F)
@@ -332,29 +335,6 @@ class QEAJointCAUA:
                 if X_i[l, k] == 0:
                     continue
                 car = self.cars[k]
-
-                # If the chosen UAV cannot cover this user in Mininet,
-                # serve via RSU/MBS baseline (delay no longer depends on UAV caching).
-                if dist_2d(car, uav) > float(UAV_RANGE):
-                    nearest_mbs = min(self.rsus, key=lambda r: dist_2d(car, r)) if self.rsus else None
-                    for f in range(self.F):
-                        for z_req in range(self.Z):
-                            p = float(p_fz[f, z_req])
-                            if p <= 0.0:
-                                continue
-                            if nearest_mbs is not None:
-                                d_mbs = _mbs_delay(
-                                    car,
-                                    nearest_mbs,
-                                    self.config,
-                                    z_req=z_req,
-                                    num_users_bs=1,
-                                )
-                                total += p * float(d_mbs)
-                            else:
-                                penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
-                                total += p * penalty
-                    continue
 
                 # Precompute miss + direct delays theo z (không phụ thuộc f)
                 d_direct_by_z = {}

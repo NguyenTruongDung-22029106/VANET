@@ -60,9 +60,14 @@ def get_config():
 
         # Run mode
         plot=True,
-        algo_mode='ryu_train',   # DRL-first default; 'ryu_env' (Eval) | 'ryu_train' (Train) | 'qea' (baseline)
+        algo_mode='qea',   # DRL-first default; 'ryu_env' (Eval) | 'ryu_train' (Train) | 'qea' (baseline)
         eval_steps=5000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
         no_uav_penalty=1000.0,   # fixed delay penalty khi agent chọn UAV ngoài vùng phủ
+        paper_uav_only_mode=True,  # true: không direct MBS->car trong DRL path
+        oor_penalty_alpha=10.0,    # reward shaping theo overshoot ngoài vùng phủ
+        oor_penalty_beta=1.25,     # penalty exponent
+        oor_penalty_cap=5.0,       # cap để tránh penalty lấn át toàn bộ reward
+        enable_direct_mbs_baseline=False,  # chỉ bật nếu cần so sánh baseline direct-MBS cũ
 
         # REST env server (for Ryu training/deploy)
         rest_host='127.0.0.1',

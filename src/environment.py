@@ -11,7 +11,7 @@ import math
 import random
 import numpy as np
 from types import SimpleNamespace
-from models import calculate_total_cost, calculate_mbs_only_delay
+from models import calculate_total_cost
 from helpers import (
     get_node_xy, dist_2d,
 )
@@ -193,8 +193,7 @@ class VanetEnvironment:
             len(self.uavs) * 2 +      # UAV positions
             len(self.uavs) +          # distance user→each UAV
             len(self.uavs) +          # cache fullness per UAV
-            1 +                       # distance user→nearest MBS/RSU
-            1 +                       # normalized load around nearest MBS/RSU
+            len(self.uavs) * 3 +      # NEW: Cache hit, UAV load, Transcoding avail per UAV
             1 +                       # popularity of requested chunk
             self.Z                    # z_req one-hot encoded
         )
@@ -220,6 +219,9 @@ class VanetEnvironment:
         self.requesting_car = self.cars[0] if self.cars else None
 
         self._norm_scale = float(getattr(config, 'plot_max', 400))
+        self.oor_penalty_alpha = float(getattr(config, 'oor_penalty_alpha', 2.0))
+        self.oor_penalty_beta = float(getattr(config, 'oor_penalty_beta', 2.0))
+        self.oor_penalty_cap = float(getattr(config, 'oor_penalty_cap', 5.0))
         self._last_actual_uav_idx = None
         self._last_served_request = None
 
@@ -266,15 +268,29 @@ class VanetEnvironment:
         for l in range(len(self.uavs)):
             usage_bits = self._cache_usage_bits(l)
             sv.append(min(usage_bits / max(self.C_cache_bits, 1.0), 1.0))
+        
+        # --- NEW STATE FEATURES ---
+        for l in range(len(self.uavs)):
+            # 1. Cache hit indicator (0.0 or 1.0)
+            sv.append(float(self.Y[l, self.f_req, self.z_req]))
+            
+            # 2. UAV Load (normalized 0 to 1)
+            uav_node = self.uavs[l]
+            uav_users = _count_cars_in_uav_range(self.cars, uav_node)
+            uav_capacity = float(getattr(self.config, 'M', 30))
+            sv.append(min(uav_users / max(uav_capacity, 1.0), 1.0))
+            
+            # 3. Transcoding availability
+            can_transcode = 0.0
+            for z2 in range(self.z_req + 1, self.Z):
+                if int(self.Y[l, self.f_req, z2]) == 1:
+                    can_transcode = 1.0
+                    break
+            sv.append(can_transcode)
+        # --------------------------
 
-        nearest_mbs = _nearest_in_range_rsu(car, self.rsus) if car is not None else None
-        if car is None or nearest_mbs is None:
-            sv.extend([1.0, 0.0])
-        else:
-            d_mbs = min(dist_2d(car, nearest_mbs) / ns, 1.0)
-            mbs_users = _count_cars_in_mbs_range(self.cars, nearest_mbs)
-            mbs_load = min(float(mbs_users) / float(_effective_mbs_capacity(self.config)), 1.0)
-            sv.extend([d_mbs, mbs_load])
+
+        # --- END NEW STATE FEATURES ---
 
         p_fz = float(self._zipf_probs_fz[self.f_req, self.z_req])
         sv.append(p_fz)
@@ -357,15 +373,18 @@ class VanetEnvironment:
         uav_idx     = int(max(0, min(int(uav_idx), len(self.uavs) - 1)))
         target_node = self.uavs[uav_idx]
 
+        # ── out_of_range: logging + reward shaping theo overshoot ─────────────
+        distance_2d = 0.0
         out_of_range = False
         if requesting_car is not None:
-            if dist_2d(requesting_car, target_node) > UAV_RANGE:
+            distance_2d = float(dist_2d(requesting_car, target_node))
+            if distance_2d > float(UAV_RANGE):
                 out_of_range = True
 
         # ── Cache placement (FIX: clamp z_cached_action vào [0, Z-1]) ──────────
         z_cached_action = int(max(0, min(int(z_cached_action), self.Z - 1)))
 
-        if cache_dec == 1 and not out_of_range:
+        if cache_dec == 1:
             self.Y[uav_idx, f, z_cached_action] = 1
             # Capacity enforcement: random eviction
             while self._cache_usage_bits(uav_idx) > self.C_cache_bits:
@@ -393,29 +412,8 @@ class VanetEnvironment:
                 cache_mode = 0      # Scenario 3: cache miss — MBS→UAV→Car (Eq.12)
                 z_cached   = z_req
 
-        # ── Out-of-range: phạt nặng, không fallback (theo Paper) ─────────────
-        if out_of_range:
-            oor_penalty = 0.0
-            if cache_dec == 1 and z_cached_action != z_req:
-                oor_penalty = -10.0
-            cost = float(getattr(self.config, 'no_uav_penalty', 1000.0))
-            reward = -math.log1p(cost) + oor_penalty
-            served_decision = {
-                'tier': 'uav', 'uav_idx': int(uav_idx),
-                'offload_name': getattr(target_node, 'name', f'uav{uav_idx + 1}'),
-                'cache': 0, 'f_req': f, 'z_req': z_req, 'z_cached': int(z_cached_action),
-                'popularity': float(self._zipf_probs_fz[f, z_req]),
-            }
-            self._last_actual_uav_idx = uav_idx
-            self._last_served_request = dict(served_decision)
-            self._new_request()
-            return self.get_state(), reward, False, {
-                'raw_delay': cost, 'actual_uav_idx': uav_idx,
-                'out_of_range': True, 'fallback': False,
-                'disconnected': False, 'decision': served_decision,
-            }
-
-        # ── In-range: tính delay theo 3 kịch bản Eq(10-12) ───────────────────
+        # ── Physics-based delay: mọi UAV đều tính delay thật ─────────────────
+        # UAV xa → SINR thấp → rate thấp → delay tự động tăng cao
         num_users_on_uav = _count_cars_in_uav_range(self.cars, target_node)
         cost = calculate_total_cost(
             requesting_car, target_node, self.config,
@@ -428,14 +426,14 @@ class VanetEnvironment:
             num_users_per_uav=num_users_on_uav,
         )
 
-        # ── Reward Shaping ────────────────────────────────────────────────────
-        action_bonus = 0.0
-        if cache_dec == 1:
-            if z_cached_action != z_req:
-                action_bonus = -10.0  # Phạt cache sai bitrate
-
+        # ── Reward Shaping: delay + overshoot penalty (không phạt cache mismatch cứng) ──
         base_reward = -math.log1p(cost)
-        reward = base_reward + action_bonus
+        overshoot = max(0.0, (distance_2d / float(UAV_RANGE)) - 1.0)
+        oor_penalty = min(
+            self.oor_penalty_alpha * (overshoot ** self.oor_penalty_beta),
+            self.oor_penalty_cap,
+        )
+        reward = base_reward - oor_penalty
         served_decision = {
             'tier': 'uav',
             'uav_idx': int(uav_idx),
@@ -452,7 +450,12 @@ class VanetEnvironment:
         return self.get_state(), reward, False, {
             'raw_delay': cost,
             'actual_uav_idx': uav_idx,
-            'out_of_range': False,
+            'distance_2d': float(distance_2d),
+            'overshoot': float(overshoot),
+            'oor_penalty': float(oor_penalty),
+            'base_reward': float(base_reward),
+            'reward_final': float(reward),
+            'out_of_range': out_of_range,
             'fallback': False,
             'disconnected': False,
             'decision': served_decision,

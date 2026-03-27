@@ -216,9 +216,9 @@ class D3QNAgent:
             except TypeError:
                 state_dict = torch.load(self.model_path, map_location=device)
 
-            self.policy_net.load_state_dict(state_dict, strict=False)
-            self.target_net.load_state_dict(self.policy_net.state_dict(), strict=False)
-            print(f"Model loaded from {self.model_path} (strict=False)")
+            self.policy_net.load_state_dict(state_dict, strict=True)
+            self.target_net.load_state_dict(self.policy_net.state_dict(), strict=True)
+            print(f"Model loaded from {self.model_path} (strict=True)")
             return True
         except Exception as e:
             print(f"Error loading model: {e}")
