@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-Configuration module: trả về một object cấu hình tĩnh (không dùng cờ/argparse).
 
 Muốn đổi tham số, sửa trực tiếp các giá trị trong hàm get_config().
 """
