@@ -29,9 +29,7 @@ from typing import List, Tuple
 import numpy as np
 
 # Fix 4: dùng chung cost model với D3QN — so sánh công bằng
-from models import calculate_total_cost as _models_cost, calculate_mbs_only_delay as _mbs_delay
-from helpers import dist_2d
-from constants import UAV_RANGE
+from models import calculate_total_cost as _models_cost
 
 
 # ============================================================
@@ -120,7 +118,7 @@ class QEAJointCAUA:
         self,
         cars:     List,
         uavs:     List,
-        rsus:     List,          # giữ để tương thích API; paper chỉ xét UAV
+        rsus:     List,          # dùng cho backhaul delay khi cache miss
         config         = None,
         F:        int  = 10,
         Z:        int  = 4,
@@ -135,14 +133,7 @@ class QEAJointCAUA:
 
         self.K = len(self.cars)
         self.uav_count = len(self.uavs)
-        # Direct-MBS baseline chỉ bật khi cần so sánh legacy.
-        self.enable_direct_mbs_baseline = bool(
-            getattr(config, 'enable_direct_mbs_baseline', False)
-        )
-        # Mặc định paper-consistent: chỉ UAV association.
-        self.has_mbs = bool(self.rsus) and self.enable_direct_mbs_baseline
-        self.mbs_row_idx = self.uav_count if self.has_mbs else None
-        self.L = self.uav_count + (1 if self.has_mbs else 0)
+        self.L = self.uav_count
         self.F = int(F)
         self.Z = int(Z)
 
@@ -220,9 +211,6 @@ class QEAJointCAUA:
 
         # Lines 17-22: đảm bảo mỗi UAV l không quá M users
         for l in range(self.L):
-            # MBS tier không bị giới hạn theo 15c
-            if self.has_mbs and l == self.mbs_row_idx:
-                continue
             while int(X[l, :].sum()) > M:
                 ones = np.where(X[l, :] == 1)[0]
                 drop = int(self.rng.choice(ones))
@@ -231,10 +219,7 @@ class QEAJointCAUA:
         # Lines 23-28: gán lại user bị bỏ rơi sau bước trên
         for k in range(self.K):
             if int(X[:, k].sum()) == 0:
-                candidates = [
-                    l for l in range(self.L)
-                    if (self.has_mbs and l == self.mbs_row_idx) or int(X[l, :].sum()) < M
-                ]
+                candidates = [l for l in range(self.L) if int(X[l, :].sum()) < M]
                 if not candidates:
                     candidates = list(range(self.L))
                 l = int(self.rng.choice(candidates))
@@ -296,40 +281,10 @@ class QEAJointCAUA:
             return total
 
         p_fz = self.p_fz  # shape (F, Z)
-        p_z  = p_fz.sum(axis=0)  # shape (Z,) — used for MBS tier (delay independent of f)
-        m_cfg = max(int(getattr(self.config, 'M', 30)), 1)
         for l in range(self.L):
-            # MBS tier row: ignore UAV cache and use MBS-only delay
-            if self.has_mbs and l == self.mbs_row_idx:
-                users_on_mbs = max(int(np.sum(X_i[l, :])), 1)
-                for k in range(self.K):
-                    if X_i[l, k] == 0:
-                        continue
-                    car = self.cars[k]
-                    for z_req in range(self.Z):
-                        prob = float(p_z[z_req])
-                        if prob <= 0.0:
-                            continue
-                        if self.rsus:
-                            nearest_mbs = min(self.rsus, key=lambda r: dist_2d(car, r))
-                            d_mbs = _mbs_delay(
-                                car,
-                                nearest_mbs,
-                                self.config,
-                                z_req=z_req,
-                                num_users_bs=users_on_mbs,
-                            )
-                            total += prob * float(d_mbs)
-                        else:
-                            penalty = float(getattr(self.config, 'no_uav_penalty', 1000.0))
-                            total += prob * penalty
-                continue
-
             uav = self.uavs[l]
             Y_l = Y_i[l]  # (F, Z)
             users_on_l = max(int(np.sum(X_i[l, :])), 1)
-            # share resource split is handled inside calculate_total_cost; cpu_l kept for compatibility
-            cpu_l = min(float(users_on_l) / float(m_cfg), 0.95)
 
             for k in range(self.K):
                 if X_i[l, k] == 0:
@@ -495,10 +450,7 @@ class QEAJointCAUA:
         policy: List[int] = []
         for k in range(self.K):
             row = int(np.argmax(self.X_best[:, k]))
-            if self.has_mbs and row == self.mbs_row_idx:
-                policy.append(-1)  # MBS tier
-            else:
-                policy.append(row)
+            policy.append(row)
         return policy
 
     def get_offload_for_car(self, car_idx: int) -> int:
@@ -507,7 +459,4 @@ class QEAJointCAUA:
         k = int(car_idx)
         if not (0 <= k < self.K):
             raise IndexError("car_idx out of range")
-        row = int(np.argmax(self.X_best[:, k]))
-        if self.has_mbs and row == self.mbs_row_idx:
-            return -1
-        return row
+        return int(np.argmax(self.X_best[:, k]))

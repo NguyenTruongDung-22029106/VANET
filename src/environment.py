@@ -2,7 +2,7 @@
 """
 environment.py — VanetEnvironment: Môi trường học tăng cường theo mô hình Xie et al.
 
-State  : động theo số UAV, gồm xe requesting + UAV features + MBS context + popularity
+State  : động theo số UAV, gồm xe requesting + UAV features + popularity
 Action : (#UAV × #bitrate × cache_decision) — chỉ UAV, không có MBS tier
          Encoding: a = uav_idx + L*(z_cached + Z*cache_dec)
 Reward : -log(1+delay), raw delay trong info['raw_delay']
@@ -10,22 +10,12 @@ Reward : -log(1+delay), raw delay trong info['raw_delay']
 import math
 import random
 import numpy as np
-from types import SimpleNamespace
 from models import calculate_total_cost
 from helpers import (
     get_node_xy, dist_2d,
 )
-from constants import UAV_RANGE, MBS_RANGE
+from constants import UAV_RANGE
 
-
-# ============================================================
-# Helper: tính phân phối Zipf
-# ============================================================
-
-def _compute_zipf_probs(num_videos: int, gamma: float) -> np.ndarray:
-    ranks = np.arange(1, num_videos + 1, dtype=np.float64)
-    raw   = ranks ** (-gamma)
-    return raw / raw.sum()
 
 def _compute_zipf_joint_probs(num_videos: int, num_bitrates: int, gamma: float) -> np.ndarray:
     """Zipf trên toàn bộ cặp (f,z), shape (F, Z)."""
@@ -42,77 +32,6 @@ def _chunk_size_bits(z_idx: int, config) -> float:
     return s0_bits * (int(z_idx) + 1)
 
 
-# ============================================================
-# Helper: tạo dummy nodes từ config
-# ============================================================
-
-def _make_dummy_nodes(config):
-    """
-    Tạo SimpleNamespace nodes từ config — dùng nội bộ cho from_config().
-    Vị trí tam giác đều khớp với main_thesis.py.
-    """
-    plot_max = getattr(config, 'plot_max', 400)
-    cx, cy   = plot_max / 2.0, plot_max / 2.0
-
-    num_cars = getattr(config, 'cars', 10)
-    num_uavs = getattr(config, 'uavs', 3)
-    num_rsus = getattr(config, 'rsus', 1)
-
-    r_poly   = plot_max / 4.0
-    uav_verts = []
-    for i in range(num_uavs):
-        angle = 2 * math.pi * i / max(num_uavs, 1) + math.pi / 2
-        uav_verts.append((cx + r_poly * math.cos(angle), cy + r_poly * math.sin(angle)))
-
-    cars = [
-        SimpleNamespace(
-            name=f'car{i}',
-            params={'position': (cx + (i - num_cars // 2) * 30, cy - 50)}
-        )
-        for i in range(1, num_cars + 1)
-    ]
-    rsus = [
-        SimpleNamespace(
-            name=f'rsu{i}',
-            params={'position': (50 + (i - 1) * 150, 50)}
-        )
-        for i in range(1, num_rsus + 1)
-    ]
-    uavs = [
-        SimpleNamespace(
-            name=f'uav{i}',
-            params={'position': uav_verts[i - 1]}
-        )
-        for i in range(1, num_uavs + 1)
-    ]
-    stations = cars + uavs
-    return stations, rsus, uavs
-
-
-def _nearest_in_range_rsu(car_node, rsus):
-    """Return nearest RSU/MBS within MBS_RANGE, else None."""
-    best_node = None
-    best_d = None
-    for rsu in rsus:
-        d = dist_2d(car_node, rsu)
-        if d <= float(MBS_RANGE) and (best_d is None or d < best_d):
-            best_d = d
-            best_node = rsu
-    return best_node
-
-
-def _nearest_rsu(car_node, rsus):
-    """Return nearest RSU/MBS regardless of coverage radius, else None."""
-    best_node = None
-    best_d = None
-    for rsu in rsus:
-        d = dist_2d(car_node, rsu)
-        if best_d is None or d < best_d:
-            best_d = d
-            best_node = rsu
-    return best_node
-
-
 def _count_cars_in_uav_range(cars, uav_node):
     """Estimate runtime users served by a UAV by coverage count."""
     if uav_node is None:
@@ -122,27 +41,6 @@ def _count_cars_in_uav_range(cars, uav_node):
         if dist_2d(car, uav_node) <= float(UAV_RANGE):
             c += 1
     return c
-
-
-def _count_cars_in_mbs_range(cars, mbs_node):
-    """Estimate runtime users served by an MBS/RSU by coverage count."""
-    if mbs_node is None:
-        return 0
-    c = 0
-    for car in cars:
-        if dist_2d(car, mbs_node) <= float(MBS_RANGE):
-            c += 1
-    return c
-
-
-def _effective_mbs_capacity(config) -> int:
-    """Return serving capacity used to normalize MBS load."""
-    return max(int(getattr(config, 'M_bs', getattr(config, 'M', 30))), 1)
-
-
-def _disconnect_reward(config) -> float:
-    """Reward used when request is dropped due to no reachable serving tier."""
-    return float(getattr(config, 'disconnect_reward', -2.0))
 
 
 # ============================================================
@@ -155,14 +53,12 @@ class VanetEnvironment:
 
     Action encoding (3-chiều):
         a = uav_idx + L * (z_cached + Z * cache_dec)
-        MBS tier: a = L * Z * 2
 
     Ví dụ với L=5 UAV, Z=4 bitrates:
-        action_size = 5*4*2 + 1 = 41
+        action_size = 5*4*2 = 40
 
     Khởi tạo:
-        VanetEnvironment(config, stations, aps, uavs_list)  ← dùng trong main_thesis.py
-        VanetEnvironment.from_config(config)                ← dùng trong ryu_app.py
+        VanetEnvironment(config, stations, aps, uavs_list)
     """
     def __init__(self, config, stations, aps=None, uavs_list=None):
         self.config = config
@@ -187,7 +83,7 @@ class VanetEnvironment:
         self._uav_action_size = self.num_offload_targets * self.num_bitrates * self.num_cache_actions
         self.action_size = max(1, self._uav_action_size)
 
-        # State: car pos + UAV features + nearest-MBS context + popularity + z_req (one-hot)
+        # State: car pos + UAV features + popularity + z_req (one-hot)
         self.state_size = (
             2 +                      # requesting user position
             len(self.uavs) * 2 +      # UAV positions
@@ -224,16 +120,6 @@ class VanetEnvironment:
         self.oor_penalty_cap = float(getattr(config, 'oor_penalty_cap', 5.0))
         self._last_actual_uav_idx = None
         self._last_served_request = None
-
-    # ------------------------------------------------------------------
-    @classmethod
-    def from_config(cls, config):
-        """
-        Tạo VanetEnvironment trực tiếp từ config — không cần truyền nodes ngoài.
-        Dùng cho ryu_app.py.
-        """
-        stations, rsus, uavs = _make_dummy_nodes(config)
-        return cls(config, stations, aps=rsus, uavs_list=uavs)
 
     # ------------------------------------------------------------------
     @staticmethod

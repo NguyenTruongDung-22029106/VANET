@@ -205,9 +205,13 @@ def _snapshot_nodes(nodes):
 
 
 def update_car_ap_association(net):
-    """Car–AP association theo khoảng cách."""
+    """Car–UAV association theo khoảng cách (RSU không phục vụ trực tiếp car)."""
     with _assoc_lock:
-        aps_for_assoc = list(net.aps)
+        aps_for_assoc = [
+            (idx, ap)
+            for idx, ap in enumerate(getattr(net, 'aps', []), start=1)
+            if getattr(ap, 'name', '').lower().startswith('uav')
+        ]
         car_mode = getattr(net, '_car_mode', None)
         if car_mode is None:
             net._car_mode = {}
@@ -229,12 +233,10 @@ def update_car_ap_association(net):
             forced_name    = forced.get(car.name)
 
             if forced_name:
-                for idx, ap in enumerate(aps_for_assoc, start=1):
+                for idx, ap in aps_for_assoc:
                     if getattr(ap, 'name', '') == forced_name:
                         try:
-                            name_l     = getattr(ap, 'name', '').lower()
-                            this_range = MBS_RANGE if ('rsu' in name_l or 'mbs' in name_l) else UAV_RANGE
-                            if _car_ap_distance(car, ap) <= this_range:
+                            if _car_ap_distance(car, ap) <= float(UAV_RANGE):
                                 test           = 1
                                 chosen_ap_idx  = idx
                                 chosen_ssid    = ap.params.get('ssid', 'AP%d' % chosen_ap_idx)
@@ -245,12 +247,10 @@ def update_car_ap_association(net):
 
             if not test:
                 best = None
-                for idx, ap in enumerate(aps_for_assoc, start=1):
+                for idx, ap in aps_for_assoc:
                     try:
-                        name_l     = getattr(ap, 'name', '').lower()
-                        this_range = MBS_RANGE if ('rsu' in name_l or 'mbs' in name_l) else UAV_RANGE
                         d = _car_ap_distance(car, ap)
-                        if d <= this_range and (best is None or d < best[0]):
+                        if d <= float(UAV_RANGE) and (best is None or d < best[0]):
                             best = (d, idx, ap)
                     except Exception:
                         pass
@@ -408,16 +408,10 @@ def run_rest_env_server(net, config, env, cars, uavs, host="127.0.0.1", port=808
                         uav_idx = int(decision.get("uav_idx", 0))
 
                         ap_name = ""
-                        paper_uav_only_mode = bool(getattr(config, 'paper_uav_only_mode', True))
                         if tier == "uav" and 0 <= uav_idx < len(uavs):
-                            if paper_uav_only_mode:
-                                # Paper UAV-only path: luôn map về UAV agent đã chọn.
-                                # MBS chỉ tham gia backhaul trong delay model.
-                                ap_name = uavs[uav_idx].name
-                            else:
-                                in_range = not bool(step_info.get("out_of_range", False))
-                                if in_range:
-                                    ap_name = uavs[uav_idx].name
+                            # UAV-only serving path: always map to selected UAV.
+                            # RSU/MBS chỉ tham gia backhaul trong delay model.
+                            ap_name = uavs[uav_idx].name
 
                         with _assoc_lock:
                             forced = getattr(net, "_car_forced_ap", None)
@@ -638,10 +632,7 @@ def run_simulation(config):
             info("*** Running QEA eval (per-request delay)...\n")
             import random as _rnd
             import numpy as _np
-            from models import (
-                calculate_total_cost as _calc_cost,
-                calculate_mbs_only_delay as _mbs_delay,
-            )
+            from models import calculate_total_cost as _calc_cost
 
             _joint_probs = _np.asarray(qea.p_fz, dtype=_np.float64)
             if _joint_probs.size == 0 or float(_joint_probs.sum()) <= 0.0:
@@ -677,12 +668,7 @@ def run_simulation(config):
                     assoc_name = None
                     if k < x_best.shape[1]:
                         assigned_row = int(_np.argmax(x_best[:, k]))
-                        # If QEA assigns this car to the extra MBS row, attach to MBS/RSU.
-                        if getattr(qea, 'has_mbs', False) and getattr(qea, 'mbs_row_idx', None) == assigned_row:
-                            if rsus:
-                                if _car_ap_distance(car_k, rsus[0]) <= float(MBS_RANGE):
-                                    assoc_name = getattr(rsus[0], 'name', None)
-                        elif 0 <= assigned_row < len(uavs):
+                        if 0 <= assigned_row < len(uavs):
                             target_k = uavs[assigned_row]
                             if _car_ap_distance(car_k, target_k) <= float(UAV_RANGE):
                                 assoc_name = getattr(target_k, 'name', None)
@@ -706,8 +692,7 @@ def run_simulation(config):
                             _valid_cars = []
                             for _car_k in cars:
                                 _covered_uav = any(_car_ap_distance(_car_k, _u) <= float(UAV_RANGE) for _u in uavs)
-                                _covered_mbs = any(_car_ap_distance(_car_k, _r) <= float(MBS_RANGE) for _r in rsus)
-                                if _covered_uav or _covered_mbs:
+                                if _covered_uav:
                                     _valid_cars.append(_car_k)
                             _car_pool = _valid_cars if _valid_cars else cars
 
@@ -717,72 +702,43 @@ def run_simulation(config):
                             _f_req = int(_req_idx // qea.Z)
                             _z_req = int(_req_idx % qea.Z)
 
-                            assigned_row = int(_np.argmax(qea.X_best[:, _car_idx]))
-                            is_mbs = (
-                                getattr(qea, 'has_mbs', False)
-                                and getattr(qea, 'mbs_row_idx', None) == assigned_row
-                            )
-                            _uav_l = assigned_row if not is_mbs else -1
+                            _uav_l = int(_np.argmax(qea.X_best[:, _car_idx]))
                             _out_of_range = False
                             _users_rt = 0
 
-                            if is_mbs:
-                                # MBS tier: cache mode không áp dụng; ưu tiên delay thật.
-                                _mbs_node = None
-                                _best_d = None
-                                for _rsu in rsus:
-                                    _d_mbs = _car_ap_distance(_car, _rsu)
-                                    if _best_d is None or _d_mbs < _best_d:
-                                        _best_d = _d_mbs
-                                        _mbs_node = _rsu
-                                if _mbs_node is not None:
-                                    _users_bs = sum(
-                                        1 for _ck in cars
-                                        if _car_ap_distance(_ck, _mbs_node) <= float(MBS_RANGE)
-                                    )
-                                    _delay = _mbs_delay(
-                                        _car, _mbs_node, config,
-                                        z_req=_z_req,
-                                        num_users_bs=_users_bs,
-                                    )
-                                else:
-                                    _out_of_range = True
-                                    _delay = float(getattr(config, 'no_uav_penalty', 1000.0))
-                                    _out_count += 1
+                            _target = uavs[_uav_l]
+                            _out_of_range = (_car_ap_distance(_car, _target) > UAV_RANGE)
+                            # Paper: sharing factor depends on number of users assigned to UAV l.
+                            # In QEA, this is given by the optimized association matrix X_best.
+                            _users_rt = int(_np.sum(qea.X_best[_uav_l, :]))
+
+                            _f_mod = _f_req % qea.F
+                            if qea.Y_best[_uav_l, _f_mod, _z_req] == 1:
+                                _cm, _zr, _zc = 1, _z_req, _z_req
                             else:
-                                _target = uavs[_uav_l]
-                                _out_of_range = (_car_ap_distance(_car, _target) > UAV_RANGE)
-                                # Paper: sharing factor depends on number of users assigned to UAV l.
-                                # In QEA, this is given by the optimized association matrix X_best.
-                                _users_rt = int(_np.sum(qea.X_best[_uav_l, :]))
-
-                                _f_mod = _f_req % qea.F
-                                if qea.Y_best[_uav_l, _f_mod, _z_req] == 1:
-                                    _cm, _zr, _zc = 1, _z_req, _z_req
+                                _z_plus = None
+                                for _z2 in range(_z_req + 1, qea.Z):
+                                    if qea.Y_best[_uav_l, _f_mod, _z2] == 1:
+                                        _z_plus = _z2
+                                        break
+                                if _z_plus is not None:
+                                    _cm, _zr, _zc = 2, _z_req, _z_plus
                                 else:
-                                    _z_plus = None
-                                    for _z2 in range(_z_req + 1, qea.Z):
-                                        if qea.Y_best[_uav_l, _f_mod, _z2] == 1:
-                                            _z_plus = _z2
-                                            break
-                                    if _z_plus is not None:
-                                        _cm, _zr, _zc = 2, _z_req, _z_plus
-                                    else:
-                                        _cm, _zr, _zc = 0, _z_req, _z_req
+                                    _cm, _zr, _zc = 0, _z_req, _z_req
 
-                                if _out_of_range:
-                                    _out_count += 1
+                            if _out_of_range:
+                                _out_count += 1
 
-                                # --- PHYSICS-BASED DELAY (SAME AS D3QN) ---
-                                _delay = _calc_cost(
-                                    _car, _target, config,
-                                    cache_mode=_cm, all_uavs=uavs,
-                                    z_req=_zr, z_cached=_zc,
-                                    num_uavs=len(uavs),
-                                    rsus=rsus,
-                                    num_users_per_uav=_users_rt,
-                                )
-                                # -----------------------------------------
+                            # --- PHYSICS-BASED DELAY (SAME AS D3QN) ---
+                            _delay = _calc_cost(
+                                _car, _target, config,
+                                cache_mode=_cm, all_uavs=uavs,
+                                z_req=_zr, z_cached=_zc,
+                                num_uavs=len(uavs),
+                                rsus=rsus,
+                                num_users_per_uav=_users_rt,
+                            )
+                            # -----------------------------------------
                             _ef.write(f"{_ep},{_st},{_delay:.6f}\n")
                             _mf.write(
                                 f"{_ep},{_st},{_uav_l},{_f_req},{_z_req},{int(_out_of_range)},{_delay:.6f}\n"

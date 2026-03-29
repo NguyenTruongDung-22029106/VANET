@@ -4,7 +4,6 @@ D3QN agent for SDN–VANET–UAV (control plane logic).
 
 Action space (3-chiều):
   UAV tier : a = uav_idx + L*(z_cached + Z*cache_dec)
-  MBS tier : a = L*Z*2
 State: from VanetEnvironment (see environment.py).
 """
 import os

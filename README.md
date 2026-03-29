@@ -23,6 +23,7 @@ Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ
 ## 2. Kiến trúc triển khai hiện tại
 
 - **Data plane (Mininet-WiFi):** `cars`, `uav*` (AP trên không), `rsu*` (AP mặt đất), switch `s1`.
+- `cars` chỉ associate với `uav*`; `rsu*` chỉ dùng cho backhaul trong mô hình delay.
 - **Control plane (Ryu):** `src/ryu_app.py` gọi REST tới môi trường trong `main_thesis.py`, sau đó cài flow OpenFlow.
 - **Environment RL:** `src/environment.py`.
 - **Cost model:** `src/models.py` (`calculate_total_cost`).
@@ -30,16 +31,16 @@ Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ
 ### State, Action, Reward
 
 - **State:** vector có kích thước động theo số UAV trong topology.
-  - `2 + L×2 + L + L + 1 + 1 + 1 + Z` chiều (với L = số UAV, Z = số bitrate)
+  - `2 + L×2 + L + L + L×3 + 1 + Z` chiều (với L = số UAV, Z = số bitrate)
   - `z_req` được One-hot encode (Z chiều) để Agent nhận diện rõ mức bitrate yêu cầu
-  - Mặc định L=5, Z=4: **state_size = 28**
+  - Mặc định L=5, Z=4: **state_size = 42**
 
 - **Action:** 3 chiều — `uav_idx × z_cached × cache_decision` (chỉ UAV, theo Paper Xie et al.).
   - Encoding: `a = uav_idx + L × (z_cached + Z × cache_dec)`
   - Tổng action = `#UAV × #bitrate × 2`
   - Với mặc định hiện tại 5 UAV, 4 bitrate: **`5 × 4 × 2 = 40` actions**
 
-- **Reward:** `R = -log(1 + delay)` + Reward Shaping (`-10` nếu cache sai bitrate).
+- **Reward:** `R = -log(1 + delay)` + out-of-range shaping penalty.
 
 - **Cache Miss:** Khi UAV không có video, dùng đường MBS→UAV (backhaul) → Car (Eq.12 Paper).
 
@@ -184,10 +185,8 @@ Output:
 | `max_steps_per_epoch` | `1000` | Số step tối đa mỗi epoch |
 | `cars`, `uavs`, `rsus` | `10, 5, 1` | Quy mô topology |
 | `plot_max` | `400` | Kích thước vùng mô phỏng (m) |
-| `algo_mode` | `'ryu_train'` | Chế độ chạy (`qea`, `ryu_train`, `ryu_env`) |
-| `eval_steps` | `1000` | Số step chạy ở `ryu_env` (`<=0` để chạy không giới hạn) |
-| `no_uav_penalty` | `1000` | Delay penalty khi agent chọn UAV ngoài vùng phủ |
-| `M_bs` | `60` | Số user tối đa phía MBS/RSU dùng để chuẩn hóa tải MBS |
+| `algo_mode` | `'qea'` | Chế độ chạy (`qea`, `ryu_train`, `ryu_env`) |
+| `eval_steps` | `5000` | Số step chạy ở `ryu_env` (`<=0` để chạy không giới hạn) |
 | `rest_host`, `rest_port` | `127.0.0.1`, `8081` | REST env endpoint cho Ryu |
 | `cache_uav_MB` | `750` | Dung lượng cache mỗi UAV |
 | `model_path` | `'agents/models/d3qn.pth'` | Nơi lưu/load model D3QN |

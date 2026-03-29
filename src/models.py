@@ -28,10 +28,8 @@ Cache mode (đồng bộ environment.py):
 """
 
 import math
-import warnings
-from types import SimpleNamespace
 
-from helpers import get_node_xy, dist_2d, dist_3d
+from helpers import dist_2d, dist_3d
 
 
 # ============================================================
@@ -82,48 +80,8 @@ def _cfg(config, key):
     return getattr(config, key, _DEFAULT[key])
 
 
-# Internal aliases used throughout this module
-_get_xy = get_node_xy
 _dist_2d = dist_2d
 _dist_3d = dist_3d
-
-_WARNED_NO_MBS_NODE = False
-
-def _plos_alt(altitude: float, tx_node, user_node, config):
-    """
-    LoS probability computed with a provided altitude (không dùng config.H cố định).
-    Used for BS->user baseline where BS altitude differs from UAV altitude.
-    """
-    H = float(altitude)
-    kappa = _cfg(config, 'kappa')
-    zeta  = _cfg(config, 'zeta')
-
-    # d3d uses the provided altitude
-    d3 = max(dist_3d(tx_node, user_node, H), 1e-3)
-    theta_deg = math.degrees(math.asin(min(H / d3, 1.0)))
-    return 1.0 / (1.0 + kappa * math.exp(-zeta * (theta_deg - kappa)))
-
-
-def _path_loss_dB_alt(tx_node, user_node, config, altitude: float):
-    """
-    Path loss (dB) similar to _path_loss_dB but parameterized by altitude.
-    Uses log10(d / d0) so model remains correct when d0 != 1.
-    """
-    fc    = _cfg(config, 'fc')
-    d0    = _cfg(config, 'd0')
-    nL    = _cfg(config, 'nLoS');   nNL = _cfg(config, 'nNLoS')
-    sL    = _cfg(config, 'sLoS');   sNL = _cfg(config, 'sNLoS')
-
-    d   = max(dist_3d(tx_node, user_node, float(altitude)), 1e-3)
-    c   = 3e8
-    fsp = 20 * math.log10(4 * math.pi * fc * d0 / c)   # free-space reference
-    d0_eff = max(float(d0), 1e-9)
-    d_ratio = max(d / d0_eff, 1e-9)
-    gL  = fsp + 10 * nL  * math.log10(d_ratio) + sL
-    gNL = fsp + 10 * nNL * math.log10(d_ratio) + sNL
-
-    p = _plos_alt(altitude, tx_node, user_node, config)
-    return p * gL + (1 - p) * gNL
 
 def _effective_users_per_uav(config, num_users_per_uav=None):
     m_cfg = max(int(_cfg(config, 'M')), 1)
@@ -213,47 +171,6 @@ def _rate_uav_user(uav_node, user_node, all_uavs, config, num_users_per_uav=None
     return (B / M) * math.log2(1 + max(sinr, 1e-10))
 
 
-def _rate_bs_user(bs_node, user_node, config, num_users_bs=None):
-    """
-    Macro BS (MBS) -> user downlink rate for out-of-coverage UAV fallback.
-
-    Assumptions (to align with your requested modeling):
-      - LoS/NLoS probabilistic pathloss (using same parameters as air-to-ground model)
-      - Downlink bandwidth is shared equally among the users served by BS.
-        Therefore B_{b,v} = Bh / M_eff
-      - If `sigma2_dBm` is interpreted as noise power over full `Bh`, then when the
-        bandwidth is reduced to Bh/M_eff, noise power scales proportionally
-        (sigma2 -> sigma2 / M_eff), which yields SINR scaling by M_eff.
-    """
-    Bh = _cfg(config, 'Bh')
-    M_eff = _effective_users_per_uav(config, num_users_bs)
-    M_eff = max(int(M_eff), 1)
-
-    # Equal bandwidth share per user
-    Bv = Bh / float(M_eff)
-
-    # BS tx power
-    PBS = 10 ** ((_cfg(config, 'PBS_dBm') - 30) / 10)
-    sigma2 = 10 ** ((_cfg(config, 'sigma2_dBm') - 30) / 10)
-
-    H_bs = float(getattr(config, 'H_bs', 1.0))
-    ploss_dB = _path_loss_dB_alt(bs_node, user_node, config, altitude=H_bs)
-    signal = PBS * 10 ** (-ploss_dB / 10)
-    # Noise scaling under bandwidth sharing:
-    # if sigma2 is noise power over Bh, then noise over Bv is sigma2 / M_eff.
-    sinr = (signal / max(sigma2, 1e-30)) * float(M_eff)
-    return Bv * math.log2(1 + max(sinr, 1e-10))
-
-
-def calculate_mbs_only_delay(user_node, bs_node, config, z_req: int = 0, num_users_bs=None) -> float:
-    """
-    Delay when the user is served directly by MBS/RSU (no UAV in coverage).
-    """
-    s = _chunk_size_bits(z_req, config)
-    r = max(_rate_bs_user(bs_node, user_node, config, num_users_bs=num_users_bs), 1.0)
-    return s / r
-
-
 # ============================================================
 # Backhaul rate  Eq(6-9)
 # ============================================================
@@ -262,7 +179,7 @@ def _rate_backhaul(uav_node, config, num_uavs=1, mbs_node=None):
     """
     r_{BS,l} = (B_h/L)·log2(1 + SINR_{BS,l})  Eq(9)
     Path loss backhaul dùng free-space + LoS/NLoS  Eq(6-8).
-    mbs_node: node RSU/MBS thật từ topology. Nếu None → fallback (0,0).
+    mbs_node: node RSU/MBS thật từ topology (bắt buộc).
     """
     Bh     = _cfg(config, 'Bh')
     L      = max(num_uavs, 1)
@@ -274,17 +191,11 @@ def _rate_backhaul(uav_node, config, num_uavs=1, mbs_node=None):
     kappa  = _cfg(config, 'kappa')
     zeta   = _cfg(config, 'zeta')
 
-    global _WARNED_NO_MBS_NODE
     if mbs_node is None:
-        # Backward-safe fallback, but explicit warning to avoid silent model drift.
-        if not _WARNED_NO_MBS_NODE:
-            warnings.warn(
-                "No RSU/MBS node provided to backhaul model; falling back to origin (0,0). "
-                "This can bias D^3 delay. Pass rsus=[mbs_node] for accurate results.",
-                RuntimeWarning,
-            )
-            _WARNED_NO_MBS_NODE = True
-        mbs_node = SimpleNamespace(params={'position': (0, 0)})
+        raise ValueError(
+            "Backhaul model requires a real RSU/MBS node. "
+            "Pass rsus=[...] to calculate_total_cost() when cache_mode=0."
+        )
     d2  = max(_dist_2d(mbs_node, uav_node), 1e-3)
 
     d3    = math.sqrt(d2 ** 2 + H ** 2)
@@ -382,7 +293,7 @@ def calculate_total_cost(
 
     Tham số:
         source_node       : xe yêu cầu (Mininet station hoặc SimpleNamespace)
-        target_node       : node phục vụ (UAV, RSU, hoặc chính source nếu Local)
+        target_node       : UAV phục vụ request
         config            : config object (từ get_config())
         cache_mode        : 0=miss, 1=direct_hit, 2=transcoding
         all_uavs          : list tất cả UAV; None → [target_node]

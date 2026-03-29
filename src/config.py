@@ -39,7 +39,6 @@ def get_config():
         B           = 20e6,     # V2U bandwidth (Hz) — 20 MHz
         Bh          = 10e6,     # V2B backhaul bandwidth (Hz) — 10 MHz
         M           = 30,       # Max users per UAV
-        M_bs        = 60,       # Max users served by MBS/RSU tier (for load sharing)
         PUAV_dBm    = 20,       # UAV tx power (dBm)
         PBS_dBm     = 30,       # MBS tx power (dBm)
         sigma2_dBm  = -95,      # Noise power (dBm)
@@ -62,12 +61,9 @@ def get_config():
         plot=True,
         algo_mode='qea',   # DRL-first default; 'ryu_env' (Eval) | 'ryu_train' (Train) | 'qea' (baseline)
         eval_steps=5000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
-        no_uav_penalty=1000.0,   # fixed delay penalty khi agent chọn UAV ngoài vùng phủ
-        paper_uav_only_mode=True,  # true: không direct MBS->car trong DRL path
         oor_penalty_alpha=10.0,    # reward shaping theo overshoot ngoài vùng phủ
         oor_penalty_beta=1.25,     # penalty exponent
         oor_penalty_cap=5.0,       # cap để tránh penalty lấn át toàn bộ reward
-        enable_direct_mbs_baseline=False,  # chỉ bật nếu cần so sánh baseline direct-MBS cũ
 
         # REST env server (for Ryu training/deploy)
         rest_host='127.0.0.1',
