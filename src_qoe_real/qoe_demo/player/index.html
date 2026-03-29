@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QoE Real DASH Demo</title>
+  <style>
+    :root {
+      --bg: #f8f6f1;
+      --ink: #1f2d3d;
+      --accent: #0f7a6d;
+      --warn: #b33a3a;
+    }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at 20% 20%, #fffbe6, var(--bg));
+    }
+    .wrap {
+      max-width: 960px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    h1 { margin: 0 0 8px; }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5dfd1;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .k { font-size: 12px; opacity: 0.8; }
+    .v { font-size: 18px; font-weight: 700; }
+    video {
+      width: 100%;
+      border-radius: 12px;
+      background: #111;
+    }
+    .log {
+      height: 220px;
+      overflow: auto;
+      margin-top: 12px;
+      border: 1px solid #e5dfd1;
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+    }
+    .warn { color: var(--warn); }
+    .ok { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>DASH QoE Real Demo</h1>
+    <p>Player will send per-segment QoE telemetry to REST env.</p>
+
+    <div class="meta">
+      <div class="card"><div class="k">Session</div><div id="session" class="v">-</div></div>
+      <div class="card"><div class="k">Car</div><div id="car" class="v">-</div></div>
+      <div class="card"><div class="k">Current Quality</div><div id="quality" class="v">-</div></div>
+      <div class="card"><div class="k">Rebuffer Sec</div><div id="rebuffer" class="v">0.00</div></div>
+      <div class="card"><div class="k">Segments Sent</div><div id="segments" class="v">0</div></div>
+    </div>
+
+    <video id="videoPlayer" controls autoplay muted></video>
+    <div id="log" class="log"></div>
+  </div>
+
+  <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+  <script src="./player.js"></script>
+</body>
+</html>
