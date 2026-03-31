@@ -86,16 +86,24 @@ class D3QNAgent:
             backup_z = getattr(config, 'num_bitrates', 4)
         self.num_bitrates = int(num_bitrates if num_bitrates is not None else backup_z)
 
-        self.memory        = deque(maxlen=50_000)
-        self.gamma         = 0.95
-        self.epsilon       = 1.0
-        self.epsilon_min   = 0.01
-        self.epsilon_decay = 0.9999
-        self.learning_rate = 5e-4
-        self.batch_size    = 256
+        def _cfg(key, default):
+            if isinstance(config, dict):
+                return config.get(key, default)
+            return getattr(config, key, default)
 
-        self.policy_net = DuelingDQN(state_size, action_size, hidden_size=256).to(device)
-        self.target_net = DuelingDQN(state_size, action_size, hidden_size=256).to(device)
+        mem_size = int(_cfg('d3qn_memory_size', 50_000))
+        self.memory        = deque(maxlen=max(mem_size, 1))
+        self.gamma         = float(_cfg('d3qn_gamma', 0.95))
+        self.epsilon       = float(_cfg('d3qn_epsilon', 1.0))
+        self.epsilon_min   = float(_cfg('d3qn_epsilon_min', 0.01))
+        self.epsilon_decay = float(_cfg('d3qn_epsilon_decay', 0.99995))
+        self.learning_rate = float(_cfg('d3qn_learning_rate', 5e-4))
+        self.batch_size    = int(_cfg('d3qn_batch_size', 256))
+        hidden_size        = int(_cfg('d3qn_hidden_size', 256))
+        self.grad_clip_norm = float(_cfg('d3qn_grad_clip_norm', 5.0))
+
+        self.policy_net = DuelingDQN(state_size, action_size, hidden_size=hidden_size).to(device)
+        self.target_net = DuelingDQN(state_size, action_size, hidden_size=hidden_size).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
 
@@ -108,7 +116,7 @@ class D3QNAgent:
             self.model_path = getattr(config, "model_path", "agents/models/d3qn.pth")
 
         self.train_steps            = 0
-        self.target_update_interval = 1000
+        self.target_update_interval = int(_cfg('d3qn_target_update_interval', 1000))
         self.losses                 = []
 
     # ------------------------------------------------------------------
@@ -185,7 +193,7 @@ class D3QNAgent:
         loss = self.criterion(current_q, target_q)
         self.optimizer.zero_grad()
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), max_norm=5.0)
+        torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), max_norm=self.grad_clip_norm)
         self.optimizer.step()
 
         self.losses.append(loss.item())

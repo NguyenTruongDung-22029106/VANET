@@ -28,8 +28,8 @@ from typing import List, Tuple
 
 import numpy as np
 
-# Fix 4: dùng chung cost model với D3QN — so sánh công bằng
-from models import calculate_total_cost as _models_cost
+# Fix 4: dùng chung cost model + kích thước chunk với D3QN — so sánh công bằng
+from models import calculate_total_cost as _models_cost, _chunk_size_bits
 
 
 # ============================================================
@@ -38,7 +38,6 @@ from models import calculate_total_cost as _models_cost
 _DEFAULT = dict(
     M            = 30,           # max users per UAV  (constraint 15c)
     cache_uav_MB = 300,          # UAV cache capacity (MB) → constraint 15a
-    chunk_size_MB= 15.0,         # s_{f,z=1} chunk size at lowest bitrate (MB)
     zipf_alpha   = 0.7,          # Zipf popularity skew
     # Tham số communication model đầy đủ nằm trong config.py / models.py
 )
@@ -74,16 +73,6 @@ def _zipf_popularity(F: int, Z: int, alpha: float) -> np.ndarray:
     ranks = np.arange(1, F * Z + 1, dtype=np.float64)
     raw   = 1.0 / ranks ** alpha
     return (raw / raw.sum()).reshape(F, Z)
-
-
-# ============================================================
-# Chunk size helper  (dùng trong __init__ và _repair_Y)
-# ============================================================
-
-def _chunk_size_bits(z_idx: int, config) -> float:
-    """s_{f,z}: proportional to bitrate; z=0 là bitrate thấp nhất."""
-    s1 = _cfg(config, 'chunk_size_MB') * 8e6   # bits
-    return s1 * (z_idx + 1)
 
 
 # ============================================================

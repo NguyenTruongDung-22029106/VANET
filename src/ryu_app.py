@@ -34,6 +34,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 import torch
+import pandas as pd
 
 # Keep PyTorch single-threaded inside controller process
 try:
@@ -62,7 +63,7 @@ from ryu.base import app_manager
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
 from ryu.ofproto import ofproto_v1_3
-from ryu.lib.packet import packet, ethernet, ether_types, ipv4
+from ryu.lib.packet import packet, ethernet, ether_types, ipv4, arp
 
 from config import get_config
 from agents.d3qn_agent import D3QNAgent
@@ -70,22 +71,8 @@ import numpy as np
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Default topology constants (fallback nếu /meta không cung cấp map)
+# Controller constants
 # ═══════════════════════════════════════════════════════════════════════════════
-
-DEFAULT_AP_PORT_MAP = {
-    'rsu1': 1,
-    'uav1': 2,
-    'uav2': 3,
-    'uav3': 4,
-}
-
-DEFAULT_AP_SUBNET_IDX = {
-    'rsu1': 1,
-    'uav1': 2,
-    'uav2': 3,
-    'uav3': 4,
-}
 
 PROACTIVE_PRIORITY  = 200
 L2_PRIORITY         = 100
@@ -140,8 +127,12 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         self._log_dir  = os.path.join(THIS_DIR, 'results')
         self._log_path = os.path.join(self._log_dir, 'ryu_deploy.log')
         self._csv_path = os.path.join(self._log_dir, 'ryu_deploy.csv')
-        self.ap_port_map = dict(DEFAULT_AP_PORT_MAP)
-        self.ap_subnet_idx = dict(DEFAULT_AP_SUBNET_IDX)
+        self._excel_path = os.path.join(self._log_dir, 'ryu_deploy.xlsx') # Thêm đường dẫn file Excel
+        self._log_buffer = [] # Thêm buffer để lưu log tạm thời
+        self._log_lock = threading.Lock() # Lock để ghi file an toàn
+
+        self.ap_port_map = {}
+        self.ap_subnet_idx = {}
 
     # ══════════════════════════════════════════════════════════════════════
     # Logging
@@ -150,35 +141,86 @@ class SdnVanetRyuApp(app_manager.RyuApp):
     def _configure_output_paths(self, algo_mode):
         suffix = 'training' if algo_mode == 'ryu_train' else 'eval'
         self._log_path = os.path.join(self._log_dir, f'ryu_deploy_{suffix}.log')
+        # Giữ lại csv_path để tương thích hoặc tham khảo nếu cần
         self._csv_path = os.path.join(self._log_dir, f'ryu_deploy_{suffix}.csv')
 
     def _init_csv(self):
         os.makedirs(self._log_dir, exist_ok=True)
-        with open(self._csv_path, 'w') as f:
-            f.write(
-                'timestamp,step,car,offload_target,tier,out_of_range,fallback,disconnected,'
-                'bitrate,z_cached,cache,delay,distance_2d,overshoot,oor_penalty,base_reward,reward_final\n'
-            )
+        # Ghi header cho file CSV nếu file chưa tồn tại
+        header = [
+            'timestamp', 'step', 'car', 'offload_target', 'bitrate',
+            'z_cached', 'cache', 'cache_mode', 'popularity', 'delay',
+            'distance_2d', 'reward',
+            'buffer_s', 'rebuffer_s', 'bitrate_switch_mbps',
+            'slot_id', 'delay_slot_mean', 'reward_slot_mean',
+        ]
+        # Nếu file tồn tại nhưng header cũ (thiếu cột), ghi lại để giữ schema nhất quán.
+        if os.path.exists(self._csv_path):
+            try:
+                with open(self._csv_path, 'r', encoding='utf-8') as f:
+                    first = f.readline().strip()
+                existing_header = first.split(',') if first else []
+                if existing_header != header:
+                    with open(self._csv_path, 'w', encoding='utf-8') as f:
+                        f.write(','.join(header) + '\n')
+            except Exception:
+                with open(self._csv_path, 'w', encoding='utf-8') as f:
+                    f.write(','.join(header) + '\n')
+        else:
+            with open(self._csv_path, 'w', encoding='utf-8') as f:
+                f.write(','.join(header) + '\n')
+        
+        # Ghi log khởi tạo
         with open(self._log_path, 'w') as f:
             ts = datetime.now().isoformat()
             f.write(f'[{ts}] RUN_START csv={os.path.basename(self._csv_path)}\n')
 
     def _write_csv(
-        self, step, car, target, tier, out_of_range, fallback, disconnected,
-        bitrate, z_cached, cache, delay, distance_2d, overshoot, oor_penalty,
-        base_reward, reward_final,
+        self, step, car, target,
+        bitrate, z_cached, cache, cache_mode, popularity, delay, distance_2d,
+        reward,
+        buffer_s=0.0, rebuffer_s=0.0, bitrate_switch_mbps=0.0,
+        slot_id='', delay_slot_mean='', reward_slot_mean='',
     ):
+        # Ghi trực tiếp vào file CSV
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'step': step,
+            'car': car,
+            'offload_target': target,
+            'bitrate': bitrate,
+            'z_cached': z_cached,
+            'cache': cache,
+            'cache_mode': cache_mode,
+            'popularity': popularity,
+            'delay': delay,
+            'distance_2d': distance_2d,
+            'reward': reward,
+            'buffer_s': buffer_s,
+            'rebuffer_s': rebuffer_s,
+            'bitrate_switch_mbps': bitrate_switch_mbps,
+            'slot_id': slot_id,
+            'delay_slot_mean': delay_slot_mean,
+            'reward_slot_mean': reward_slot_mean,
+        }
         try:
-            with open(self._csv_path, 'a') as f:
-                ts = datetime.now().isoformat()
-                f.write(
-                    f'{ts},{step},{car},{target},{tier},{out_of_range},{fallback},{disconnected},'
-                    f'{bitrate},{z_cached},{cache},{delay:.6f},{float(distance_2d):.6f},'
-                    f'{float(overshoot):.6f},{float(oor_penalty):.6f},'
-                    f'{float(base_reward):.6f},{float(reward_final):.6f}\n'
-                )
-        except Exception:
-            pass
+            with self._log_lock:
+                # Mở file ở chế độ append
+                with open(self._csv_path, 'a') as f:
+                    # Lấy giá trị theo đúng thứ tự header
+                    values = [log_entry.get(k, '') for k in [
+                        'timestamp', 'step', 'car', 'offload_target', 'bitrate',
+                        'z_cached', 'cache', 'cache_mode', 'popularity', 'delay',
+                        'distance_2d', 'reward',
+                        'buffer_s', 'rebuffer_s', 'bitrate_switch_mbps',
+                        'slot_id', 'delay_slot_mean', 'reward_slot_mean',
+                    ]]
+                    # Đảm bảo delay luôn là số float, không có dấu phẩy
+                    delay_idx = 9 # Vị trí của 'delay' trong list
+                    values[delay_idx] = f"{log_entry['delay']:.4f}"
+                    f.write(','.join(map(str, values)) + '\n')
+        except Exception as e:
+            self.logger.error(f"Failed to write to CSV file: {e}")
 
     def _write_log(self, msg):
         try:
@@ -198,40 +240,80 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         self.logger.info("*** SDN-VANET Ryu app started (REST env). ***")
 
         self._config = get_config()
-        cfg_log_dir = getattr(self._config, 'log_dir', 'results')
+        cfg_log_dir = self._config.log_dir
         if os.path.isabs(cfg_log_dir):
             self._log_dir = cfg_log_dir
         else:
             self._log_dir = os.path.join(THIS_DIR, cfg_log_dir)
-        host = getattr(self._config, 'rest_host', '127.0.0.1')
-        port = int(getattr(self._config, 'rest_port', 8081))
+        host = self._config.rest_host
+        port = int(self._config.rest_port)
         self._rest_base = f"http://{host}:{port}"
+        self._private_lan_prefix = self._config.private_lan_prefix
+        self._lan_subnet_mask = self._config.lan_subnet_mask
 
-        meta = self._rest_get_with_retry("/meta", retries=20, sleep_s=0.5)
+        meta = self._rest_get_with_retry(
+            "/meta",
+            retries=int(self._config.ryu_meta_retries),
+            sleep_s=float(self._config.ryu_meta_sleep_s),
+            timeout=float(self._config.ryu_rest_timeout_s),
+        )
         if meta is None:
             msg = f"REST env not ready at {self._rest_base}/meta. Stop controller startup."
             self.logger.error(msg)
             self._write_log(msg)
             return
-        state_size = int(meta.get("state_size", 15))
-        action_size = int(meta.get("action_size", 6))
-        num_targets = int(meta.get("num_offload_targets", 3))
-        meta_port_map = meta.get("ap_port_map", {}) or {}
-        meta_subnet_idx = meta.get("ap_subnet_idx", {}) or {}
-        if isinstance(meta_port_map, dict) and meta_port_map:
+        try:
+            state_size = int(meta["state_size"])
+            action_size = int(meta["action_size"])
+            num_targets = int(meta["num_offload_targets"])
+        except Exception as e:
+            msg = f"Missing/invalid /meta fields (state_size/action_size/num_offload_targets): {e}. Controller cannot start."
+            self.logger.error(msg)
+            self._write_log(msg)
+            return
+        
+        # Bắt buộc phải có map từ /meta, không dùng fallback
+        meta_port_map = meta.get("ap_port_map")
+        meta_subnet_idx = meta.get("ap_subnet_idx")
+
+        if not isinstance(meta_port_map, dict) or not meta_port_map:
+            msg = "Topology info `ap_port_map` is missing or invalid from /meta. Controller cannot start."
+            self.logger.error(msg)
+            self._write_log(msg)
+            return
+        
+        if not isinstance(meta_subnet_idx, dict) or not meta_subnet_idx:
+            msg = "Topology info `ap_subnet_idx` is missing or invalid from /meta. Controller cannot start."
+            self.logger.error(msg)
+            self._write_log(msg)
+            return
+
+        try:
+            self.ap_port_map = {str(k): int(v) for k, v in meta_port_map.items()}
+            self.ap_subnet_idx = {str(k): int(v) for k, v in meta_subnet_idx.items()}
+            self.logger.info(f"Loaded ap_port_map: {self.ap_port_map}")
+            self.logger.info(f"Loaded ap_subnet_idx: {self.ap_subnet_idx}")
+        except (ValueError, TypeError) as e:
+            msg = f"Failed to parse topology info from /meta: {e}. Controller cannot start."
+            self.logger.error(msg)
+            self._write_log(msg)
+            return
+
+        # Deterministic per-car MACs (optional): if provided by /meta, preload maps.
+        car_mac_map = meta.get("car_mac_map") or {}
+        if isinstance(car_mac_map, dict) and car_mac_map:
             try:
-                self.ap_port_map = {
-                    str(k): int(v) for k, v in meta_port_map.items()
-                }
-            except Exception:
-                self.ap_port_map = dict(DEFAULT_AP_PORT_MAP)
-        if isinstance(meta_subnet_idx, dict) and meta_subnet_idx:
-            try:
-                self.ap_subnet_idx = {
-                    str(k): int(v) for k, v in meta_subnet_idx.items()
-                }
-            except Exception:
-                self.ap_subnet_idx = dict(DEFAULT_AP_SUBNET_IDX)
+                for car_name, mac in car_mac_map.items():
+                    if not car_name or not mac:
+                        continue
+                    mac_l = str(mac).strip().lower()
+                    if not mac_l:
+                        continue
+                    self.car_to_mac[str(car_name)] = mac_l
+                    self.mac_to_car[mac_l] = str(car_name)
+                self.logger.info(f"Loaded car_mac_map for {len(self.car_to_mac)} cars")
+            except Exception as e:
+                self.logger.warning(f"Failed to preload car_mac_map: {e}")
 
         agent = D3QNAgent(
             state_size=state_size,
@@ -240,11 +322,11 @@ class SdnVanetRyuApp(app_manager.RyuApp):
             config=self._config,
         )
 
-        algo_mode = getattr(self._config, 'algo_mode', 'ryu_train')
+        algo_mode = self._config.algo_mode
         self._configure_output_paths(algo_mode)
         self._init_csv()
 
-        model_path = getattr(self._config, 'model_path', 'agents/models/d3qn.pth')
+        model_path = self._config.model_path
         if not os.path.isabs(model_path):
             model_path = os.path.join(THIS_DIR, model_path)
         agent.model_path = model_path
@@ -358,7 +440,9 @@ class SdnVanetRyuApp(app_manager.RyuApp):
           2. If car MAC is known:
                - Uplink:   eth_src=car_mac, IP → output target_ap_port
                - Downlink: eth_dst=car_mac, IP → output car_ingress_port
-          3. If MAC unknown: fallback to subnet-based forwarding
+                 (fallback to target AP port when MAC->port isn't learned yet)
+          3. If MAC unknown: do not install proactive flows; rely on
+             table-miss/PacketIn paths for eventual MAC learning.
         """
         out_port = self.ap_port_map.get(ap_name)
         if out_port is None:
@@ -392,62 +476,39 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 )
 
                 # Step 2b: per-car downlink (target AP → car)
+                # Normally ingress is learned (MAC->port) from PacketIn.
+                # For deterministic runs (where we preload MACs via `/meta`)
+                # we fall back to `out_port` (the AP port on this switch)
+                # so downlink rules still get installed even if MAC->port
+                # learning hasn't happened yet.
                 ingress = self.mac_to_port.get(dpid, {}).get(car_mac)
-                if ingress is not None:
-                    match_down = parser.OFPMatch(
-                        eth_type=ether_types.ETH_TYPE_IP,
-                        eth_dst=car_mac,
-                    )
-                    actions_down = [parser.OFPActionOutput(ingress)]
-                    self._add_flow(
-                        datapath, PROACTIVE_PRIORITY, match_down, actions_down,
-                        cookie=cookie,
-                    )
+                if ingress is None:
+                    ingress = out_port
+
+                match_down = parser.OFPMatch(
+                    eth_type=ether_types.ETH_TYPE_IP,
+                    eth_dst=car_mac,
+                )
+                actions_down = [parser.OFPActionOutput(ingress)]
+                self._add_flow(
+                    datapath, PROACTIVE_PRIORITY, match_down, actions_down,
+                    cookie=cookie,
+                )
 
                 self._write_log(
                     f'FLOW_PER_CAR: {car_name}(mac={car_mac})→{ap_name} '
                     f'port={out_port} dpid={hex(dpid)}'
                 )
             else:
-                # Step 3: fallback — subnet-based (until MAC is learned)
-                subnet_idx = self.ap_subnet_idx.get(ap_name)
-                if subnet_idx is None:
-                    continue
-                match_fwd = parser.OFPMatch(
-                    eth_type=ether_types.ETH_TYPE_IP,
-                    ipv4_dst=(f'192.168.{subnet_idx}.0', '255.255.255.0'),
-                )
-                actions_fwd = [parser.OFPActionOutput(out_port)]
-                self._add_flow(
-                    datapath, PROACTIVE_PRIORITY - 10, match_fwd, actions_fwd,
-                    cookie=cookie,
-                )
-
-                # Return rules for other subnets
-                for other_ap, other_port in self.ap_port_map.items():
-                    if other_ap == ap_name:
-                        continue
-                    other_idx = self.ap_subnet_idx.get(other_ap)
-                    if other_idx is None:
-                        continue
-                    match_ret = parser.OFPMatch(
-                        eth_type=ether_types.ETH_TYPE_IP,
-                        in_port=out_port,
-                        ipv4_dst=(f'192.168.{other_idx}.0', '255.255.255.0'),
-                    )
-                    actions_ret = [parser.OFPActionOutput(other_port)]
-                    self._add_flow(
-                        datapath, PROACTIVE_PRIORITY - 11, match_ret, actions_ret,
-                        cookie=cookie,
-                    )
-
-                self._write_log(
-                    f'FLOW_SUBNET_FALLBACK: {car_name}→{ap_name} '
-                    f'port={out_port} dpid={hex(dpid)} (MAC not yet learned)'
-                )
+                # MAC not known:
+                # Skip subnet-based proactive fallback so that packets hit the
+                # table-miss flow, go to controller via PacketIn, and the
+                # controller can learn MAC->car mapping (then upgrade flows).
+                # This also avoids log spam and helps network completion.
+                continue
 
     def _upgrade_car_flows(self, car_name, car_mac):
-        """Khi MAC mới được learn, upgrade flows từ subnet-based → per-car."""
+        """Khi MAC mới được learn, cài/upgrade các rule per-car."""
         with self._offload_lock:
             ap_name = self._offload_table.get(car_name)
         if ap_name:
@@ -463,16 +524,26 @@ class SdnVanetRyuApp(app_manager.RyuApp):
     def _try_learn_car_mac(self, pkt, src_mac, in_port):
         """
         Identify car from IP src address.
-        IP format: 192.168.{ap_idx}.1{car_idx:02d}
-        Example: 192.168.1.101 = car1 on rsu1 (ap_idx=1)
+        IP format: {private_lan_prefix}.{ap_idx}.1{car_idx:02d}  (mặc định 192.168.*)
+        Example: 192.168.1.101 = car1 on subnet ap_idx=1
         """
         ip_hdr = pkt.get_protocol(ipv4.ipv4)
-        if ip_hdr is None:
-            return
-
-        src_ip = ip_hdr.src
+        src_ip = None
+        if ip_hdr is not None:
+            src_ip = ip_hdr.src
+        else:
+            # If there's no IPv4 header (e.g., ARP), try ARP src IP.
+            arp_hdr = pkt.get_protocol(arp.arp)
+            if arp_hdr is None:
+                return
+            src_ip = getattr(arp_hdr, "src_ip", None) or getattr(arp_hdr, "psrc", None)
+            if not src_ip:
+                return
         parts  = src_ip.split('.')
-        if len(parts) != 4 or parts[0] != '192' or parts[1] != '168':
+        pre = str(self._private_lan_prefix).split('.')
+        if len(parts) != 4 or len(pre) < 2:
+            return
+        if parts[0] != pre[0] or parts[1] != pre[1]:
             return
 
         try:
@@ -493,6 +564,13 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                     "*** Learned: %s = MAC %s (from IP %s, port %d) ***",
                     car_name, src_mac, src_ip, in_port,
                 )
+                # Ghi file log để dễ kiểm tra offline (không phụ thuộc logger handler).
+                try:
+                    self._write_log(
+                        f'MAC_LEARNED: {car_name} mac={src_mac} ip={src_ip} port={in_port}'
+                    )
+                except Exception:
+                    pass
                 self._upgrade_car_flows(car_name, src_mac)
 
     # ══════════════════════════════════════════════════════════════════════
@@ -509,20 +587,31 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         """
         agent = self._agent
         step  = 0
-        training = (getattr(self._config, 'algo_mode', 'ryu_train') == 'ryu_train')
+        training = (self._config.algo_mode == 'ryu_train')
+        rest_timeout = float(self._config.ryu_rest_timeout_s)
+        reset_retries = int(self._config.ryu_reset_retries)
+        reset_sleep_s = float(self._config.ryu_reset_sleep_s)
+        step_retries = int(self._config.ryu_step_retries)
+        step_sleep_s = float(self._config.ryu_step_sleep_s)
+        loop_sleep_s = float(self._config.ryu_loop_sleep_s)
+        save_every = int(self._config.ryu_save_every_steps)
+        log_every = int(self._config.ryu_log_every_steps)
         if training:
-            epochs = max(int(getattr(self._config, 'epochs', 1)), 1)
-            max_steps_per_epoch = max(int(getattr(self._config, 'max_steps_per_epoch', 1)), 1)
+            epochs = max(int(self._config.epochs), 1)
+            max_steps_per_epoch = max(int(self._config.max_steps_per_epoch), 1)
             max_steps = epochs * max_steps_per_epoch
         else:
-            max_steps = int(getattr(
-                self._config, 'eval_steps',
-                getattr(self._config, 'max_steps_per_epoch', 1000),
-            ))
+            max_steps = int(self._config.eval_steps)
             if max_steps <= 0:
                 max_steps = None
 
-        reset = self._rest_post_with_retry("/reset", {}, retries=20, sleep_s=0.5)
+        reset = self._rest_post_with_retry(
+            "/reset",
+            {},
+            retries=reset_retries,
+            sleep_s=reset_sleep_s,
+            timeout=rest_timeout,
+        )
         if reset is None:
             self._write_log("REST reset failed after retries")
             return
@@ -541,14 +630,14 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 resp = self._rest_post_with_retry(
                     "/step",
                     {"action_idx": action_idx},
-                    retries=3,
-                    sleep_s=0.1,
-                    timeout=5.0,
+                    retries=step_retries,
+                    sleep_s=step_sleep_s,
+                    timeout=rest_timeout,
                 )
                 if not isinstance(resp, dict):
                     self._write_log(f"REST /step failed at step={step}; skipping this step")
                     self.logger.warning("REST /step failed at step=%d; skip step", step)
-                    time.sleep(0.10)
+                    time.sleep(loop_sleep_s)
                     continue
 
                 next_state = np.array(resp.get("next_state", []), dtype=np.float32)
@@ -560,7 +649,6 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 decision = resp.get("decision", {}) or {}
                 tier = decision.get("tier", "")
                 out_of_range = bool(info.get("out_of_range", False))
-                fallback = bool(info.get("fallback", False))
                 disconnected = bool(info.get("disconnected", False))
                 def _to_float(v, default=0.0):
                     try:
@@ -569,16 +657,13 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                         return float(default)
                 distance_2d = _to_float(info.get("distance_2d", 0.0), 0.0)
                 overshoot = _to_float(info.get("overshoot", 0.0), 0.0)
-                oor_penalty = _to_float(info.get("oor_penalty", 0.0), 0.0)
-                base_reward = _to_float(info.get("base_reward", reward), reward)
-                reward_final = _to_float(info.get("reward_final", reward), reward)
-
                 if training:
                     _tpool.execute(agent.store_experience, state, action_idx, reward, next_state, False)
                     _tpool.execute(agent.train)
-                    if step % 1000 == 0:
+                    if save_every > 0 and step % save_every == 0:
                         _tpool.execute(agent.save_model)
-
+                        # Không cần flush buffer nữa vì ghi trực tiếp
+                
                 with self._offload_lock:
                     prev = self._offload_table.get(car_name)
 
@@ -603,20 +688,26 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                     self._write_log(f'FLOW_REMOVED: {car_name} (selected tier unavailable in current coverage)')
 
                 self._write_csv(
-                    step, car_name, ap_name,
-                    tier, out_of_range, fallback, disconnected,
-                    decision.get("z_req", ""),
-                    decision.get("z_cached", ""),
-                    decision.get("cache", ""),
-                    delay,
-                    distance_2d,
-                    overshoot,
-                    oor_penalty,
-                    base_reward,
-                    reward_final,
+                    step=step,
+                    car=car_name,
+                    target=ap_name,
+                    bitrate=decision.get("bitrate", 0.0),
+                    z_cached=decision.get("z_cached", 0),
+                    cache=decision.get("cache", 0),
+                    cache_mode=decision.get("cache_mode", -1),
+                    popularity=decision.get("popularity", 0.0),
+                    delay=delay,
+                    distance_2d=distance_2d,
+                    reward=reward,
+                    buffer_s=info.get("buffer_s", 0.0),
+                    rebuffer_s=info.get("rebuffer_s", 0.0),
+                    bitrate_switch_mbps=info.get("bitrate_switch_mbps", 0.0),
+                    slot_id=info.get("slot_id", ''),
+                    delay_slot_mean=info.get("delay_slot_mean", ''),
+                    reward_slot_mean=info.get("reward_slot_mean", ''),
                 )
 
-                if step % 100 == 1:
+                if log_every > 0 and step % log_every == 1:
                     tier = decision.get("tier", "")
                     self.logger.info(
                         "step %d  %s -> %s  cache = %s  z_cached = %s  delay = %.4fs",
@@ -628,7 +719,7 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                     self.logger.info("  known MACs: %s", dict(self.car_to_mac))
 
                 state = next_state
-                time.sleep(0.10)  # 100ms — giảm áp lực lên OVS
+                time.sleep(loop_sleep_s)  # giảm áp lực lên OVS
 
             except (KeyboardInterrupt, SystemExit):
                 self._write_log('REST loop stopped (interrupt)')
@@ -641,6 +732,8 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                 _tpool.execute(agent.save_model)
             except Exception as e:
                 self.logger.warning("Failed to save model at loop end: %s", e)
+        
+        # Không cần flush buffer nữa
         self._write_log(f'REST loop ended after {step} steps')
         self.logger.info("*** Control loop stopped after %d steps. ***", step)
 
@@ -674,7 +767,10 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         self._add_flow(
             datapath, ARP_PRIORITY,
             parser.OFPMatch(eth_type=ether_types.ETH_TYPE_ARP),
-            [parser.OFPActionOutput(ofproto.OFPP_FLOOD)],
+            # Punt ARP to controller so PacketIn learning can build MAC->car mapping.
+            # packet_in_handler sẽ flood tiếp nếu cần.
+            [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER,
+                                    ofproto.OFPCML_NO_BUFFER)],
         )
 
         self.logger.info(

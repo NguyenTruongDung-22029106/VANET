@@ -16,7 +16,7 @@ Dự án mô phỏng hệ thống video streaming trong mạng xe có UAV/RSU, v
 - **D3QN online (Ryu SDN controller) — phương pháp chính:** quyết định động theo trạng thái mạng.
 - **QEA offline baseline (tùy chọn):** dùng để đối sánh.
 
-Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ nội dung (delay)** theo mô hình Xie et al. (IEEE Access 2022).
+**Độ trễ tải segment** theo Xie et al. (IEEE Access 2022), Eq.(10)–(12), trong `models.calculate_total_cost()`. Kích thước chunk trong code: **s_{f,z} = R_z·T** với `T = abr_segment_duration_s` và bảng bitrate `abr_bitrate_values_kbps`. **Phần thưởng RL** là **QoE ABR** (utility − rebuffer − đổi bitrate) trong `environment.py`, không dùng `-log(1+delay)`.
 
 ---
 
@@ -26,21 +26,21 @@ Hàm mục tiêu trong implementation hiện tại là **độ trễ phục vụ
 - `cars` chỉ associate với `uav*`; `rsu*` chỉ dùng cho backhaul trong mô hình delay.
 - **Control plane (Ryu):** `src/ryu_app.py` gọi REST tới môi trường trong `main_thesis.py`, sau đó cài flow OpenFlow.
 - **Environment RL:** `src/environment.py`.
-- **Cost model:** `src/models.py` (`calculate_total_cost`).
+- **Cost model:** `src/models.py` — `calculate_total_cost`, `_chunk_size_bits`, `abr_bitrate_kbps_list` (cùng bảng bitrate với delay và cache).
 
 ### State, Action, Reward
 
 - **State:** vector có kích thước động theo số UAV trong topology.
-  - `2 + L×2 + L + L + L×3 + 1 + Z` chiều (với L = số UAV, Z = số bitrate)
-  - `z_req` được One-hot encode (Z chiều) để Agent nhận diện rõ mức bitrate yêu cầu
-  - Mặc định L=5, Z=4: **state_size = 42**
+  - Công thức: **`2 + 7L + 2Z + 3`** (vị trí xe/UAV, khoảng cách, đầy cache, 3 đặc trưng/UAV, `p_{f,z}`, one-hot `z_req`, buffer, one-hot bitrate trước đó, throughput EWMA).
+  - `z_req` được One-hot encode (Z chiều).
+  - Ví dụ L=5, Z=4: **state_size = 48**.
 
 - **Action:** 3 chiều — `uav_idx × z_cached × cache_decision` (chỉ UAV, theo Paper Xie et al.).
   - Encoding: `a = uav_idx + L × (z_cached + Z × cache_dec)`
   - Tổng action = `#UAV × #bitrate × 2`
   - Với mặc định hiện tại 5 UAV, 4 bitrate: **`5 × 4 × 2 = 40` actions**
 
-- **Reward:** `R = -log(1 + delay)` + out-of-range shaping penalty.
+- **Reward:** QoE ABR trong `environment.py`: utility (log/linear theo bitrate) trừ phạt rebuffer và đổi bitrate; delay tải segment từ `calculate_total_cost()` (Eq.10–12 Xie); `s_{f,z} = R_z·T` với `T = abr_segment_duration_s`.
 
 - **Cache Miss:** Khi UAV không có video, dùng đường MBS→UAV (backhaul) → Car (Eq.12 Paper).
 
@@ -181,12 +181,15 @@ Output:
 
 | Tham số | Mặc định | Ý nghĩa |
 |---|---:|---|
-| `epochs` | `50` | Số epoch mô phỏng |
+| `epochs` | `100` | Số epoch mô phỏng |
 | `max_steps_per_epoch` | `1000` | Số step tối đa mỗi epoch |
 | `cars`, `uavs`, `rsus` | `10, 5, 1` | Quy mô topology |
 | `plot_max` | `400` | Kích thước vùng mô phỏng (m) |
-| `algo_mode` | `'qea'` | Chế độ chạy (`qea`, `ryu_train`, `ryu_env`) |
-| `eval_steps` | `5000` | Số step chạy ở `ryu_env` (`<=0` để chạy không giới hạn) |
+| `algo_mode` | `'ryu_train'` | Chế độ (`ryu_train`, `ryu_env`, `qea`) |
+| `eval_steps` | `5000` | Số step chạy ở `ryu_env` (`<=0` = không giới hạn) |
+| `abr_segment_duration_s` | `2.0` | \(T\): thời lượng một segment ABR (giây) |
+| `abr_bitrate_values_kbps` | `(300,…,1850)` | Bảng \(R_z\) (kbps), khớp `num_bitrates` |
+| `abr_rebuffer_penalty`, `abr_switch_penalty` | `4.3`, `1.0` | Hệ số phạt trong reward QoE |
 | `rest_host`, `rest_port` | `127.0.0.1`, `8081` | REST env endpoint cho Ryu |
 | `cache_uav_MB` | `750` | Dung lượng cache mỗi UAV |
 | `model_path` | `'agents/models/d3qn.pth'` | Nơi lưu/load model D3QN |
@@ -238,7 +241,9 @@ DATN/
 
 ## 10. Tài liệu tham khảo chính
 
-- `References/system_model_formulas.tex`
+- `References/system_model_formulas.tex` — biên dịch PDF bằng **XeLaTeX** (Unicode tiếng Việt):  
+  `cd References && xelatex -interaction=nonstopmode system_model_formulas.tex` (chạy hai lần cho ổn định tham chiếu).
+- `References/architecture_mapping.md` — ánh xạ paper ↔ mã nguồn.
 - `References/SDN_VANET_UAV_Architecture_Summary.md`
 - Xie et al., *Joint Caching and User Association Optimization for Adaptive Bitrate Video Streaming in UAV-Assisted Cellular Networks*, IEEE Access 2022. DOI: `10.1109/ACCESS.2022.3211940`
 

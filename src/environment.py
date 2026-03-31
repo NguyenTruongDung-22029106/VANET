@@ -5,12 +5,14 @@ environment.py — VanetEnvironment: Môi trường học tăng cường theo m�
 State  : động theo số UAV, gồm xe requesting + UAV features + popularity
 Action : (#UAV × #bitrate × cache_decision) — chỉ UAV, không có MBS tier
          Encoding: a = uav_idx + L*(z_cached + Z*cache_dec)
-Reward : -log(1+delay), raw delay trong info['raw_delay']
+Reward : QoE ABR (utility − rebuffer − switch); D từ Eq.(10–12) Xie et al.
+         Buffer: B' = B + T − D với T = abr_segment_duration_s (thời lượng segment, cố định);
+         s_{f,z} = R_z·T trong models (cùng nguồn với delay).
 """
 import math
 import random
 import numpy as np
-from models import calculate_total_cost
+from models import calculate_total_cost, _chunk_size_bits, abr_bitrate_kbps_list
 from helpers import (
     get_node_xy, dist_2d,
 )
@@ -26,12 +28,6 @@ def _compute_zipf_joint_probs(num_videos: int, num_bitrates: int, gamma: float) 
     return (raw / raw.sum()).reshape(F, Z)
 
 
-def _chunk_size_bits(z_idx: int, config) -> float:
-    """s_{f,z}: chunk size theo bitrate z (tuyến tính theo z+1)."""
-    s0_bits = float(getattr(config, 'chunk_size_MB', 8.0)) * 8e6
-    return s0_bits * (int(z_idx) + 1)
-
-
 def _count_cars_in_uav_range(cars, uav_node):
     """Estimate runtime users served by a UAV by coverage count."""
     if uav_node is None:
@@ -41,6 +37,28 @@ def _count_cars_in_uav_range(cars, uav_node):
         if dist_2d(car, uav_node) <= float(UAV_RANGE):
             c += 1
     return c
+
+
+def _get_abr_labels(config, Z: int):
+    labels = getattr(config, 'abr_bitrate_labels', None)
+    if labels is None:
+        labels = tuple(f"z{z}" for z in range(Z))
+    try:
+        labels = list(labels)
+    except Exception:
+        labels = [f"z{z}" for z in range(Z)]
+    if len(labels) < Z:
+        while len(labels) < Z:
+            labels.append(str(labels[-1]) if labels else f"z{len(labels)}")
+    return [str(x) for x in labels[:Z]]
+
+
+def _abr_utility(bitrate_kbps: float, mode: str = 'log') -> float:
+    b = max(float(bitrate_kbps), 1.0)
+    if str(mode).lower().strip() == 'linear':
+        return b / 1000.0
+    # log utility (Pensieve-like)
+    return math.log(b / 1000.0)
 
 
 # ============================================================
@@ -83,15 +101,18 @@ class VanetEnvironment:
         self._uav_action_size = self.num_offload_targets * self.num_bitrates * self.num_cache_actions
         self.action_size = max(1, self._uav_action_size)
 
-        # State: car pos + UAV features + popularity + z_req (one-hot)
+        # Kích thước state = 2 + 7L + 2Z + 3 (L = số UAV, Z = num_bitrates)
         self.state_size = (
             2 +                      # requesting user position
             len(self.uavs) * 2 +      # UAV positions
             len(self.uavs) +          # distance user→each UAV
             len(self.uavs) +          # cache fullness per UAV
-            len(self.uavs) * 3 +      # NEW: Cache hit, UAV load, Transcoding avail per UAV
-            1 +                       # popularity of requested chunk
-            self.Z                    # z_req one-hot encoded
+            len(self.uavs) * 3 +      # Cache hit, UAV load, transcoding avail per UAV
+            1 +                       # popularity p_{f,z}
+            self.Z +                  # z_req one-hot
+            1 +                       # buffer_norm
+            self.Z +                  # last_bitrate one-hot
+            1                         # throughput EWMA norm
         )
 
         # Paper caching: y_{l,f,z} per UAV, per chunk, per bitrate
@@ -109,17 +130,36 @@ class VanetEnvironment:
             self.num_videos, self.Z, self.zipf_exponent
         )
         self._zipf_probs = self._zipf_probs_fz.sum(axis=1)
-        self.f_req         = 0
-        self.z_req         = 0
+        # Slot bookkeeping (paper-like: tất cả cars cùng request trong 1 slot/round)
+        self.K = len(self.cars)
+        self._slot_id = 0
+        self._slot_car_idx = 0
+        self._slot_f_req = np.zeros(self.K, dtype=np.int64)
+        self._slot_z_req = np.zeros(self.K, dtype=np.int64)
+        self._slot_delay_i = np.zeros(self.K, dtype=np.float64)
+        self._slot_reward_i = np.zeros(self.K, dtype=np.float64)
+
+        # Current request for `requesting_car` (set bởi `_new_request()` / theo từng substep)
+        self.f_req = 0
+        self.z_req = 0
 
         self.requesting_car = self.cars[0] if self.cars else None
 
         self._norm_scale = float(getattr(config, 'plot_max', 400))
-        self.oor_penalty_alpha = float(getattr(config, 'oor_penalty_alpha', 2.0))
-        self.oor_penalty_beta = float(getattr(config, 'oor_penalty_beta', 2.0))
-        self.oor_penalty_cap = float(getattr(config, 'oor_penalty_cap', 5.0))
         self._last_actual_uav_idx = None
         self._last_served_request = None
+
+        # ── ABR/QoE runtime state (per requesting stream) ─────────────────
+        self._abr_segment_s = float(getattr(config, 'abr_segment_duration_s', 2.0))
+        self._abr_max_buf_s = float(getattr(config, 'abr_max_buffer_s', 30.0))
+        self._abr_init_buf_s = float(getattr(config, 'abr_init_buffer_s', 2.0))
+        # Per-car ABR state: mỗi xe có buffer/switch history riêng
+        self._buffer_s = np.full(self.K, float(self._abr_init_buf_s), dtype=np.float64)
+        self._last_bitrate_idx = np.zeros(self.K, dtype=np.int64)
+        self._tp_ewma_kbps = np.zeros(self.K, dtype=np.float64)
+        self._abr_tp_alpha = float(getattr(config, 'abr_tp_ewma_alpha', 0.9))
+        self._abr_bitrates_kbps = abr_bitrate_kbps_list(config, self.Z)
+        self._abr_labels = _get_abr_labels(config, self.Z)
 
     # ------------------------------------------------------------------
     @staticmethod
@@ -163,7 +203,7 @@ class VanetEnvironment:
             # 2. UAV Load (normalized 0 to 1)
             uav_node = self.uavs[l]
             uav_users = _count_cars_in_uav_range(self.cars, uav_node)
-            uav_capacity = float(getattr(self.config, 'M', 30))
+            uav_capacity = float(getattr(self.config, 'M', 30.0))
             sv.append(min(uav_users / max(uav_capacity, 1.0), 1.0))
             
             # 3. Transcoding availability
@@ -186,6 +226,24 @@ class VanetEnvironment:
         if 0 <= int(self.z_req) < self.Z:
             z_req_onehot[int(self.z_req)] = 1.0
         sv.extend(z_req_onehot)
+
+        # --- ABR/QoE state features (per-car) ---
+        cur_i = int(getattr(self, '_slot_car_idx', 0))
+        cur_i = max(0, min(cur_i, max(self.K - 1, 0)))
+
+        buf_norm = float(self._buffer_s[cur_i]) / max(float(self._abr_max_buf_s), 1e-6)
+        sv.append(min(max(buf_norm, 0.0), 1.0))
+
+        last_onehot = [0.0] * self.Z
+        li = int(self._last_bitrate_idx[cur_i])
+        if 0 <= li < self.Z:
+            last_onehot[li] = 1.0
+        sv.extend(last_onehot)
+
+        max_br = float(max(self._abr_bitrates_kbps) if self._abr_bitrates_kbps else 1.0)
+        tp_norm = float(self._tp_ewma_kbps[cur_i]) / max(max_br, 1.0)
+        sv.append(min(max(tp_norm, 0.0), 1.0))
+        # ------------------------------
 
         return np.array(sv, dtype=np.float32)
 
@@ -230,23 +288,37 @@ class VanetEnvironment:
 
     # ------------------------------------------------------------------
     def _new_request(self):
-        """Chọn request theo joint popularity p_{f,z} — gọi TRƯỚC get_state()."""
-        if not self.cars:
+        """
+        Start a new slot (paper-like):
+          - pre-generate request (f,z) cho TOÀN BỘ cars trong slot
+          - reset current substep về car idx = 0
+        """
+        self._slot_id = int(self._slot_id) + 1
+        self._slot_car_idx = 0
+
+        if not self.cars or self.K <= 0:
             self.requesting_car = None
-        else:
-            # Theo Paper: mọi xe đều phục vụ qua UAV, chọn xe bất kỳ
-            valid_cars = []
-            for car in self.cars:
-                covered_by_uav = any(dist_2d(car, uav) <= float(UAV_RANGE) for uav in self.uavs)
-                if covered_by_uav:
-                    valid_cars.append(car)
-            self.requesting_car = random.choice(valid_cars) if valid_cars else random.choice(self.cars)
+            self.f_req = 0
+            self.z_req = 0
+            return
+
         joint_flat = self._zipf_probs_fz.reshape(-1)
-        req_idx = int(np.random.choice(joint_flat.size, p=joint_flat))
-        self.f_req = int(req_idx // self.Z)
-        self.z_req = int(req_idx % self.Z)
+        req_idx = np.random.choice(joint_flat.size, size=self.K, p=joint_flat).astype(np.int64)
+        self._slot_f_req = (req_idx // self.Z).astype(np.int64)
+        self._slot_z_req = (req_idx % self.Z).astype(np.int64)
+
+        # Reset accumulators for aggregation at end-of-slot
+        self._slot_delay_i[:] = 0.0
+        self._slot_reward_i[:] = 0.0
+
+        self.requesting_car = self.cars[0]
+        self.f_req = int(self._slot_f_req[0])
+        self.z_req = int(self._slot_z_req[0])
 
     def step(self, action_idx: int):
+        car_i = int(getattr(self, '_slot_car_idx', 0))
+        slot_id = int(getattr(self, '_slot_id', 0))
+
         requesting_car = self.requesting_car
         f = int(self.f_req)
         z_req = int(self.z_req)
@@ -259,13 +331,11 @@ class VanetEnvironment:
         uav_idx     = int(max(0, min(int(uav_idx), len(self.uavs) - 1)))
         target_node = self.uavs[uav_idx]
 
-        # ── out_of_range: logging + reward shaping theo overshoot ─────────────
+        # ── out_of_range: logging ─────────────
         distance_2d = 0.0
-        out_of_range = False
         if requesting_car is not None:
             distance_2d = float(dist_2d(requesting_car, target_node))
-            if distance_2d > float(UAV_RANGE):
-                out_of_range = True
+        # NOTE: out_of_range flag is not used for penalty anymore
 
         # ── Cache placement (FIX: clamp z_cached_action vào [0, Z-1]) ──────────
         z_cached_action = int(max(0, min(int(z_cached_action), self.Z - 1)))
@@ -312,49 +382,126 @@ class VanetEnvironment:
             num_users_per_uav=num_users_on_uav,
         )
 
-        # ── Reward Shaping: delay + overshoot penalty (không phạt cache mismatch cứng) ──
-        base_reward = -math.log1p(cost)
-        overshoot = max(0.0, (distance_2d / float(UAV_RANGE)) - 1.0)
-        oor_penalty = min(
-            self.oor_penalty_alpha * (overshoot ** self.oor_penalty_beta),
-            self.oor_penalty_cap,
+        # ── ABR QoE reward (per car) ─────────────────────────────────────
+        bitrate_kbps = float(self._abr_bitrates_kbps[z_req] if 0 <= z_req < len(self._abr_bitrates_kbps) else 1000.0)
+        last_bitrate_i = int(self._last_bitrate_idx[car_i]) if self.K > 0 else 0
+        last_kbps = float(self._abr_bitrates_kbps[last_bitrate_i] if 0 <= last_bitrate_i < len(self._abr_bitrates_kbps) else bitrate_kbps)
+        bitrate_label = str(self._abr_labels[z_req] if 0 <= z_req < len(self._abr_labels) else str(z_req))
+
+        download_time_s = float(cost)
+        s_bits = float(self.chunk_sizes[z_req]) if 0 <= z_req < len(self.chunk_sizes) else _chunk_size_bits(z_req, self.config)
+        playback_s = float(self._abr_segment_s)
+        # Buffer: B' = B + T − D (T = thời lượng segment; s_{f,z} = R_z·T trong Xie ABR)
+        buf_next = float(self._buffer_s[car_i]) + playback_s - download_time_s
+        rebuffer_s = 0.0
+        if buf_next < 0.0:
+            rebuffer_s = -buf_next
+            buf_next = 0.0
+        buf_next = min(buf_next, float(self._abr_max_buf_s))
+
+        # Effective throughput (kbps): s_{f,z} [kbit] / D — khớp cùng s, D với Eq.(10–12)
+        tp_kbps = 0.0
+        if download_time_s > 1e-6:
+            tp_kbps = (s_bits / 1000.0) / download_time_s
+        self._tp_ewma_kbps[car_i] = (
+            self._abr_tp_alpha * float(self._tp_ewma_kbps[car_i])
+            + (1.0 - self._abr_tp_alpha) * float(tp_kbps)
         )
-        reward = base_reward - oor_penalty
+
+        # QoE terms
+        util = _abr_utility(bitrate_kbps, mode=getattr(self.config, 'abr_utility', 'log'))
+        rebuf_pen = float(getattr(self.config, 'abr_rebuffer_penalty', 4.3))
+        sw_pen = float(getattr(self.config, 'abr_switch_penalty', 1.0))
+        switch_mag = abs((bitrate_kbps - last_kbps) / 1000.0)  # Mbps delta
+        abr_reward = util - rebuf_pen * float(rebuffer_s) - sw_pen * float(switch_mag)
+        reward = abr_reward
+
         served_decision = {
             'tier': 'uav',
             'uav_idx': int(uav_idx),
             'offload_name': getattr(target_node, 'name', f'uav{uav_idx + 1}'),
             'cache': int(cache_dec),
+            'cache_mode': int(cache_mode),
             'f_req': f,
             'z_req': z_req,
             'z_cached': int(z_cached_action),
+            'bitrate': float(bitrate_kbps),
+            'bitrate_label': bitrate_label,
             'popularity': float(self._zipf_probs_fz[f, z_req]),
         }
         self._last_actual_uav_idx = uav_idx
         self._last_served_request = dict(served_decision)
-        self._new_request()
-        return self.get_state(), reward, False, {
-            'raw_delay': cost,
-            'actual_uav_idx': uav_idx,
+        # Persist ABR state for this car
+        self._buffer_s[car_i] = float(buf_next)
+        self._last_bitrate_idx[car_i] = int(z_req)
+
+        # Slot accumulators for aggregation/logging
+        if self.K > 0:
+            self._slot_delay_i[car_i] = float(cost)
+            self._slot_reward_i[car_i] = float(reward)
+
+        # Advance to next substep (next car) or next slot
+        self._slot_car_idx = car_i + 1
+        done_slot = self._slot_car_idx >= self.K
+
+        info = {
+            'raw_delay': float(cost),
+            'playback_chunk_s': float(playback_s),
             'distance_2d': float(distance_2d),
-            'overshoot': float(overshoot),
-            'oor_penalty': float(oor_penalty),
-            'base_reward': float(base_reward),
-            'reward_final': float(reward),
-            'out_of_range': out_of_range,
+            'actual_uav_idx': int(uav_idx),
+            'buffer_s': float(self._buffer_s[car_i]),
+            'rebuffer_s': float(rebuffer_s),
+            'bitrate_kbps': float(bitrate_kbps),
+            'bitrate_label': bitrate_label,
+            'bitrate_switch_mbps': float(switch_mag),
+            'qoe_reward': float(abr_reward),
+            'slot_id': slot_id,
+            'substep_idx': int(car_i),
             'fallback': False,
             'disconnected': False,
             'decision': served_decision,
         }
 
+        if not done_slot:
+            # Update current request for the next car
+            self.requesting_car = self.cars[self._slot_car_idx]
+            self.f_req = int(self._slot_f_req[self._slot_car_idx])
+            self.z_req = int(self._slot_z_req[self._slot_car_idx])
+            next_state = self.get_state()
+            return next_state, reward, False, info
+
+        # End of slot: aggregate across cars (xấp xỉ D_tot xu hướng)
+        delay_slot_mean = float(np.mean(self._slot_delay_i)) if self.K > 0 else 0.0
+        reward_slot_mean = float(np.mean(self._slot_reward_i)) if self.K > 0 else 0.0
+        info['delay_slot_mean'] = delay_slot_mean
+        info['reward_slot_mean'] = reward_slot_mean
+
+        # Start the next slot: generates requests for all cars
+        self._new_request()
+        next_state = self.get_state()
+        return next_state, reward, False, info
+
     # ------------------------------------------------------------------
     def reset(self):
         self.Y[:] = 0
-        self.f_req          = 0
-        self.z_req          = 0
-        self.requesting_car = self.cars[0] if self.cars else None
         self._last_actual_uav_idx = None
         self._last_served_request = None
+        self._abr_segment_s = float(getattr(self.config, 'abr_segment_duration_s', 2.0))
+        self._slot_id = 0
+        self._slot_car_idx = 0
+        self.f_req = 0
+        self.z_req = 0
+
+        # Reset per-car ABR state
+        if self.K > 0:
+            self._buffer_s[:] = float(self._abr_init_buf_s)
+            self._last_bitrate_idx[:] = 0
+            self._tp_ewma_kbps[:] = 0.0
+            self.requesting_car = self.cars[0]
+        else:
+            self.requesting_car = None
+
+        # Start first slot (generate requests for all cars)
         self._new_request()
         return self.get_state()
 
@@ -367,6 +514,7 @@ class VanetEnvironment:
                 'uav_idx':      int(served.get('uav_idx', -1)),
                 'offload_name': str(served.get('offload_name', 'none')),
                 'cache':        int(served.get('cache', 0)),
+                'cache_mode':   int(served.get('cache_mode', -1)),
                 'f_req':        int(served.get('f_req', self.f_req)),
                 'z_req':        int(served.get('z_req', self.z_req)),
                 'z_cached':     int(served.get('z_cached', -1)),

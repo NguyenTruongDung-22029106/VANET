@@ -5,18 +5,18 @@
 %   "Tối ưu hóa Lưu trữ Biên và Liên kết Người dùng cho Dịch vụ
 %    Truyền phát Video Thích ứng trong Mạng VANET hỗ trợ UAV dùng D3QN"
 %
-% Nguồn:
-%   [Xie]  Xie et al., "Joint Caching and User Association Optimization
-%          for Adaptive Bitrate Video Streaming in UAV-Assisted Cellular
-%          Networks," IEEE Access, 2022.
-%   [Chen] Chen et al., "Edge Collaborative Caching Based on
-%          Incentive-Driven D3QN Combined With User Preferences in
-%          UAV-Assisted Vehicular Networks," IEEE Trans. ITS, 2025.
+% Nguồn chính (công thức hệ thống): [Xie] Xie et al., IEEE Access, 2022.
+% Phần D3QN/QoE là mô tả cài đặt luận văn (không lấy số hiệu phương trình từ bài khác).
+% =============================================================================
+% Biên dịch: XeLaTeX (Unicode tiếng Việt; pdflatex + T1 không đủ dấu).
+%    xelatex -interaction=nonstopmode system_model_formulas.tex
 % =============================================================================
 
 \documentclass[11pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}[
+  Ligatures = TeX,
+]
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{hyperref}
 \usepackage{enumitem}
@@ -102,129 +102,70 @@ interference from all other UAVs $l' \neq l$.
 $B$ = total bandwidth;
 $M$ = number of users / sub-channels per UAV.
 
-\subsection{Backhaul Rate: MBS $\to$ UAV}
+\subsection{Backhaul: MBS $\to$ UAV [Xie Eq.~(6)--(9)]}
 
+\noindent In \cite{Xie}, the LoS and NLoS path losses for the wireless backhaul link (notation as in the paper) are
+\begin{align}
+  g_{\mathrm{BS},l}^{\mathrm{LoS}}  &= d_{\mathrm{BS},l}^{-\gamma},
+  \tag{Xie~6} \\
+  g_{\mathrm{BS},l}^{\mathrm{NLoS}} &= \eta\, d_{\mathrm{BS},l}^{-\gamma}.
+  \tag{Xie~7}
+\end{align}
+The average path loss is
+$g_{\mathrm{BS},l} = P_{\mathrm{BS},l}^{\mathrm{LoS}}\, g_{\mathrm{BS},l}^{\mathrm{LoS}}
+ + \bigl(1 - P_{\mathrm{BS},l}^{\mathrm{LoS}}\bigr)\, g_{\mathrm{BS},l}^{\mathrm{NLoS}}$
+(see the text immediately after (7) in \cite{Xie}). The received SINR is
 \begin{equation}
-  r_{\mathrm{BS},l} = \frac{B_h}{L} \log_2\!\left(1 + \mathrm{SINR}_{\mathrm{BS},l}\right)
-  \tag{Xie~9}
+  \mathrm{SINR}_{\mathrm{BS},l} =
+    \frac{P_{\mathrm{BS}}\, 10^{-g_{\mathrm{BS},l}/10}}{\sigma^2}
+  \tag{Xie~8}
 \end{equation}
-
-\noindent where the backhaul path loss (Eq.~6--8) uses the same LoS/NLoS model
-with backhaul-specific exponent $\gamma$ and excess loss $\eta$:
+and the backhaul rate is
 \begin{equation}
-  g_{\mathrm{BS},l} = P_{\mathrm{BS},l}^{\mathrm{LoS}} \cdot d_{\mathrm{BS},l}^{-\gamma}
-                    + \left(1 - P_{\mathrm{BS},l}^{\mathrm{LoS}}\right) \cdot \eta \, d_{\mathrm{BS},l}^{-\gamma}
-  \tag{Xie~6--8}
+  r_{\mathrm{BS},l} = \frac{B_h}{L} \log_2\!\left(1 + \mathrm{SINR}_{\mathrm{BS},l}\right).
+  \tag{Xie~9}
 \end{equation}
 
 \noindent \textbf{Variables:}
 $B_h$ = backhaul bandwidth;
 $L$ = number of UAVs;
 $P_{\mathrm{BS}}$ = MBS transmit power;
-$\gamma$ = backhaul path loss exponent;
-$\eta$ = NLoS excess loss coefficient.
+$\sigma^2$ = noise power;
+$\gamma$, $\eta$ = backhaul path loss exponent and NLoS excess factor as in \cite{Xie}.
 
-\subsection{V2V Transmission Rate}
-
-\begin{equation}
-  R_{vv'}(t) = B_{vv'} \log_2\!\left(1 + \frac{P_{vv'}\,g_{vv'}(t)}{N_0 B_{vv'}}\right)
-  \tag{Chen~12}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$B_{vv'}$ = V2V bandwidth;
-$P_{vv'}$ = vehicle transmit power;
-$g_{vv'}(t) = g_0 / l_{vv'}^2(t)$ = channel gain ($l_{vv'}$ = distance);
-$N_0$ = noise power.
-
-\subsection{V2U Transmission Rate}
-
-\begin{equation}
-  R_{u,v} = B_{u,v} \log_2\!\left(1 + \frac{P_{u,v}^t \, h_{v,u}(t)}{\sigma^2}\right)
-  \tag{Chen~15}
-\end{equation}
-
-\noindent where $h_{v,u}(t) = g_0 / l_{u,v}^2(t)$ (free-space path loss).
-$B_{u,v}$ is allocated equally among associated users.
+\noindent \textbf{Code note:} \texttt{models.\_rate\_backhaul} computes an equivalent weighted channel gain
+(LoS probability $\times$ distance-dependent term) then $\mathrm{SINR}$ and $r_{\mathrm{BS},l}$; the structure matches
+(8)--(9), while the split (6)/(7) is folded into one gain expression for implementation.
 
 % =============================================================================
-\section{Content Popularity Model}
-% Source: [Chen] Eq.(1)
+\section{Request indicator, popularity, and cache (Xie)}
 % =============================================================================
 
+\noindent \textbf{Theo \cite{Xie} (Section III-A2):} Ký hiệu $p_{k,f,z} \in \{0,1\}$ là \emph{chỉ báo}:
+$p_{k,f,z}=1$ khi user $k$ đang yêu cầu chunk $v_{f,z}$, ngược lại bằng $0$.
+Các yêu cầu chunk chịu ảnh hưởng độ phổ biến; trong bài báo,
+\emph{``the popularity of video chunks follows a Zipf-like distribution''} \cite{Xie}
+(tham chiếu [37] trong bài gốc). Các Eq.~(Xie~10)--(Xie~12) lấy tổng theo $(f,z)$ với các hệ số
+$p_{k,f,z}$; với mỗi request thực tế chỉ một cặp $(f,z)$ có $p_{k,f,z}=1$, các hạng tử còn lại bằng $0$.
+
+\noindent \textbf{Cài đặt mô phỏng (luận văn):} Mỗi bước cần \emph{một} cặp $(f,z)$ theo độ phổ biến Zipf-like.
+Code dùng phân phối xác suất joint trên tất cả cặp $(f,z)$ với trọng số Zipf theo thứ hạng
+$r=1,\ldots,FZ$ (\texttt{environment.\_compute\_zipf\_joint\_probs}), rồi lấy mẫu một cặp ---
+tương đương việc sinh một mẫu chỉ báo $p_{k,f,z}$ trong mô phỏng Monte Carlo.
+Chi tiết công thức Zipf trên từng cặp là \emph{lựa chọn implementation}; bài Xie chỉ nêu Zipf-like, không ghi đủ hệ số từng rank.
+
+\subsection{Cache placement and capacity [Xie, constraint (15a)]}
+
+\noindent Ma trận cache nhị phân $y_{l,f,z} \in \{0,1\}$ (UAV $l$ lưu chunk $f$ ở bitrate $z$).
+Ràng buộc dung lượng:
 \begin{equation}
-  p_f = \frac{f^{-\gamma}}{\displaystyle\sum_{j=1}^{F} j^{-\gamma}}
-  \tag{Chen~1}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$p_f$ = request probability of content $f$;
-$\gamma$ = Zipf exponent (skewness);
-$F$ = total number of contents in the library.
-
-% =============================================================================
-\section{Cache Model}
-% Source: [Chen] Eq.(4)--(8), [Xie] constraint (15a)
-% =============================================================================
-
-\subsection{Cache State Matrix}
-
-\begin{equation}
-  C = \begin{pmatrix}
-    c_{1,f_1} & \cdots & c_{1,f_n} \\
-    \vdots    & \ddots & \vdots    \\
-    c_{M,f_1} & \cdots & c_{M,f_n}
-  \end{pmatrix}, \quad c_{M,f} \in \{0,1\}
-  \tag{Chen~4}
-\end{equation}
-
-\subsection{Cache Capacity Constraint}
-
-\begin{equation}
-  \sum_{f=1}^{F} s_f \, c_{M,f}^t \leq C_M, \quad \forall\, M \in \mathcal{V} \cup \mathcal{U}
-  \tag{Chen~C3}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$s_f$ = size of content $f$;
-$C_M$ = cache capacity of node $M$ (UAV or vehicle).
-
-\subsection{Cache Replacement Trigger}
-
-\begin{equation}
-  C_{M}^{t-1} + \sum_{f=1}^{F} \left(c_{M,f}^t - c_{M,f}^{t-1}\right) \times s_f > C_M
-  \tag{Chen~6}
-\end{equation}
-
-\subsection{Caching Value Function}
-
-\begin{equation}
-  V_f^t = \omega_1\,\phi_{v_m, f_k} + \omega_2\!\left(p_f + \alpha\, SC_i\right)
-  \tag{Chen~11}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$\omega_1, \omega_2$ = weighting coefficients;
-$\phi_{v_m,f_k}$ = user preference level (Section~\ref{sec:preference});
-$p_f$ = content popularity;
-$\alpha$ = incentive adjustment factor;
-$SC_i$ = social contribution rate (Section~\ref{sec:incentive}).
-
-\subsection{Cache Replacement Decision}
-
-\begin{equation}
-  x_{f_k}^t = e^{V_f^t - \mu\, s_f^t}
-  \tag{Chen~8-def}
-\end{equation}
-
-\begin{equation}
-  c_{M,f_k}^t = \begin{cases} 1 & \text{if } x_{f_k}^t > x_{f_k'}^{t-1} \\ 0 & \text{otherwise} \end{cases}
-  \tag{Chen~8}
+  \sum_{f=1}^{F}\sum_{z=1}^{Z} y_{l,f,z}\, s_{f,z} \leq C_l^{\mathrm{cache}}, \quad \forall\, l \in \mathcal{L}.
+  \tag{Xie~15a}
 \end{equation}
 
 % =============================================================================
 \section{Video Delivery Delay Model}
-% Source: [Xie] Eq.(10)--(13), [Chen] Eq.(21)--(26)
+% Source: [Xie] Eq.(10)--(14)
 % =============================================================================
 
 \subsection{Total Delivery Delay}
@@ -243,8 +184,8 @@ $SC_i$ = social contribution rate (Section~\ref{sec:incentive}).
   \tag{Xie~10}
 \end{equation}
 
-\noindent \textbf{Variables:}
-$p_{k,f,z}$ = probability user $k$ requests content $f$ at bitrate $z$;
+\noindent \textbf{Variables (Xie):}
+$p_{k,f,z} \in \{0,1\}$ = chỉ báo user $k$ có yêu cầu $v_{f,z}$ hay không;
 $y_{l,f,z} \in \{0,1\}$ = cache indicator (UAV $l$, content $f$, bitrate $z$);
 $s_{f,z}$ = chunk size at bitrate $z$;
 $r_{l,k}$ = downlink rate from Eq.~(Xie~5).
@@ -278,6 +219,29 @@ $c_{l,k} = C_{\mathrm{comp}} / M$ = computing resource allocated to user $k$.
 
 \noindent $r_{\mathrm{BS},l}$ = backhaul rate from Eq.~(Xie~9).
 
+\subsection{ABR segment size and client buffer (thesis implementation)}
+\label{sec:abr-impl}
+
+Trong code hiện tại, các representation ABR dùng \emph{cùng} thời lượng segment
+$T_{\mathrm{seg}}$ (giây) như MPEG-DASH; kích thước chunk (bit) thống nhất với
+Eq.~(Xie~10)--(Xie~12) là
+\begin{equation}
+  s_{f,z} = R_z\, T_{\mathrm{seg}},
+  \tag{impl-ABR-s}
+\end{equation}
+với $R_z$ bitrate nominal của representation $z$ (bit/s).
+Tham số \texttt{abr\_segment\_duration\_s}, \texttt{abr\_bitrate\_values\_kbps} trong
+\texttt{config.py}; hàm \texttt{models.\_chunk\_size\_bits} và
+\texttt{models.abr\_bitrate\_kbps\_list} đảm bảo cùng bảng $R_z$ giữa độ trễ và cache.
+
+Gọi $D$ là độ trễ phục vụ một request theo một trong ba kịch bản (Xie~10), (Xie~11) hoặc (Xie~12)
+--- \texttt{calculate\_total\_cost} trong \texttt{models.py}. Buffer phía client (giây):
+\begin{equation}
+  B_{t+1} = \min\!\left(B_{\max},\, \max\!\left(0,\, B_t + T_{\mathrm{seg}} - D\right)\right).
+  \tag{impl-buffer}
+\end{equation}
+Thời gian rebuffering trong bước là $\max(0,\, -(B_t + T_{\mathrm{seg}} - D))$ khi $B_t + T_{\mathrm{seg}} < D$.
+
 \subsection{Total System Delay Objective}
 
 \begin{equation}
@@ -290,69 +254,9 @@ $c_{l,k} = C_{\mathrm{comp}} / M$ = computing resource allocated to user $k$.
 $x_{l,k} \in \{0,1\}$ = user association indicator (user $k$ assigned to UAV $l$);
 $\mathcal{L}$ = set of UAVs; $\mathcal{K}$ = set of users.
 
-\subsection{Total User Delivery Delay (Chen multi-path)}
-
-\begin{equation}
-  D_{f,v}^{\mathrm{total}} =
-  \begin{cases}
-    c_{v,f}^t \, d_{v',v}^f \\
-    \quad + (1-c_{v,f}^t)\, k_1 c_{u,f}^t \, d_{u,v}^f \\
-    \quad + (1-c_{v,f}^t)(1-k_1 c_{u,f}^t)\, k_2 c_{u',f}^t \, d_{u',v}^f \\
-    \quad + (1-c_{v,f}^t)(1-k_1 c_{u,f}^t)(1-k_2 c_{u',f}^t)\, d_{b,v}^f
-  \end{cases}
-  \tag{Chen~26}
-\end{equation}
-
-\noindent The four paths in priority order: V2V $\to$ V2U $\to$ V2U' (neighboring UAV) $\to$ V2B.
-
-% =============================================================================
-\section{User Preference \& Incentive Model}
-\label{sec:preference}
-% Source: [Chen] Eq.(2)--(3), (9)--(11)
-% =============================================================================
-
-\subsection{Topic Similarity Between Contents}
-
-\begin{equation}
-  Q(f, f') = \frac{2}{K(K-1)}
-    \sum_{f,f'} \frac{\displaystyle\sum_{j=1}^{J} e(f,w_j)\,e(f',w_j)}
-    {\sqrt{\displaystyle\sum_{j=1}^{J} e(f,w_j)^2}\;\sqrt{\displaystyle\sum_{j=1}^{J} e(f',w_j)^2}}
-  \tag{Chen~2}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$e(f,w_j) \in \{0,1\}$ = relevance of content $f$ to topic $w_j$;
-$K$ = number of historically requested contents;
-$J$ = number of topics.
-
-\subsection{User Preference Level}
-\label{sec:phi}
-
-\begin{equation}
-  \phi_{v_m, f_k} =
-    \frac{\displaystyle\sum_{j=1}^{J} e(f_k, w_j)\, Q(f, f')}
-    {\sqrt{\displaystyle\sum_{j=1}^{J} [e(f_k,w_j)]^2}\;
-     \sqrt{\displaystyle\sum_{j=1}^{J} [Q(f,f')]^2}}
-  \tag{Chen~3}
-\end{equation}
-
-\subsection{Social Contribution Rate}
-\label{sec:incentive}
-
-\begin{equation}
-  SC_i(t) = \frac{1}{T} \sum_{t=1}^{T}
-    \frac{h_{v2v}\, s_f\, p_f}{\displaystyle\sum_{f=1}^{F} c_{M,f}^t\, s_f}
-  \tag{Chen~10}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$h_{v2v} \in \{0,1\}$ = V2V sharing decision;
-$s_f\,p_f$ = effective contribution of sharing content $f$;
-denominator = total cached content size at node $M$.
-
 % =============================================================================
 \section{Optimization Problem}
-% Source: [Xie] Problem (15), [Chen] Problem P (35)--(36)
+% Source: [Xie] Problem (15)
 % =============================================================================
 
 \subsection{Joint CA+UA Optimization (Xie et al.)}
@@ -374,26 +278,13 @@ denominator = total cached content size at node $M$.
     \tag{15d}
 \end{align}
 
-\subsection{Cache Utility Maximization (Chen et al.)}
-
-\begin{equation}
-  \max_{c_{v,f}^t,\, c_{u,f}^t} \quad
-    \lim_{T\to\infty} \frac{1}{T} \sum_{t=1}^{T}
-    \sum_{f=1}^{F} \sum_{v=1}^{m} \sum_{u=1}^{n} U
-  \tag{Chen~35}
-\end{equation}
-
-\noindent where the normalized utility $U = (U_t + U_e)\,p_f$ with:
-\begin{equation}
-  U_t = \frac{d_{b,v}^f - D_{f,v}^{\mathrm{total}}}{d_{b,v}^f}
-  \tag{Chen~33}
-\end{equation}
-
-\noindent \textbf{Note:} This project omits the energy component $U_e$; only delay is optimized: $U \approx U_t \cdot p_f$.
+\noindent \textbf{Ghi chú:} Luận văn dùng D3QN để học chính sách; hàm mục tiêu lý thuyết
+trong \cite{Xie} là tối thiểu hóa độ trễ $D_{\mathrm{tot}}$; phần thưởng thực tế là QoE ABR
+(Mục~\ref{sec:rl-reward-impl}).
 
 % =============================================================================
-\section{D3QN Reinforcement Learning Model}
-% Source: [Chen] Eq.(47)--(57), [Xie] Algorithm 1 (baseline QEA)
+\section{D3QN và cài đặt luận văn}
+% Baseline QEA: [Xie] Algorithm~1; D3QN: mô tả chuẩn (Double DQN + Dueling), không trích số hiệu từ bài khác.
 % =============================================================================
 
 \subsection{Q-Value Update (Double DQN)}
@@ -402,18 +293,18 @@ denominator = total cached content size at node $M$.
   Q_1(s_t, a_t) &\leftarrow Q_1(s_t,a_t) + \alpha\!\left(
     r_{t+1} + \gamma\, Q_2\!\left(s_{t+1}, \arg\max_{a'} Q_1(s_{t+1},a')\right)
     - Q_1(s_t,a_t)\right)
-  \tag{Chen~48} \\
+  \tag{D3QN-a} \\
   Q_2(s_t, a_t) &\leftarrow Q_2(s_t,a_t) + \alpha\!\left(
     r_{t+1} + \gamma\, Q_1\!\left(s_{t+1}, \arg\max_{a'} Q_2(s_{t+1},a')\right)
     - Q_2(s_t,a_t)\right)
-  \tag{Chen~49}
+  \tag{D3QN-b}
 \end{align}
 
 \subsection{Dueling Network Q-Value Decomposition}
 
 \begin{equation}
   Q(s,a) = V(s) + \left( A(s,a) - \frac{1}{|\mathcal{A}|} \sum_{a'} A(s,a') \right)
-  \tag{Chen~50}
+  \tag{D3QN-duel}
 \end{equation}
 
 \noindent \textbf{Variables:}
@@ -426,69 +317,51 @@ normalization term ensures identifiability.
 \begin{equation}
   a_t = \arg\max_{a}
     \left( V(s_t) + A(s_t,a) - \frac{1}{|\mathcal{A}|}\sum_{a'} A(s_t,a') \right)
-  \tag{Chen~51}
+  \tag{D3QN-act}
 \end{equation}
 
 \subsection{Target Value (D3QN)}
 
 \begin{equation}
   Q_{\mathrm{target}} = R_{t+1} + \gamma\,\max_{A}\,Q(S_{t+1}, A;\,\theta_t^-)
-  \tag{Chen~52}
+  \tag{D3QN-tgt}
 \end{equation}
 
-\subsection{Reward Function}
+\subsection{Reward trong code (QoE ABR)}
+\label{sec:rl-reward-impl}
 
+\noindent \texttt{environment.py} dùng phần thưởng QoE kiểu Pensieve cho ABR
+(gắn với độ trễ $D$ từ mô hình Xie ở trên):
 \begin{equation}
-  R_i(t) = R(t) + \alpha\, SC_i(t)
-  \tag{Chen~56}
+  r_t = u(R_{z_t}) - \beta_{\mathrm{rebuf}}\, t_{\mathrm{rebuf},t}
+        - \beta_{\mathrm{sw}}\, \bigl| R_{z_t} - R_{z_{t-1}} \bigr|_{\mathrm{norm}},
+  \tag{impl-QoE}
 \end{equation}
+trong đó $u(\cdot)$ là log hoặc tuyến tính theo bitrate nominal $R_{z_t}$;
+$t_{\mathrm{rebuf},t}$ lấy từ cập nhật buffer (Mục~\ref{sec:abr-impl});
+$\beta_{\mathrm{rebuf}}, \beta_{\mathrm{sw}}$ là \texttt{abr\_rebuffer\_penalty},
+\texttt{abr\_switch\_penalty} trong \texttt{config.py}.
 
+\subsection{Vector trạng thái trong code}
+\label{sec:state-impl}
+
+\noindent Vector trạng thái có số chiều cố định theo topology:
 \begin{equation}
-  R(t) = \begin{cases}
-    U_t  & \text{if } D^t < \delta_f \\
-   -U_t  & \text{if } D^t > \delta_f \\
-    R_{\max} & \text{if cache hit } \varsigma = 1
-  \end{cases}
-  \tag{Chen~57}
+  |\mathbf{s}| = 2 + 7L + 2Z + 3,
+  \tag{impl-state}
 \end{equation}
+với $L$ số UAV, $Z = |\{\text{bitrate levels}\}|$: vị trí xe và UAV (chuẩn hóa), khoảng cách xe--UAV,
+độ đầy cache từng UAV, ba đặc trưng/UAV (cache hit tại $(f,z_{\mathrm{req}})$, tải, khả năng transcode),
+trọng số joint Zipf $P(f_{\mathrm{req}},z_{\mathrm{req}})$ (không phải chỉ báo $p_{k,f,z}$ của \cite{Xie}),
+one-hot $z_{\mathrm{req}}$, buffer chuẩn hóa, one-hot bitrate bước trước,
+throughput EWMA chuẩn hóa. Chi tiết: \texttt{VanetEnvironment.get\_state} trong \texttt{environment.py}.
 
-\noindent \textbf{Variables:}
-$U_t$ = normalized delay improvement (Eq.~Chen~33);
-$\delta_f$ = maximum tolerable delay for content $f$;
-$SC_i(t)$ = social contribution rate;
-$\alpha$ = incentive weight.\\
-\textbf{Note:} This project omits $\alpha\,SC_i$ (simplified reward): $R(t) = U_t = (D_{\mathrm{miss}} - D_{l,k}) / D_{\mathrm{miss}}$.
+\subsection{Không gian hành động trong code (Xie, UAV-only)}
 
-\subsection{State Space}
-
-\begin{equation}
-  \mathcal{S} = \left\{ H_v^t,\; \vartheta,\; \omega_\theta,\; \rho_\nu,\;
-    c_{M,f_n},\; C_M,\; \Theta_m(t),\; V_f^t \right\}
-  \tag{Chen~54}
-\end{equation}
-
-\noindent \textbf{Variables:}
-$H_v^t$ = vehicle position;
-$\vartheta$ = requested content list;
-$\omega_\theta$ = movement angle;
-$\rho_\nu$ = traffic density;
-$c_{M,f_n}$ = cache status at node $M$;
-$C_M$ = available storage;
-$\Theta_m(t)$ = social contribution;
-$V_f^t$ = content caching value.
-
-\subsection{Action Space}
-
-\begin{equation}
-  a_t = \begin{bmatrix}
-    c_{v_1}^t \cdots c_{v,f}^t \cdots c_{v'_1}^t \cdots c_{v',f}^t \\
-    c_{u_1}^t \cdots c_{u,f}^t \cdots c_{u'_1}^t \cdots c_{u',f}^t
-  \end{bmatrix}
-  \tag{Chen~55}
-\end{equation}
-
-\noindent Actions: no caching / cache to vehicle / cache to neighboring vehicle /
-cache to UAV / cache to neighboring UAV.
+\noindent \textbf{Cài đặt luận văn (tầng UAV, Xie):}
+$a \in \{0,\ldots, L Z \cdot 2 - 1\}$ với giải mã
+$(\mathrm{uav\_idx}, z_{\mathrm{cached}}, \mathrm{cache\_dec})$; chỉ UAV (không MBS trong action);
+xem \texttt{encode\_action} / \texttt{\_decode\_action} trong \texttt{environment.py}.
 
 % =============================================================================
 \section{QEA Baseline (for Comparison)}
@@ -526,8 +399,8 @@ $(x_{\mathrm{cur}},\, b_{\mathrm{best}},\, f(\mathbf{X}_i) \geq f(\mathbf{B}))$.
 
 \begin{table}[h!]
 \centering
-\caption{Main Notation Summary}
-\begin{tabular}{@{}lll@{}}
+\caption{Main Notation Summary (Xie + thesis implementation)}
+\begin{tabular}{@{}p{2.2cm}p{6.8cm}l@{}}
 \toprule
 Symbol & Definition & Source \\
 \midrule
@@ -535,19 +408,18 @@ $r_{l,k}$              & Downlink rate UAV $l$ -- user $k$           & Xie~5  \\
 $r_{\mathrm{BS},l}$    & Backhaul rate MBS -- UAV $l$                & Xie~9  \\
 $g_{l,k}$              & Average path loss (dB)                      & Xie~1--2 \\
 $P_{l,k}^{\mathrm{LoS}}$ & LoS probability                           & Xie~3  \\
+$p_{k,f,z}$            & Theo Xie: chỉ báo $\{0,1\}$. Trong mô phỏng: joint Zipf $P(f,z)$; vector trạng thái nhúng $P(f_{\mathrm{req}},z_{\mathrm{req}})$. & Xie~(10--12) \\
 $D_{l,k}^1$            & Direct hit delay                            & Xie~10 \\
 $D_{l,k}^2$            & Transcoding hit delay                       & Xie~11 \\
 $D_{l,k}^3$            & Cache miss delay                            & Xie~12 \\
 $D_{\mathrm{tot}}$     & Total system delay objective                & Xie~14 \\
+$s_{f,z}$              & Chunk size (bit); impl.: $R_z T_{\mathrm{seg}}$ & impl-ABR-s \\
+$R_z$                  & Nominal bitrate, representation $z$         & config \\
+$T_{\mathrm{seg}}$     & ABR segment duration (s)                    & config \\
 $x_{l,k}$              & User association indicator                  & Xie~15 \\
 $y_{l,f,z}$            & Cache placement indicator                   & Xie~15 \\
-$p_f$                  & Content popularity (Zipf)                   & Chen~1 \\
-$\phi_{v_m,f_k}$       & User preference level                       & Chen~3 \\
-$SC_i(t)$              & Social contribution rate                    & Chen~10 \\
-$V_f^t$                & Integrated caching value                    & Chen~11 \\
-$Q(s,a)$               & Q-value (D3QN)                              & Chen~50 \\
-$R_i(t)$               & Reward function                             & Chen~56 \\
-$U_t$                  & Normalized delay utility                    & Chen~33 \\
+$Q(s,a)$               & Q-value (Dueling DQN)                       & D3QN-duel \\
+$r_t$ (thesis)         & QoE ABR reward                             & impl-QoE \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -558,11 +430,6 @@ $U_t$                  & Normalized delay utility                    & Chen~33 \
   Y. Xie et al., ``Joint Caching and User Association Optimization for
   Adaptive Bitrate Video Streaming in UAV-Assisted Cellular Networks,''
   \textit{IEEE Access}, 2022.
-
-\bibitem{Chen}
-  G. Chen et al., ``Edge Collaborative Caching Based on Incentive-Driven
-  D3QN Combined With User Preferences in UAV-Assisted Vehicular Networks,''
-  \textit{IEEE Trans. Intell. Transp. Syst.}, vol.~26, no.~12, Dec.~2025.
 \end{thebibliography}
 
 \end{document}

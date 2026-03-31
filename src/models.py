@@ -19,7 +19,7 @@ Công thức tham chiếu:
   Eq(12)  : D^3 — cache miss delay (kéo từ backhaul)
   Eq(13)  : D_{l,k} = D^1 + D^2 + D^3
 
-Reward trong environment chỉ dùng delay (bỏ qua energy).
+Reward trong environment: QoE ABR; s_{f,z}=R_z*T theo Xie (Eq.10-12 dùng cùng s_{f,z}).
 
 Cache mode (đồng bộ environment.py):
   0 = miss         → dùng D^3
@@ -63,10 +63,10 @@ _DEFAULT = dict(
     w0           = 1.0,         # Cycles per bit for transcoding
     C_comp       = 3.4e9,       # UAV computing capacity (cycles/s)
 
-    # Content
-    chunk_size_MB = 8.0,        # s_{f,z=0}: khớp config.py content_size_MB=8MB
-    # z=0: bitrate thấp (e.g. 480p), z=1: bitrate cao (e.g. 1080p)
-    # s_{f,z} = chunk_size_MB * (z+1) — tỉ lệ tuyến tính với bitrate
+    # ABR chunk — Xie et al.: s_{f,z} là kích thước chunk; với streaming thích ứng,
+    # các representation cùng thời lượng segment T → s_{f,z} = R_z * T (bits).
+    abr_segment_duration_s = 2.0,
+    abr_bitrate_values_kbps = (300, 750, 1200, 1850),
 
 )
 
@@ -172,13 +172,13 @@ def _rate_uav_user(uav_node, user_node, all_uavs, config, num_users_per_uav=None
 
 
 # ============================================================
-# Backhaul rate  Eq(6-9)
+# Backhaul rate — Xie Eq.(6)(7) path loss, Eq.(8) SINR, Eq.(9) rate
 # ============================================================
 
 def _rate_backhaul(uav_node, config, num_uavs=1, mbs_node=None):
     """
-    r_{BS,l} = (B_h/L)·log2(1 + SINR_{BS,l})  Eq(9)
-    Path loss backhaul dùng free-space + LoS/NLoS  Eq(6-8).
+    r_{BS,l} = (B_h/L)·log2(1 + SINR_{BS,l})  [Xie Eq.(9)]
+    SINR từ suy hao trung bình LoS/NLoS [Eq.(6)(7) → g_BS,l, rồi Eq.(8)].
     mbs_node: node RSU/MBS thật từ topology (bắt buộc).
     """
     Bh     = _cfg(config, 'Bh')
@@ -209,17 +209,39 @@ def _rate_backhaul(uav_node, config, num_uavs=1, mbs_node=None):
 
 
 # ============================================================
-# Chunk size helper
+# Chunk size helper  (Xie Eq.(10)-(12): s_{f,z} trong D^1, D^2, D^3)
 # ============================================================
+
+def _abr_kbps_at_z(config, z_idx: int) -> float:
+    """Nominal bitrate R_z (kbps) cho representation index z."""
+    vals = _cfg(config, 'abr_bitrate_values_kbps')
+    if vals is None:
+        vals = _DEFAULT['abr_bitrate_values_kbps']
+    try:
+        vals = [float(x) for x in list(vals)]
+    except (TypeError, ValueError):
+        vals = [300.0, 750.0, 1200.0, 1850.0]
+    if not vals:
+        return 1000.0
+    z = int(max(0, z_idx))
+    return float(vals[z]) if z < len(vals) else float(vals[-1])
+
+
+def abr_bitrate_kbps_list(config, num_z: int):
+    """R_z (kbps), z = 0..num_z-1 — cùng nguồn với s_{f,z} = R_z·T trong _chunk_size_bits."""
+    n = max(int(num_z), 1)
+    return [int(round(_abr_kbps_at_z(config, z))) for z in range(n)]
+
 
 def _chunk_size_bits(z_idx, config):
     """
-    s_{f,z}: kích thước chunk ở bitrate z (bits).
-    z=0 → bitrate thấp (s0), z=1 → bitrate cao (2·s0).
-    Tỉ lệ tuyến tính với bitrate theo Xie et al.
+    s_{f,z} (bits): kích thước một segment ở representation z.
+    Theo mô hình ABR trong Xie et al.: cùng thời lượng phát T cho mọi z
+    → s_{f,z} = R_z * T với R_z = bitrate nominal (bit/s).
     """
-    s0 = _cfg(config, 'chunk_size_MB') * 8e6   # bits
-    return s0 * (z_idx + 1)
+    T = max(float(_cfg(config, 'abr_segment_duration_s')), 1e-9)
+    r_bps = _abr_kbps_at_z(config, z_idx) * 1000.0
+    return r_bps * T
 
 
 # ============================================================
