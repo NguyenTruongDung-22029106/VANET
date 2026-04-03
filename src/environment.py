@@ -408,13 +408,28 @@ class VanetEnvironment:
             + (1.0 - self._abr_tp_alpha) * float(tp_kbps)
         )
 
-        # QoE terms
-        util = _abr_utility(bitrate_kbps, mode=getattr(self.config, 'abr_utility', 'log'))
-        rebuf_pen = float(getattr(self.config, 'abr_rebuffer_penalty', 4.3))
-        sw_pen = float(getattr(self.config, 'abr_switch_penalty', 1.0))
+        # QoE scalarized reward (perceptual, paper-friendly):
+        # reward = q(z) - beta*rebuffer_s - gamma*|q_t - q_{t-1}|
+        q_table = getattr(self.config, 'qoe_quality_table', None)
+        try:
+            q_list = list(q_table) if q_table is not None else []
+        except Exception:
+            q_list = []
+        if not q_list:
+            # Strict table-only mode: provide a simple monotonic default if misconfigured.
+            q_list = [float(i + 1) for i in range(int(self.Z))]
+
+        q_t = float(q_list[z_req]) if 0 <= z_req < len(q_list) else float(q_list[-1])
+        q_prev = float(q_list[last_bitrate_i]) if 0 <= last_bitrate_i < len(q_list) else float(q_t)
+
+        smooth_dq = abs(float(q_t) - float(q_prev))
+        beta = float(getattr(self.config, 'qoe_rebuffer_beta', getattr(self.config, 'abr_rebuffer_penalty', 4.3)))
+        gamma = float(getattr(self.config, 'qoe_smooth_gamma', getattr(self.config, 'abr_switch_penalty', 1.0)))
+        reward = float(q_t) - beta * float(rebuffer_s) - gamma * float(smooth_dq)
+
+        # Keep Mbps switching magnitude for analysis/logging (not directly used in reward)
         switch_mag = abs((bitrate_kbps - last_kbps) / 1000.0)  # Mbps delta
-        abr_reward = util - rebuf_pen * float(rebuffer_s) - sw_pen * float(switch_mag)
-        reward = abr_reward
+        stall_event = 1 if float(rebuffer_s) > 0.0 else 0
 
         served_decision = {
             'tier': 'uav',
@@ -454,7 +469,10 @@ class VanetEnvironment:
             'bitrate_kbps': float(bitrate_kbps),
             'bitrate_label': bitrate_label,
             'bitrate_switch_mbps': float(switch_mag),
-            'qoe_reward': float(abr_reward),
+            'utility_q': float(q_t),
+            'smoothness_q_delta': float(smooth_dq),
+            'stall_event': int(stall_event),
+            'qoe_reward': float(reward),
             'slot_id': slot_id,
             'substep_idx': int(car_i),
             'fallback': False,

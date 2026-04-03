@@ -152,6 +152,7 @@ class SdnVanetRyuApp(app_manager.RyuApp):
             'z_cached', 'cache', 'cache_mode', 'popularity', 'delay',
             'distance_2d', 'reward',
             'buffer_s', 'rebuffer_s', 'bitrate_switch_mbps',
+            'utility_q', 'smoothness_q_delta', 'stall_event',
             'slot_id', 'delay_slot_mean', 'reward_slot_mean',
         ]
         # Nếu file tồn tại nhưng header cũ (thiếu cột), ghi lại để giữ schema nhất quán.
@@ -180,6 +181,7 @@ class SdnVanetRyuApp(app_manager.RyuApp):
         bitrate, z_cached, cache, cache_mode, popularity, delay, distance_2d,
         reward,
         buffer_s=0.0, rebuffer_s=0.0, bitrate_switch_mbps=0.0,
+        utility_q=0.0, smoothness_q_delta=0.0, stall_event=0,
         slot_id='', delay_slot_mean='', reward_slot_mean='',
     ):
         # Ghi trực tiếp vào file CSV
@@ -199,6 +201,9 @@ class SdnVanetRyuApp(app_manager.RyuApp):
             'buffer_s': buffer_s,
             'rebuffer_s': rebuffer_s,
             'bitrate_switch_mbps': bitrate_switch_mbps,
+            'utility_q': utility_q,
+            'smoothness_q_delta': smoothness_q_delta,
+            'stall_event': stall_event,
             'slot_id': slot_id,
             'delay_slot_mean': delay_slot_mean,
             'reward_slot_mean': reward_slot_mean,
@@ -213,6 +218,7 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                         'z_cached', 'cache', 'cache_mode', 'popularity', 'delay',
                         'distance_2d', 'reward',
                         'buffer_s', 'rebuffer_s', 'bitrate_switch_mbps',
+                        'utility_q', 'smoothness_q_delta', 'stall_event',
                         'slot_id', 'delay_slot_mean', 'reward_slot_mean',
                     ]]
                     # Đảm bảo delay luôn là số float, không có dấu phẩy
@@ -702,6 +708,9 @@ class SdnVanetRyuApp(app_manager.RyuApp):
                     buffer_s=info.get("buffer_s", 0.0),
                     rebuffer_s=info.get("rebuffer_s", 0.0),
                     bitrate_switch_mbps=info.get("bitrate_switch_mbps", 0.0),
+                    utility_q=info.get("utility_q", 0.0),
+                    smoothness_q_delta=info.get("smoothness_q_delta", 0.0),
+                    stall_event=info.get("stall_event", 0),
                     slot_id=info.get("slot_id", ''),
                     delay_slot_mean=info.get("delay_slot_mean", ''),
                     reward_slot_mean=info.get("reward_slot_mean", ''),

@@ -58,7 +58,7 @@ def get_config():
         # Run mode
         plot=True,
         algo_mode='qea',   # DRL-first default; 'ryu_env' (Eval) | 'ryu_train' (Train) | 'qea' (baseline)
-        eval_steps=5000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
+        eval_steps=10000,   # số step eval cho ryu_env (<=0 để chạy không giới hạn)
         
         # ── ABR QoE (buffer/rebuffer/switching) — khớp Xie: s_{f,z}=R_z*T, 1 step = 1 segment
         abr_segment_duration_s=2.0,   # T (s): thời lượng một segment (cùng cho mọi z)
@@ -68,6 +68,12 @@ def get_config():
         abr_rebuffer_penalty=4.3,
         abr_switch_penalty=1.0,
         abr_utility='log',  # 'log' | 'linear'
+        # QoE scalarization (perceptual, table-based):
+        # reward = q(z) - beta*rebuffer_s - gamma*|q_t - q_{t-1}|
+        # Use `qoe_quality_table[z]` as quality units (length Z; increasing with bitrate).
+        qoe_quality_table=(1.0, 2.0, 3.0, 4.0),
+        qoe_rebuffer_beta=4.3,
+        qoe_smooth_gamma=1.0,
         # Map z_req (0..Z-1) -> representation (low -> high)
         # 4 mức: 240p, 360p, 480p, 720p
         abr_bitrate_labels=('240p', '360p', '480p', '720p'),
